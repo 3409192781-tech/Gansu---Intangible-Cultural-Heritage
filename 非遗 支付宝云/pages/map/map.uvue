@@ -1,0 +1,519 @@
+<template>
+	<view class="map-page">
+		<view class="map-container">
+			<view class="map-header">
+				<view class="header-decoration"></view>
+				<text class="header-title">甘肃全景</text>
+			</view>
+			<view class="map-content">
+				<movable-area class="map-movable-area">
+					<movable-view 
+						class="map-movable-view" 
+						direction="all" 
+						:scale="true" 
+						:scale-min="1" 
+						:scale-max="3"
+					>
+						<view class="map-wrapper">
+							<image 
+								src="/static/gansu-map.svg" 
+								mode="widthFix" 
+								class="gansu-map-image"
+							></image>
+							<view 
+								class="city-marker" 
+								v-for="(marker, index) in cityMarkers" 
+								:key="index"
+								:style="{ left: marker.left + '%', top: marker.top + '%' }"
+								@click="goToCityList(marker.name)"
+							>
+								<view class="marker-dot"></view>
+								<text class="marker-label">{{marker.label}}</text>
+							</view>
+						</view>
+					</movable-view>
+				</movable-area>
+				<view class="map-decorations">
+					<view class="decoration-corner corner-tl"></view>
+					<view class="decoration-corner corner-tr"></view>
+					<view class="decoration-corner corner-bl"></view>
+					<view class="decoration-corner corner-br"></view>
+				</view>
+				<view class="zoom-hint">
+					<text class="zoom-hint-text">双指缩放 · 点击城市查看非遗</text>
+				</view>
+			</view>
+		</view>
+		
+		<view class="city-list">
+			<view class="city-list-header">
+				<view class="header-icon"></view>
+				<text class="city-list-title">城市景点</text>
+				<view class="header-line"></view>
+			</view>
+			<view class="city-item" v-for="(city, index) in cities" :key="index" @click="goToCityList(city.name)">
+				<view class="city-image-wrap">
+					<image :src="city.image" mode="aspectFill" class="city-image"></image>
+					<view class="city-image-overlay"></view>
+					<view class="city-corner"></view>
+				</view>
+				<view class="city-info">
+					<text class="city-name">{{city.name}}</text>
+					<text class="city-desc">{{city.desc}}</text>
+					<view class="city-spots">
+						<text class="city-spot" v-for="(spot, sIndex) in city.spots" :key="sIndex">{{spot}}</text>
+					</view>
+				</view>
+				<view class="city-arrow"></view>
+			</view>
+		</view>
+		
+		<view class="legend">
+			<text class="legend-title">图例说明</text>
+			<view class="legend-item">
+				<view class="legend-dot"></view>
+				<text class="legend-text">城市景点</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	const cities = [
+		{ name: '兰州', desc: '甘肃省省会 · 黄河之都', image: '/static/city-lanzhou.jpg', spots: ['太平鼓', '刻葫芦', '牛肉面'] },
+		{ name: '敦煌', desc: '丝路明珠 · 艺术圣地', image: '/static/city-dunhuang.jpg', spots: ['彩塑', '壁画', '剪纸'] },
+		{ name: '嘉峪关', desc: '天下第一雄关', image: '/static/city-jiayuguan.jpg', spots: ['石砚', '地蹦子', '烤肉'] },
+		{ name: '张掖', desc: '七彩丹霞 · 塞上江南', image: '/static/city-zhangye.jpg', spots: ['剪纸', '太平鼓', '高跷'] },
+		{ name: '天水', desc: '羲皇故里 · 陇上江南', image: '/static/city-tianshui.jpg', spots: ['雕漆', '呱呱', '皮影戏'] },
+		{ name: '酒泉', desc: '航天城 · 丝路重镇', image: '/static/city-jiuquan.jpg', spots: ['夜光杯', '剪纸', '曲子戏'] },
+		{ name: '武威', desc: '六朝古都 · 马踏飞燕', image: '/static/city-wuwei.jpg', spots: ['重刻剪纸', '贤孝', '攻鼓子'] },
+		{ name: '临夏', desc: '中国花儿之乡', image: '/static/city-linxia.jpg', spots: ['砖雕', '花儿', '腰刀'] }
+	]
+	
+	const cityMarkers = [
+		{ name: '兰州', label: '兰州', left: 68.6, top: 62.3 },
+		{ name: '敦煌', label: '敦煌', left: 26.5, top: 31.5 },
+		{ name: '嘉峪关', label: '嘉峪关', left: 37.3, top: 34.2 },
+		{ name: '张掖', label: '张掖', left: 49.6, top: 40.7 },
+		{ name: '武威', label: '武威', left: 61.9, top: 48.2 },
+		{ name: '金昌', label: '金昌', left: 59.4, top: 43.8 },
+		{ name: '白银', label: '白银', left: 70.6, top: 58.7 },
+		{ name: '临夏', label: '临夏', left: 65.2, top: 65.8 },
+		{ name: '定西', label: '定西', left: 73.2, top: 65.9 },
+		{ name: '天水', label: '天水', left: 79.4, top: 73.5 },
+		{ name: '平凉', label: '平凉', left: 84.8, top: 66.2 },
+		{ name: '庆阳', label: '庆阳', left: 90.2, top: 64.8 },
+		{ name: '陇南', label: '陇南', left: 74.9, top: 82.4 },
+		{ name: '甘南', label: '甘南', left: 63.5, top: 70.4 },
+		{ name: '酒泉', label: '酒泉', left: 38.6, top: 34.6 }
+	]
+	
+	const goToCityList = (cityName: string) => {
+		uni.navigateTo({
+			url: `/pages/city-list/city-list?city=${cityName}`
+		})
+	}
+</script>
+
+<style>
+	.map-page {
+		min-height: 100vh;
+		background: #FFF8E7;
+		padding-bottom: 120rpx;
+	}
+	
+	.map-container {
+		position: relative;
+		padding: 24rpx;
+		margin: 20rpx;
+		background: #FFFFFF;
+		border-radius: 24rpx;
+		box-shadow: 0 4rpx 20rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+	
+	.map-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 20rpx;
+		position: relative;
+	}
+	
+	.header-decoration {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: 2rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	}
+	
+	.header-title {
+		font-size: 36rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		background: #FFFFFF;
+		padding: 0 30rpx;
+		position: relative;
+		z-index: 1;
+	}
+	
+	.map-content {
+		position: relative;
+		width: 100%;
+		height: 500rpx;
+		border-radius: 16rpx;
+		overflow: hidden;
+		background: #FFF8E7;
+	}
+	
+	.map-movable-area {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.map-movable-view {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.map-wrapper {
+		position: relative;
+		width: 90%;
+	}
+	
+	.gansu-map-image {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+	
+	.city-marker {
+		position: absolute;
+		transform: translate(-50%, -50%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		z-index: 10;
+	}
+	
+	.marker-dot {
+		width: 16rpx;
+		height: 16rpx;
+		background: #8B4513;
+		border-radius: 50%;
+		border: 3rpx solid #D4A86A;
+		position: relative;
+		z-index: 1;
+		box-shadow: 0 0 8rpx rgba(139, 69, 19, 0.4);
+	}
+	
+	.marker-label {
+		font-size: 20rpx;
+		color: #2C1810;
+		margin-top: 6rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		font-weight: bold;
+		white-space: nowrap;
+		text-shadow: 0 2rpx 4rpx rgba(255, 248, 231, 0.9);
+	}
+	
+	.map-decorations {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 20;
+	}
+	
+	.decoration-corner {
+		position: absolute;
+		width: 40rpx;
+		height: 40rpx;
+	}
+	
+	.corner-tl {
+		top: 10rpx;
+		left: 10rpx;
+		border-top: 4rpx solid #D4A86A;
+		border-left: 4rpx solid #D4A86A;
+	}
+	
+	.corner-tr {
+		top: 10rpx;
+		right: 10rpx;
+		border-top: 4rpx solid #D4A86A;
+		border-right: 4rpx solid #D4A86A;
+	}
+	
+	.corner-bl {
+		bottom: 10rpx;
+		left: 10rpx;
+		border-bottom: 4rpx solid #D4A86A;
+		border-left: 4rpx solid #D4A86A;
+	}
+	
+	.corner-br {
+		bottom: 10rpx;
+		right: 10rpx;
+		border-bottom: 4rpx solid #D4A86A;
+		border-right: 4rpx solid #D4A86A;
+	}
+	
+	.zoom-hint {
+		position: absolute;
+		bottom: 16rpx;
+		left: 0;
+		right: 0;
+		text-align: center;
+		z-index: 20;
+		pointer-events: none;
+	}
+	
+	.zoom-hint-text {
+		font-size: 20rpx;
+		color: rgba(139, 69, 19, 0.6);
+		background: rgba(255, 248, 231, 0.8);
+		padding: 4rpx 16rpx;
+		border-radius: 20rpx;
+	}
+	
+	.city-list {
+		padding: 0 24rpx;
+	}
+	
+	.city-list-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 20rpx;
+	}
+	
+	.header-icon {
+		width: 44rpx;
+		height: 44rpx;
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+		border-radius: 10rpx;
+		margin-right: 14rpx;
+		position: relative;
+		flex-shrink: 0;
+	}
+	
+	.header-icon::before {
+		content: '';
+		position: absolute;
+		bottom: 10rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 10rpx solid transparent;
+		border-right: 10rpx solid transparent;
+		border-bottom: 14rpx solid #FFF8E7;
+	}
+	
+	.header-icon::after {
+		content: '';
+		position: absolute;
+		bottom: 10rpx;
+		left: 30%;
+		width: 0;
+		height: 0;
+		border-left: 7rpx solid transparent;
+		border-right: 7rpx solid transparent;
+		border-bottom: 10rpx solid rgba(255, 248, 231, 0.6);
+	}
+	
+	.city-list-title {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		flex-shrink: 0;
+	}
+	
+	.header-line {
+		flex: 1;
+		height: 2rpx;
+		background: linear-gradient(90deg, #D4A86A, transparent);
+		margin-left: 16rpx;
+	}
+	
+	.city-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: #FFFFFF;
+		border-radius: 16rpx;
+		padding: 20rpx;
+		margin-bottom: 16rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		position: relative;
+	}
+	
+	.city-item::before {
+		content: '';
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		width: 16rpx;
+		height: 16rpx;
+		border-top: 2rpx solid #D4A86A;
+		border-left: 2rpx solid #D4A86A;
+		border-radius: 4rpx 0 0 0;
+		opacity: 0.5;
+	}
+	
+	.city-item::after {
+		content: '';
+		position: absolute;
+		bottom: 8rpx;
+		right: 8rpx;
+		width: 16rpx;
+		height: 16rpx;
+		border-bottom: 2rpx solid #D4A86A;
+		border-right: 2rpx solid #D4A86A;
+		border-radius: 0 0 4rpx 0;
+		opacity: 0.5;
+	}
+	
+	.city-image-wrap {
+		position: relative;
+		width: 130rpx;
+		height: 130rpx;
+		border-radius: 12rpx;
+		overflow: hidden;
+		margin-right: 20rpx;
+		flex-shrink: 0;
+	}
+	
+	.city-image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.city-image-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, transparent, rgba(139, 69, 19, 0.3));
+	}
+	
+	.city-corner {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 36rpx;
+		height: 36rpx;
+		background: linear-gradient(135deg, #D4A86A 50%, transparent 50%);
+	}
+	
+	.city-corner::before {
+		content: '';
+		position: absolute;
+		top: 4rpx;
+		right: 4rpx;
+		width: 8rpx;
+		height: 8rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.city-info {
+		flex: 1;
+	}
+	
+	.city-name {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.city-desc {
+		font-size: 24rpx;
+		color: #7A6B5A;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+	
+	.city-spots {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	
+	.city-spot {
+		font-size: 22rpx;
+		background: rgba(139, 69, 19, 0.1);
+		color: #8B4513;
+		padding: 6rpx 14rpx;
+		border-radius: 10rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+	}
+	
+	.city-arrow {
+		width: 24rpx;
+		height: 24rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		margin-left: 10rpx;
+	}
+	
+	.legend {
+		margin: 20rpx 24rpx 0;
+		background: #FFFFFF;
+		padding: 16rpx 20rpx;
+		border-radius: 12rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.legend-title {
+		font-size: 26rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		margin-right: 20rpx;
+		flex-shrink: 0;
+	}
+	
+	.legend-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-right: 20rpx;
+	}
+	
+	.legend-dot {
+		width: 18rpx;
+		height: 18rpx;
+		background: #8B4513;
+		border-radius: 50%;
+		border: 3rpx solid #D4A86A;
+		margin-right: 10rpx;
+		box-shadow: 0 0 8rpx rgba(139, 69, 19, 0.3);
+	}
+	
+	.legend-text {
+		font-size: 24rpx;
+		color: #5A4B3A;
+	}
+</style>

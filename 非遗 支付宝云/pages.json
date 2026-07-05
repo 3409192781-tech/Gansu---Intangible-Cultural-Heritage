@@ -1,0 +1,109 @@
+{
+	"pages": [
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "云游甘肃",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/map/map",
+			"style": {
+				"navigationBarTitleText": "甘肃地图",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/detail/detail",
+			"style": {
+				"navigationBarTitleText": "景点详情",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/settings/settings",
+			"style": {
+				"navigationBarTitleText": "设置",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/privacy/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/agreement/agreement",
+			"style": {
+				"navigationBarTitleText": "用户协议",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/city-list/city-list",
+			"style": {
+				"navigationBarTitleText": "城市非遗",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "云游甘肃",
+		"navigationBarBackgroundColor": "#D4A86A",
+		"backgroundColor": "#F5E6D3",
+		"backgroundColorTop": "#F5E6D3",
+		"backgroundColorBottom": "#F5E6D3"
+	},
+	"tabBar": {
+		"color": "#8B7355",
+		"selectedColor": "#D4A86A",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/tabs/home.png",
+				"selectedIconPath": "static/tabs/home-active.png"
+			},
+			{
+				"pagePath": "pages/map/map",
+				"text": "地图",
+				"iconPath": "static/tabs/map.png",
+				"selectedIconPath": "static/tabs/map-active.png"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"text": "我的",
+				"iconPath": "static/tabs/user.png",
+				"selectedIconPath": "static/tabs/user-active.png"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}

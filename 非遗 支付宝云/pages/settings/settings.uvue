@@ -1,0 +1,746 @@
+<template>
+	<view class="settings-page">
+		<view class="settings-header">
+			<view class="header-bg-layer">
+				<image class="header-bg" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Dunhuang%20fresco%20pattern%20traditional%20Chinese%20gold%20green%20red%20mural%20texture&image_size=landscape_16_9" mode="aspectFill"></image>
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			<view class="header-content">
+				<view class="header-icon-wrap">
+					<view class="header-icon"></view>
+				</view>
+				<text class="header-title">设置</text>
+				<text class="header-subtitle">个性化你的云游体验</text>
+			</view>
+		</view>
+		
+		<view class="settings-content">
+		<view class="settings-group">
+			<view class="group-header">
+				<view class="group-icon-wrap icon-privacy-group"></view>
+				<text class="group-title">协议与政策</text>
+				<view class="group-line"></view>
+			</view>
+			<view class="settings-item" @click="goToPrivacy">
+				<view class="item-icon icon-privacy"></view>
+				<text class="settings-text">隐私政策</text>
+				<view class="item-arrow"></view>
+			</view>
+			<view class="settings-item" @click="goToAgreement">
+				<view class="item-icon icon-agreement"></view>
+				<text class="settings-text">用户协议</text>
+				<view class="item-arrow"></view>
+			</view>
+			<view class="settings-item" @click="goToAbout">
+				<view class="item-icon icon-about"></view>
+				<text class="settings-text">关于我们</text>
+				<view class="item-arrow"></view>
+			</view>
+		</view>
+		
+		<view class="settings-group">
+			<view class="group-header">
+				<view class="group-icon-wrap icon-notify-group"></view>
+				<text class="group-title">偏好设置</text>
+				<view class="group-line"></view>
+			</view>
+			<view class="settings-item">
+				<view class="item-icon icon-notify"></view>
+				<text class="settings-text">消息通知</text>
+				<switch class="settings-switch" :checked="notifications" @change="toggleNotifications" color="#4A8F6D"></switch>
+			</view>
+			<view class="settings-item">
+				<view class="item-icon icon-dark"></view>
+				<text class="settings-text">深色模式</text>
+				<switch class="settings-switch" :checked="darkMode" @change="toggleDarkMode" color="#4A8F6D"></switch>
+			</view>
+		</view>
+		
+		<view class="settings-group">
+			<view class="group-header">
+				<view class="group-icon-wrap icon-feedback-group"></view>
+				<text class="group-title">帮助与反馈</text>
+				<view class="group-line"></view>
+			</view>
+			<view class="settings-item" @click="handleFeedback">
+				<view class="item-icon icon-feedback"></view>
+				<text class="settings-text">意见反馈</text>
+				<view class="item-arrow"></view>
+			</view>
+			<view class="settings-item" @click="handleContact">
+				<view class="item-icon icon-contact"></view>
+				<text class="settings-text">联系客服</text>
+				<view class="item-arrow"></view>
+			</view>
+		</view>
+		
+		<view class="settings-group">
+			<view class="settings-item logout-item" @click="handleLogout">
+				<view class="item-icon icon-logout"></view>
+				<text class="settings-text logout-text">退出登录</text>
+				<view class="item-arrow"></view>
+			</view>
+		</view>
+		
+		</view>
+		
+		<view class="settings-footer">
+			<view class="footer-decoration"></view>
+			<text class="footer-text">云游甘肃 v1.0.0</text>
+			<text class="footer-sub">© 2024 云游甘肃小程序</text>
+			<text class="footer-slogan">丝路文化 · 敦煌风韵</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref } from 'vue'
+	
+	const notifications = ref(true)
+	const darkMode = ref(false)
+	
+	const goToPrivacy = () => {
+		uni.navigateTo({
+			url: '/pages/privacy/privacy'
+		})
+	}
+	
+	const goToAgreement = () => {
+		uni.navigateTo({
+			url: '/pages/agreement/agreement'
+		})
+	}
+	
+	const goToAbout = () => {
+		uni.showModal({
+			title: '关于我们',
+			content: '云游甘肃小程序致力于为游客提供甘肃省旅游景点、非遗文化、特色美食等信息的一站式服务平台。我们希望通过数字化手段，让更多人了解和喜爱甘肃的独特魅力。',
+			showCancel: false
+		})
+	}
+	
+	const toggleNotifications = (e) => {
+		notifications.value = e.detail.value
+		uni.showToast({ title: notifications.value ? '已开启消息通知' : '已关闭消息通知', icon: 'none' })
+	}
+	
+	const toggleDarkMode = (e) => {
+		darkMode.value = e.detail.value
+		uni.showToast({ title: darkMode.value ? '深色模式开发中' : '已切换浅色模式', icon: 'none' })
+	}
+	
+	const handleFeedback = () => {
+		uni.showModal({
+			title: '意见反馈',
+			content: '感谢您的反馈！我们会认真对待每一条建议。如有问题，请联系客服：19993147273',
+			showCancel: false
+		})
+	}
+	
+	const handleContact = () => {
+		uni.makePhoneCall({
+			phoneNumber: '19993147273'
+		})
+	}
+	
+	const handleLogout = () => {
+		uni.showModal({
+			title: '退出登录',
+			content: '确定要退出登录吗？',
+			success: (res) => {
+				if (res.confirm) {
+					uni.removeStorageSync('userInfo')
+					uni.redirectTo({
+						url: '/pages/login/login'
+					})
+				}
+			}
+		})
+	}
+</script>
+
+<style>
+	.settings-page {
+		min-height: 100vh;
+		background: #FFF8E7;
+		padding-bottom: 120rpx;
+	}
+	
+	.settings-header {
+		position: relative;
+		padding: 60rpx 30rpx 50rpx;
+		overflow: hidden;
+	}
+	
+	.header-bg-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	
+	.header-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	
+	.header-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.85) 0%, rgba(196, 98, 16, 0.9) 100%);
+	}
+	
+	.header-pattern {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+	}
+	
+	.header-content {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	
+	.header-icon-wrap {
+		width: 100rpx;
+		height: 100rpx;
+		background: rgba(255, 248, 231, 0.2);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 24rpx;
+		border: 3rpx solid rgba(212, 168, 106, 0.5);
+	}
+	
+	.header-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 50%;
+		position: relative;
+	}
+	
+	.header-icon::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 12rpx;
+		height: 12rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.header-icon::after {
+		content: '';
+		position: absolute;
+		top: -6rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 6rpx solid transparent;
+		border-right: 6rpx solid transparent;
+		border-bottom: 8rpx solid #FFF8E7;
+	}
+	
+	.header-title {
+		font-size: 48rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		margin-bottom: 10rpx;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+	}
+	
+	.header-subtitle {
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.8);
+		letter-spacing: 2rpx;
+	}
+	
+	.settings-content {
+		padding: 20rpx 24rpx;
+		margin-top: -20rpx;
+		position: relative;
+		z-index: 2;
+	}
+	
+	.settings-group {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		margin-bottom: 20rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+	
+	.group-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.12);
+		background: linear-gradient(180deg, rgba(212, 168, 106, 0.06), transparent);
+	}
+	
+	.group-icon-wrap {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 8rpx;
+		margin-right: 14rpx;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.icon-privacy-group {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.icon-privacy-group::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 16rpx;
+		height: 14rpx;
+		border: 2.5rpx solid #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.icon-privacy-group::after {
+		content: '';
+		position: absolute;
+		top: 30%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 5rpx solid transparent;
+		border-right: 5rpx solid transparent;
+		border-bottom: 6rpx solid #FFF8E7;
+	}
+	
+	.icon-notify-group {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+	
+	.icon-notify-group::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -60%);
+		width: 14rpx;
+		height: 12rpx;
+		border: 2.5rpx solid #FFF8E7;
+		border-radius: 8rpx 8rpx 0 0;
+	}
+	
+	.icon-notify-group::after {
+		content: '';
+		position: absolute;
+		top: 65%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 6rpx;
+		height: 4rpx;
+		border: 2rpx solid #FFF8E7;
+		border-top: none;
+		border-radius: 0 0 4rpx 4rpx;
+	}
+	
+	.icon-feedback-group {
+		background: linear-gradient(135deg, #4A8F6D, #3A7A5D);
+	}
+	
+	.icon-feedback-group::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 16rpx;
+		height: 12rpx;
+		border: 2.5rpx solid #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.icon-feedback-group::after {
+		content: '';
+		position: absolute;
+		top: 65%;
+		left: 35%;
+		width: 0;
+		height: 0;
+		border-left: 4rpx solid transparent;
+		border-right: 4rpx solid transparent;
+		border-top: 5rpx solid #FFF8E7;
+	}
+	
+	.group-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.group-line {
+		flex: 1;
+		height: 2rpx;
+		background: linear-gradient(90deg, #D4A86A, transparent);
+		margin-left: 16rpx;
+	}
+	
+	.settings-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 24rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.1);
+		position: relative;
+	}
+	
+	.settings-item:last-child {
+		border-bottom: none;
+	}
+	
+	.settings-item:active {
+		background: rgba(212, 168, 106, 0.06);
+	}
+	
+	.item-icon {
+		width: 44rpx;
+		height: 44rpx;
+		border-radius: 10rpx;
+		margin-right: 18rpx;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	
+	.icon-privacy {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.icon-privacy::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -40%);
+		width: 18rpx;
+		height: 14rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.icon-privacy::after {
+		content: '';
+		position: absolute;
+		top: 25%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 6rpx solid transparent;
+		border-right: 6rpx solid transparent;
+		border-bottom: 8rpx solid #FFF8E7;
+	}
+	
+	.icon-agreement {
+		background: linear-gradient(135deg, #4A8F6D, #3E7A5B);
+	}
+	
+	.icon-agreement::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20rpx;
+		height: 16rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 2rpx;
+	}
+	
+	.icon-agreement::after {
+		content: '';
+		position: absolute;
+		top: 35%;
+		left: 35%;
+		width: 30%;
+		height: 2rpx;
+		background: #FFF8E7;
+		box-shadow: 0 5rpx 0 #FFF8E7;
+	}
+	
+	.icon-about {
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+	}
+	
+	.icon-about::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.icon-about::after {
+		content: 'i';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 22rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: serif;
+	}
+	
+	.icon-notify {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+	
+	.icon-notify::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -60%);
+		width: 18rpx;
+		height: 14rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 10rpx 10rpx 0 0;
+	}
+	
+	.icon-notify::after {
+		content: '';
+		position: absolute;
+		top: 70%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 8rpx;
+		height: 5rpx;
+		border: 2rpx solid #FFF8E7;
+		border-top: none;
+		border-radius: 0 0 6rpx 6rpx;
+	}
+	
+	.icon-dark {
+		background: linear-gradient(135deg, #6B7B8B, #4B5B6B);
+	}
+	
+	.icon-dark::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20rpx;
+		height: 20rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.icon-dark::after {
+		content: '';
+		position: absolute;
+		top: 25%;
+		right: 20%;
+		width: 14rpx;
+		height: 14rpx;
+		background: #6B7B8B;
+		border-radius: 50%;
+	}
+	
+	.icon-feedback {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.icon-feedback::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20rpx;
+		height: 16rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 4rpx;
+	}
+	
+	.icon-feedback::after {
+		content: '';
+		position: absolute;
+		top: 70%;
+		left: 32%;
+		width: 0;
+		height: 0;
+		border-left: 5rpx solid transparent;
+		border-right: 5rpx solid transparent;
+		border-top: 6rpx solid #FFF8E7;
+	}
+	
+	.icon-contact {
+		background: linear-gradient(135deg, #5EAA7F, #4A8F6D);
+	}
+	
+	.icon-contact::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 14rpx;
+		height: 20rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.icon-contact::after {
+		content: '';
+		position: absolute;
+		top: 65%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 6rpx;
+		height: 2rpx;
+		background: #FFF8E7;
+		border-radius: 1rpx;
+	}
+	
+	.icon-logout {
+		background: linear-gradient(135deg, #C44510, #A43500);
+	}
+	
+	.icon-logout::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 18rpx;
+		height: 20rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 3rpx 3rpx 0 0;
+	}
+	
+	.icon-logout::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		right: 28%;
+		width: 5rpx;
+		height: 5rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.settings-text {
+		flex: 1;
+		font-size: 30rpx;
+		color: #2C1810;
+	}
+	
+	.logout-text {
+		color: #C44510;
+		font-weight: 500;
+	}
+	
+	.item-arrow {
+		width: 24rpx;
+		height: 24rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		flex-shrink: 0;
+	}
+	
+	.settings-switch {
+		transform: scale(0.8);
+		flex-shrink: 0;
+	}
+	
+	.logout-item {
+		justify-content: center;
+	}
+	
+	.logout-item .item-icon {
+		margin-right: 16rpx;
+	}
+	
+	.logout-item .settings-text {
+		flex: none;
+	}
+	
+	.logout-item .item-arrow {
+		margin-left: 16rpx;
+	}
+	
+	.settings-footer {
+		padding: 48rpx 40rpx;
+		text-align: center;
+		position: relative;
+	}
+	
+	.footer-decoration {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120rpx;
+		height: 4rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+		border-radius: 2rpx;
+	}
+	
+	.footer-text {
+		font-size: 28rpx;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 12rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 2rpx;
+	}
+	
+	.footer-sub {
+		font-size: 24rpx;
+		color: #7A6B5A;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+	
+	.footer-slogan {
+		font-size: 22rpx;
+		color: #9A8B7A;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 4rpx;
+	}
+</style>

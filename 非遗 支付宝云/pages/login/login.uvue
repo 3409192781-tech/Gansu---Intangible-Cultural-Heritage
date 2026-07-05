@@ -1,0 +1,520 @@
+<template>
+	<view class="login-page">
+		<view class="bg-layer">
+			<image class="bg-image" src="/static/login-bg.jpg" mode="aspectFill"></image>
+			<view class="bg-overlay"></view>
+			<view class="bg-pattern"></view>
+		</view>
+		
+		<view class="cloud-decoration cloud-1"></view>
+		<view class="cloud-decoration cloud-2"></view>
+		<view class="cloud-decoration cloud-3"></view>
+		
+		<view class="login-section">
+			<view class="login-btn" @click="handleLogin">
+				<view class="btn-decoration-left"></view>
+				<view class="btn-content">
+					<view class="btn-icon-wrap">
+						<view class="btn-icon"></view>
+					</view>
+					<text class="login-text">微信一键登录</text>
+				</view>
+				<view class="btn-decoration-right"></view>
+			</view>
+			<view class="privacy-text">
+				<text>登录即表示同意</text>
+				<text class="link" @click="goToAgreement">《用户协议》</text>
+				<text>和</text>
+				<text class="link" @click="goToPrivacy">《隐私政策》</text>
+			</view>
+		</view>
+		
+		<view class="footer-decoration">
+			<view class="decoration-line"></view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	const handleLogin = () => {
+		uni.showLoading({ title: '登录中...' })
+		setTimeout(() => {
+			uni.hideLoading()
+			uni.setStorageSync('userInfo', {
+				openid: 'test_openid_001',
+				nickName: '游客',
+				avatarUrl: ''
+			})
+			uni.switchTab({
+				url: '/pages/index/index'
+			})
+		}, 1500)
+	}
+	
+	const goToAgreement = () => {
+		uni.navigateTo({
+			url: '/pages/agreement/agreement'
+		})
+	}
+	
+	const goToPrivacy = () => {
+		uni.navigateTo({
+			url: '/pages/privacy/privacy'
+		})
+	}
+</script>
+
+<style>
+	.login-page {
+		width: 100%;
+		height: 100vh;
+		position: relative;
+		background: linear-gradient(180deg, #C46210 0%, #8B4513 50%, #6B3410 100%);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	
+	.bg-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+	}
+	
+	.bg-image {
+		width: 100%;
+		height: 100%;
+		opacity: 1;
+	}
+	
+	.bg-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.3) 100%);
+	}
+	
+	.bg-pattern {
+		display: none;
+	}
+	
+	.cloud-decoration {
+		position: absolute;
+		background: rgba(255, 248, 231, 0.15);
+		border-radius: 50%;
+		z-index: 1;
+		pointer-events: none;
+	}
+	
+	.cloud-1 {
+		width: 200rpx;
+		height: 80rpx;
+		top: 10%;
+		left: 5%;
+	}
+	
+	.cloud-1::before {
+		content: '';
+		position: absolute;
+		width: 100rpx;
+		height: 60rpx;
+		background: rgba(255, 248, 231, 0.15);
+		border-radius: 50%;
+		top: -20rpx;
+		left: 30rpx;
+	}
+	
+	.cloud-2 {
+		width: 160rpx;
+		height: 60rpx;
+		top: 25%;
+		right: 8%;
+	}
+	
+	.cloud-2::before {
+		content: '';
+		position: absolute;
+		width: 80rpx;
+		height: 50rpx;
+		background: rgba(255, 248, 231, 0.15);
+		border-radius: 50%;
+		top: -15rpx;
+		left: 20rpx;
+	}
+	
+	.cloud-3 {
+		width: 140rpx;
+		height: 50rpx;
+		top: 40%;
+		left: 20%;
+	}
+	
+	.logo-section {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-top: 100rpx;
+		flex-shrink: 0;
+	}
+	
+	.logo-frame {
+		position: relative;
+		padding: 24rpx 48rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	
+	.logo-decoration-top {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 160rpx;
+		height: 6rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	}
+	
+	.logo-text {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+	}
+	
+	.logo-text:first-of-type {
+		margin-bottom: 8rpx;
+	}
+	
+	.logo-char {
+		font-size: 96rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		text-shadow: 4rpx 4rpx 0 #D4A86A, 8rpx 8rpx 0 rgba(107, 52, 16, 0.5);
+		margin-right: 20rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		line-height: 1.1;
+	}
+	
+	.logo-char:last-child {
+		margin-right: 0;
+	}
+	
+	.logo-decoration-bottom {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 160rpx;
+		height: 6rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	}
+	
+	.logo-subtitle {
+		margin-top: 28rpx;
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.8);
+		letter-spacing: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.gansu-map-section {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex: 1;
+		width: 100%;
+		padding: 20rpx 0;
+	}
+	
+	.map-container {
+		position: relative;
+		width: 360rpx;
+		height: 360rpx;
+		flex-shrink: 0;
+	}
+	
+	.map-container::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 370rpx;
+		height: 370rpx;
+		border: 1rpx dashed rgba(212, 168, 106, 0.2);
+		border-radius: 50%;
+	}
+	
+	.map-container::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 290rpx;
+		height: 290rpx;
+		border: 1rpx dashed rgba(212, 168, 106, 0.15);
+		border-radius: 50%;
+	}
+	
+	.map-outline {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 320rpx;
+		height: 320rpx;
+	}
+	
+	.map-shape {
+		width: 100%;
+		height: 100%;
+		border: 4rpx solid rgba(212, 168, 106, 0.6);
+		border-radius: 40% 60% 45% 55%;
+		background: rgba(255, 248, 231, 0.1);
+		box-shadow: 0 0 30rpx rgba(212, 168, 106, 0.2), inset 0 0 30rpx rgba(212, 168, 106, 0.1);
+	}
+	
+	.map-inner {
+		position: absolute;
+		top: 10rpx;
+		left: 10rpx;
+		right: 10rpx;
+		bottom: 10rpx;
+		border: 2rpx solid rgba(212, 168, 106, 0.35);
+		border-radius: 40% 60% 45% 55%;
+	}
+	
+	.map-dots {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 320rpx;
+		height: 320rpx;
+	}
+	
+	.map-dot {
+		position: absolute;
+		width: 22rpx;
+		height: 22rpx;
+		background: #D4A86A;
+		border-radius: 50%;
+		border: 4rpx solid #FFF8E7;
+		box-shadow: 0 0 16rpx rgba(212, 168, 106, 0.7);
+	}
+	
+	.map-dot::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 32rpx;
+		height: 32rpx;
+		border: 1rpx solid rgba(212, 168, 106, 0.4);
+		border-radius: 50%;
+	}
+	
+	.map-dot::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 7rpx;
+		height: 7rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.dot-dunhuang {
+		top: 28%;
+		left: 22%;
+	}
+	
+	.dot-lanzhou {
+		top: 58%;
+		left: 62%;
+	}
+	
+	.dot-zhangye {
+		top: 42%;
+		left: 52%;
+	}
+	
+	.dot-jiayuguan {
+		top: 35%;
+		left: 38%;
+	}
+	
+	.login-section {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		padding: 0 60rpx;
+		padding-bottom: 80rpx;
+		flex-shrink: 0;
+		margin-top: auto;
+	}
+	
+	.login-btn {
+		position: relative;
+		width: 100%;
+		height: 96rpx;
+		background: linear-gradient(135deg, #4A8F6D 0%, #3A7A5D 100%);
+		border-radius: 48rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 8rpx 28rpx rgba(74, 143, 109, 0.4);
+	}
+	
+	.login-btn:active {
+		transform: scale(0.98);
+		box-shadow: 0 4rpx 14rpx rgba(74, 143, 109, 0.3);
+	}
+	
+	.btn-decoration-left, .btn-decoration-right {
+		position: absolute;
+		width: 22rpx;
+		height: 44rpx;
+		border: 3rpx solid rgba(212, 168, 106, 0.6);
+		border-radius: 11rpx;
+		opacity: 0.5;
+	}
+	
+	.btn-decoration-left {
+		left: 28rpx;
+	}
+	
+	.btn-decoration-left::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 7rpx;
+		height: 7rpx;
+		background: #D4A86A;
+		border-radius: 50%;
+		opacity: 0.8;
+	}
+	
+	.btn-decoration-right {
+		right: 28rpx;
+	}
+	
+	.btn-decoration-right::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 7rpx;
+		height: 7rpx;
+		background: #D4A86A;
+		border-radius: 50%;
+		opacity: 0.8;
+	}
+	
+	.btn-content {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.btn-icon-wrap {
+		width: 52rpx;
+		height: 52rpx;
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 18rpx;
+	}
+	
+	.btn-icon {
+		width: 28rpx;
+		height: 24rpx;
+		background: #FFFFFF;
+		border-radius: 50% 50% 50% 0;
+		position: relative;
+	}
+	
+	.btn-icon::before {
+		content: '';
+		position: absolute;
+		top: 7rpx;
+		left: 5rpx;
+		width: 5rpx;
+		height: 5rpx;
+		background: #4A8F6D;
+		border-radius: 50%;
+	}
+	
+	.btn-icon::after {
+		content: '';
+		position: absolute;
+		top: 7rpx;
+		right: 5rpx;
+		width: 5rpx;
+		height: 5rpx;
+		background: #4A8F6D;
+		border-radius: 50%;
+	}
+	
+	.login-text {
+		font-size: 32rpx;
+		color: #FFFFFF;
+		font-weight: bold;
+		letter-spacing: 3rpx;
+	}
+	
+	.privacy-text {
+		margin-top: 28rpx;
+		font-size: 22rpx;
+		color: rgba(255, 248, 231, 0.7);
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		line-height: 1.6;
+	}
+	
+	.link {
+		color: #D4A86A;
+		font-weight: bold;
+	}
+	
+	.footer-decoration {
+		position: relative;
+		padding-bottom: 40rpx;
+		display: flex;
+		justify-content: center;
+		z-index: 2;
+		flex-shrink: 0;
+	}
+	
+	.decoration-line {
+		width: 160rpx;
+		height: 3rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+		border-radius: 2rpx;
+	}
+</style>

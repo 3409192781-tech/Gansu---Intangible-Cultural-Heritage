@@ -1,0 +1,761 @@
+<template>
+	<view class="user-page">
+		<view class="user-header">
+			<view class="header-bg-layer">
+				<image class="header-bg" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Dunhuang%20desert%20sunset%20camel%20caravan%20warm%20orange%20sky%20Chinese%20traditional%20art%20mural%20style&image_size=landscape_16_9" mode="aspectFill"></image>
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			
+			<view class="user-info">
+				<view class="avatar">
+					<view class="avatar-ring"></view>
+					<text class="avatar-text">{{avatarText}}</text>
+				</view>
+				<view class="user-detail">
+					<text class="user-name">{{userInfo.nickName}}</text>
+					<text class="user-id">ID: {{userIdShort}}</text>
+				</view>
+				<view class="edit-btn">
+					<view class="edit-icon"></view>
+				</view>
+			</view>
+			
+			<view class="user-stats">
+				<view class="stat-item" @click="goToCollection">
+					<text class="stat-value">12</text>
+					<text class="stat-label">收藏</text>
+					<view class="stat-decoration"></view>
+				</view>
+				<view class="stat-divider"></view>
+				<view class="stat-item" @click="goToHistory">
+					<text class="stat-value">28</text>
+					<text class="stat-label">浏览</text>
+					<view class="stat-decoration"></view>
+				</view>
+				<view class="stat-divider"></view>
+				<view class="stat-item" @click="goToOrders">
+					<text class="stat-value">3</text>
+					<text class="stat-label">订单</text>
+					<view class="stat-decoration"></view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="user-menu">
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-spots"></view>
+					<text class="menu-group-title">我的行程</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToMySpots">
+					<view class="menu-icon menu-icon-spots"></view>
+					<text class="menu-text">我的景点</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToMyCulture">
+					<view class="menu-icon menu-icon-culture"></view>
+					<text class="menu-text">非遗收藏</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToMyFood">
+					<view class="menu-icon menu-icon-food"></view>
+					<text class="menu-text">美食记录</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+			
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-services"></view>
+					<text class="menu-group-title">服务中心</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToMessages">
+					<view class="menu-icon menu-icon-messages"></view>
+					<text class="menu-text">消息通知</text>
+					<view class="menu-badge">3</view>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToCoupons">
+					<view class="menu-icon menu-icon-coupons"></view>
+					<text class="menu-text">优惠券</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToHelp">
+					<view class="menu-icon menu-icon-help"></view>
+					<text class="menu-text">帮助中心</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+			
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-settings"></view>
+					<text class="menu-group-title">设置</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToSettings">
+					<view class="menu-icon menu-icon-settings"></view>
+					<text class="menu-text">设置</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="user-footer">
+			<view class="footer-decoration"></view>
+			<text class="footer-text">云游甘肃 · 带你领略丝路文化</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed } from 'vue'
+	
+	const userInfo = ref({
+		openid: uni.getStorageSync('userInfo')?.openid || 'test_openid_001',
+		nickName: uni.getStorageSync('userInfo')?.nickName || '游客'
+	})
+	
+	const avatarText = computed(() => {
+		const name = userInfo.value.nickName
+		if (!name || name.length === 0) return '游'
+		return name.charAt(0)
+	})
+	
+	const userIdShort = computed(() => {
+		const id = userInfo.value.openid
+		if (!id || id.length < 8) return '00000000'
+		return id.slice(-8)
+	})
+	
+	const goToCollection = () => {
+		uni.showToast({ title: '收藏功能开发中', icon: 'none' })
+	}
+	
+	const goToHistory = () => {
+		uni.showToast({ title: '浏览记录功能开发中', icon: 'none' })
+	}
+	
+	const goToOrders = () => {
+		uni.showToast({ title: '订单功能开发中', icon: 'none' })
+	}
+	
+	const goToMySpots = () => {
+		uni.showToast({ title: '我的景点功能开发中', icon: 'none' })
+	}
+	
+	const goToMyCulture = () => {
+		uni.showToast({ title: '非遗收藏功能开发中', icon: 'none' })
+	}
+	
+	const goToMyFood = () => {
+		uni.showToast({ title: '美食记录功能开发中', icon: 'none' })
+	}
+	
+	const goToMessages = () => {
+		uni.showToast({ title: '消息通知功能开发中', icon: 'none' })
+	}
+	
+	const goToCoupons = () => {
+		uni.showToast({ title: '优惠券功能开发中', icon: 'none' })
+	}
+	
+	const goToHelp = () => {
+		uni.showToast({ title: '帮助中心功能开发中', icon: 'none' })
+	}
+	
+	const goToSettings = () => {
+		uni.navigateTo({
+			url: '/pages/settings/settings'
+		})
+	}
+</script>
+
+<style>
+	.user-page {
+		min-height: 100vh;
+		background: #FFF8E7;
+		padding-bottom: 120rpx;
+	}
+	
+	.user-header {
+		position: relative;
+		padding: 60rpx 30rpx 40rpx;
+	}
+	
+	.header-bg-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	
+	.header-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	
+	.header-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.8) 0%, rgba(196, 98, 16, 0.9) 100%);
+	}
+	
+	.header-pattern {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+	}
+	
+	.user-info {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 40rpx;
+	}
+	
+	.avatar {
+		position: relative;
+		width: 130rpx;
+		height: 130rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.avatar-ring {
+		position: absolute;
+		top: -6rpx;
+		left: -6rpx;
+		right: -6rpx;
+		bottom: -6rpx;
+		border: 4rpx solid #D4A86A;
+		border-radius: 50%;
+	}
+	
+	.avatar-text {
+		font-size: 52rpx;
+		color: #8B4513;
+		font-weight: bold;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.user-detail {
+		flex: 1;
+		margin-left: 28rpx;
+	}
+	
+	.user-name {
+		font-size: 40rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.user-id {
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.7);
+	}
+	
+	.edit-btn {
+		width: 68rpx;
+		height: 68rpx;
+		background: rgba(255, 248, 231, 0.2);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.edit-icon {
+		width: 24rpx;
+		height: 24rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 4rpx;
+		position: relative;
+	}
+	
+	.edit-icon::after {
+		content: '';
+		position: absolute;
+		top: -8rpx;
+		right: -8rpx;
+		width: 16rpx;
+		height: 16rpx;
+		border-right: 3rpx solid #FFF8E7;
+		border-bottom: 3rpx solid #FFF8E7;
+		transform: rotate(-45deg);
+	}
+	
+	.user-stats {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		background: rgba(255, 248, 231, 0.12);
+		border-radius: 24rpx;
+		padding: 32rpx 0;
+		backdrop-filter: blur(10px);
+		border: 2rpx solid rgba(255, 248, 231, 0.2);
+	}
+	
+	.user-stats::before {
+		content: '';
+		position: absolute;
+		top: 12rpx;
+		left: 12rpx;
+		right: 12rpx;
+		bottom: 12rpx;
+		border: 1rpx solid rgba(212, 168, 106, 0.2);
+		border-radius: 20rpx;
+		pointer-events: none;
+	}
+	
+	.stat-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		position: relative;
+		flex: 1;
+	}
+	
+	.stat-value {
+		font-size: 44rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		margin-bottom: 8rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+	}
+	
+	.stat-label {
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.85);
+	}
+	
+	.stat-decoration {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 80rpx;
+		height: 80rpx;
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		border-radius: 50%;
+	}
+	
+	.stat-decoration::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 60rpx;
+		height: 60rpx;
+		border: 1rpx solid rgba(212, 168, 106, 0.15);
+		border-radius: 50%;
+	}
+	
+	.stat-divider {
+		width: 2rpx;
+		background: linear-gradient(180deg, transparent, rgba(255, 248, 231, 0.4), transparent);
+	}
+	
+	.user-menu {
+		padding: 20rpx 24rpx;
+	}
+	
+	.menu-group {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		margin-bottom: 20rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+	
+	.menu-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.12);
+	}
+	
+	.menu-icon-wrap {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 8rpx;
+		margin-right: 14rpx;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.icon-spots {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.icon-spots::before {
+		content: '';
+		position: absolute;
+		bottom: 8rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 10rpx solid transparent;
+		border-right: 10rpx solid transparent;
+		border-bottom: 14rpx solid #FFF8E7;
+	}
+	
+	.icon-services {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+	
+	.icon-services::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 18rpx;
+		height: 14rpx;
+		border: 2.5rpx solid #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.icon-services::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -20%);
+		width: 0;
+		height: 0;
+		border-left: 6rpx solid transparent;
+		border-right: 6rpx solid transparent;
+		border-top: 6rpx solid #FFF8E7;
+	}
+	
+	.icon-settings {
+		background: linear-gradient(135deg, #6B7B8B, #8B9BA9);
+	}
+	
+	.icon-settings::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 16rpx;
+		height: 16rpx;
+		border: 2.5rpx solid #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.icon-settings::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 6rpx;
+		height: 6rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.menu-group-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.menu-line {
+		flex: 1;
+		height: 2rpx;
+		background: linear-gradient(90deg, #D4A86A, transparent);
+		margin-left: 16rpx;
+	}
+	
+	.menu-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 24rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.1);
+	}
+	
+	.menu-item:last-child {
+		border-bottom: none;
+	}
+	
+	.menu-icon {
+		width: 44rpx;
+		height: 44rpx;
+		border-radius: 10rpx;
+		margin-right: 18rpx;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	
+	.menu-icon-spots {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.menu-icon-spots::before {
+		content: '';
+		position: absolute;
+		bottom: 10rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 14rpx solid transparent;
+		border-right: 14rpx solid transparent;
+		border-bottom: 18rpx solid #FFF8E7;
+	}
+	
+	.menu-icon-spots::after {
+		content: '';
+		position: absolute;
+		bottom: 10rpx;
+		left: 30%;
+		width: 0;
+		height: 0;
+		border-left: 10rpx solid transparent;
+		border-right: 10rpx solid transparent;
+		border-bottom: 14rpx solid rgba(255, 248, 231, 0.7);
+	}
+	
+	.menu-icon-culture {
+		background: linear-gradient(135deg, #4A8F6D, #3E7A5B);
+	}
+	
+	.menu-icon-culture::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 24rpx;
+		height: 20rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 2rpx 2rpx 10rpx 10rpx;
+	}
+	
+	.menu-icon-culture::after {
+		content: '';
+		position: absolute;
+		top: 12rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 4rpx;
+		height: 10rpx;
+		background: #FFF8E7;
+		border-radius: 2rpx;
+	}
+	
+	.menu-icon-food {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+	
+	.menu-icon-food::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 24rpx;
+		height: 14rpx;
+		border: 3rpx solid #FFF8E7;
+		border-top: none;
+		border-radius: 0 0 14rpx 14rpx;
+	}
+	
+	.menu-icon-food::after {
+		content: '';
+		position: absolute;
+		top: 10rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 16rpx;
+		height: 3rpx;
+		background: #FFF8E7;
+		border-radius: 2rpx;
+	}
+	
+	.menu-icon-messages {
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+	}
+	
+	.menu-icon-messages::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -60%);
+		width: 24rpx;
+		height: 18rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 4rpx;
+	}
+	
+	.menu-icon-messages::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -20%);
+		width: 0;
+		height: 0;
+		border-left: 8rpx solid transparent;
+		border-right: 8rpx solid transparent;
+		border-top: 8rpx solid #FFF8E7;
+	}
+	
+	.menu-icon-coupons {
+		background: linear-gradient(135deg, #CC8800, #AC7800);
+	}
+	
+	.menu-icon-coupons::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 26rpx;
+		height: 16rpx;
+		background: #FFF8E7;
+		border-radius: 3rpx;
+	}
+	
+	.menu-icon-coupons::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 6rpx;
+		height: 6rpx;
+		background: #CC8800;
+		border-radius: 50%;
+	}
+	
+	.menu-icon-help {
+		background: linear-gradient(135deg, #5EAA7F, #4A8F6D);
+	}
+	
+	.menu-icon-help::before {
+		content: '?';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: serif;
+	}
+	
+	.menu-icon-settings {
+		background: linear-gradient(135deg, #6B7B8B, #4B5B6B);
+	}
+	
+	.menu-icon-settings::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.menu-icon-settings::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 8rpx;
+		height: 8rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.menu-text {
+		flex: 1;
+		font-size: 30rpx;
+		color: #2C1810;
+	}
+	
+	.menu-badge {
+		background: #C44510;
+		color: #FFFFFF;
+		font-size: 22rpx;
+		padding: 4rpx 14rpx;
+		border-radius: 20rpx;
+		margin-right: 12rpx;
+		flex-shrink: 0;
+	}
+	
+	.menu-arrow {
+		width: 24rpx;
+		height: 24rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		flex-shrink: 0;
+	}
+	
+	.user-footer {
+		padding: 48rpx 40rpx;
+		text-align: center;
+		position: relative;
+	}
+	
+	.footer-decoration {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120rpx;
+		height: 4rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	}
+	
+	.footer-text {
+		font-size: 26rpx;
+		color: #7A6B5A;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+</style>

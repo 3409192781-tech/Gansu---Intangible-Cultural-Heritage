@@ -1,0 +1,1166 @@
+<template>
+	<view class="home-page">
+		<view class="search-bar">
+			<view class="search-input-wrap">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<text class="search-placeholder">搜索景点、美食、非遗...</text>
+			</view>
+			<view class="search-btn" @click="handleSearch">
+				<text class="search-btn-text">搜索</text>
+			</view>
+		</view>
+		
+		<view class="banner-section">
+			<swiper
+				class="banner-swiper"
+				:indicator-dots="false"
+				:autoplay="true"
+				:interval="4000"
+				:duration="500"
+				:circular="true"
+				@change="onBannerChange"
+			>
+				<swiper-item v-for="(banner, index) in banners" :key="index" @click="goToDetail(banner.id)">
+					<view class="banner-item">
+						<image :src="banner.image" mode="aspectFill" class="banner-image"></image>
+						<view class="banner-overlay"></view>
+						<view class="banner-decoration-top"></view>
+						<view class="banner-decoration-bottom"></view>
+						<view class="banner-text">
+							<view class="banner-title-wrap">
+								<view class="title-decoration-left"></view>
+								<text class="banner-title">{{banner.title}}</text>
+								<view class="title-decoration-right"></view>
+							</view>
+							<text class="banner-desc">{{banner.desc}}</text>
+						</view>
+					</view>
+				</swiper-item>
+			</swiper>
+			<view class="banner-dots">
+				<view class="banner-dot" v-for="(b, i) in banners" :key="i" :class="{'banner-active': i === currentBanner}"></view>
+			</view>
+		</view>
+		
+		<view class="quick-entry">
+			<view class="entry-bg-decoration"></view>
+			<view class="entry-item" v-for="(item, index) in quickEntries" :key="index" @click="handleQuickEntry(item)">
+				<view class="entry-icon" :class="item.iconClass">
+					<view class="entry-icon-inner" :class="item.innerClass"></view>
+					<image :src="item.icon" mode="aspectFit" class="entry-icon-img"></image>
+				</view>
+				<text class="entry-text">{{item.text}}</text>
+			</view>
+		</view>
+		
+		<view class="section">
+			<view class="section-header">
+				<view class="section-title-wrap">
+					<view class="section-icon section-icon-spot">
+						<view class="icon-star-shape"></view>
+					</view>
+					<text class="section-title">热门景点</text>
+				</view>
+				<text class="section-more" @click="viewMore('spots')">更多 ›</text>
+			</view>
+			<scroll-view class="section-scroll" scroll-x :show-scrollbar="false">
+				<view class="card-list">
+					<view class="card-item" v-for="(spot, index) in hotSpots" :key="index" @click="goToDetail(spot.id)">
+						<view class="card-image-wrap">
+							<image :src="spot.image" mode="aspectFill" class="card-image"></image>
+							<view class="card-image-overlay"></view>
+							<view class="card-corner">
+								<view class="corner-inner"></view>
+							</view>
+							<view class="card-rating-badge">
+								<text class="rating-badge-text">{{spot.rating}}</text>
+							</view>
+						</view>
+						<view class="card-info">
+							<text class="card-title">{{spot.name}}</text>
+							<view class="card-tags">
+								<text class="card-tag" v-for="(tag, tIndex) in spot.tags" :key="tIndex">{{tag}}</text>
+							</view>
+							<view class="card-bottom">
+								<view class="card-location">
+									<view class="location-pin-mini">
+										<view class="pin-dot"></view>
+									</view>
+									<text class="location-text">{{spot.location}}</text>
+								</view>
+								<view class="card-price">
+									<text class="price-text">查看详情</text>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</scroll-view>
+		</view>
+		
+		<view class="section">
+			<view class="section-header">
+				<view class="section-title-wrap">
+					<view class="section-icon section-icon-culture">
+						<view class="icon-flower-shape"></view>
+					</view>
+					<text class="section-title">非遗文化</text>
+				</view>
+				<text class="section-more" @click="viewMore('culture')">更多 ›</text>
+			</view>
+			<scroll-view class="section-scroll" scroll-x :show-scrollbar="false">
+				<view class="culture-list">
+					<view class="culture-item" v-for="(culture, index) in cultures" :key="index">
+						<view class="culture-icon-wrap">
+							<image :src="culture.image" mode="aspectFill" class="culture-icon-image"></image>
+							<view class="culture-icon-ring"></view>
+						</view>
+						<text class="culture-name">{{culture.name}}</text>
+						<text class="culture-desc">{{culture.desc}}</text>
+					</view>
+				</view>
+			</scroll-view>
+		</view>
+		
+		<view class="section">
+			<view class="section-header">
+				<view class="section-title-wrap">
+					<view class="section-icon section-icon-food">
+						<view class="icon-bowl-shape"></view>
+					</view>
+					<text class="section-title">美食推荐</text>
+				</view>
+				<text class="section-more" @click="viewMore('food')">更多 ›</text>
+			</view>
+			<view class="food-grid">
+				<view class="food-item" v-for="(food, index) in foods" :key="index">
+					<view class="food-image-wrap">
+						<image :src="food.image" mode="aspectFill" class="food-image"></image>
+						<view class="food-image-overlay"></view>
+						<view class="food-corner"></view>
+					</view>
+					<view class="food-info">
+						<text class="food-name">{{food.name}}</text>
+						<view class="food-area-wrap">
+							<view class="area-dot"></view>
+							<text class="food-area">{{food.area}}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="section">
+			<view class="section-header">
+				<view class="section-title-wrap">
+					<view class="section-icon section-icon-event">
+						<view class="icon-flag-shape"></view>
+					</view>
+					<text class="section-title">近期活动</text>
+				</view>
+				<text class="section-more" @click="viewMore('events')">更多 ›</text>
+			</view>
+			<view class="event-list">
+				<view class="event-item" v-for="(event, index) in events" :key="index">
+					<view class="event-date">
+						<view class="date-decoration"></view>
+						<text class="event-month">{{event.month}}</text>
+						<text class="event-day">{{event.day}}</text>
+					</view>
+					<view class="event-content">
+						<text class="event-title">{{event.title}}</text>
+						<view class="event-location">
+							<view class="location-dot-small"></view>
+							<text class="location-text-small">{{event.location}}</text>
+						</view>
+					</view>
+					<view class="event-arrow-wrap">
+						<view class="event-arrow"></view>
+					</view>
+				</view>
+			</view>
+		</view>
+		
+		<view class="footer">
+			<view class="footer-decoration"></view>
+			<text class="footer-text">云游甘肃 · 带你领略丝路文化</text>
+			<text class="footer-copyright">© 2024 云游甘肃小程序</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref } from 'vue'
+	
+	const currentBanner = ref(0)
+	
+	const banners = [
+		{ id: 1, image: '/static/banner1.jpg', title: '敦煌彩塑', desc: '千年非遗 · 匠心传承' },
+		{ id: 6, image: '/static/banner2.jpg', title: '庆阳香包', desc: '传统手工艺 · 国家级非遗' },
+		{ id: 7, image: '/static/banner3.jpg', title: '兰州牛肉面', desc: '中华第一面 · 舌尖非遗' }
+	]
+	
+	const onBannerChange = (e: any) => {
+		currentBanner.value = e.detail.current
+	}
+	
+	const quickEntries = [
+		{ icon: '/static/icons/map.svg', text: '地图导览', iconClass: 'entry-icon-map', innerClass: '' },
+		{ icon: '/static/icons/spot.svg', text: '景点推荐', iconClass: 'entry-icon-spot', innerClass: '' },
+		{ icon: '/static/icons/culture.svg', text: '非遗文化', iconClass: 'entry-icon-culture', innerClass: '' },
+		{ icon: '/static/icons/food.svg', text: '特色美食', iconClass: 'entry-icon-food', innerClass: '' },
+		{ icon: '/static/icons/ticket.svg', text: '门票预订', iconClass: 'entry-icon-ticket', innerClass: '' },
+		{ icon: '/static/icons/phone.svg', text: '联系我们', iconClass: 'entry-icon-phone', innerClass: '' }
+	]
+	
+	const hotSpots = [
+		{ id: 1, name: '敦煌彩塑', image: '/static/spot1.jpg', tags: ['国家级非遗', '敦煌文化'], location: '酒泉市敦煌市', rating: '4.9' },
+		{ id: 2, name: '临夏砖雕', image: '/static/spot2.jpg', tags: ['传统美术', '国家级非遗'], location: '临夏州临夏市', rating: '4.8' },
+		{ id: 3, name: '天水雕漆', image: '/static/spot3.jpg', tags: ['传统技艺', '国家级非遗'], location: '天水市', rating: '4.9' },
+		{ id: 4, name: '夜光杯雕', image: '/static/spot4.jpg', tags: ['传统美术', '酒泉特产'], location: '酒泉市', rating: '4.8' },
+		{ id: 5, name: '保安腰刀', image: '/static/spot5.jpg', tags: ['传统技艺', '国家级非遗'], location: '临夏州积石山县', rating: '4.7' }
+	]
+	
+	const cultures = [
+		{ name: '敦煌彩塑', desc: '千年艺术瑰宝', image: '/static/culture1.jpg' },
+		{ name: '花儿', desc: '国家级非遗', image: '/static/culture2.jpg' },
+		{ name: '庆阳香包', desc: '传统手工艺', image: '/static/culture3.jpg' },
+		{ name: '临夏砖雕', desc: '传统美术', image: '/static/culture4.jpg' },
+		{ name: '敦煌曲子戏', desc: '西北戏曲之魂', image: '/static/culture5.jpg' },
+		{ name: '兰州太平鼓', desc: '黄河文化', image: '/static/culture6.jpg' }
+	]
+	
+	const foods = [
+		{ name: '兰州牛肉面', area: '兰州', image: '/static/food1.jpg' },
+		{ name: '陇西腊肉', area: '定西', image: '/static/food2.jpg' },
+		{ name: '静宁烧鸡', area: '平凉', image: '/static/food3.jpg' },
+		{ name: '天水呱呱', area: '天水', image: '/static/food4.jpg' }
+	]
+	
+	const events = [
+		{ month: '7月', day: '15日', title: '敦煌飞天文化节', location: '酒泉市敦煌市' },
+		{ month: '8月', day: '8日', title: '张掖丹霞旅游节', location: '张掖市临泽县' },
+		{ month: '9月', day: '1日', title: '嘉峪关国际马拉松', location: '嘉峪关市' },
+		{ month: '10月', day: '1日', title: '国庆文化旅游周', location: '全省各地' }
+	]
+	
+	const goToDetail = (id) => {
+		uni.navigateTo({
+			url: `/pages/detail/detail?id=${id}`
+		})
+	}
+	
+	const handleQuickEntry = (item) => {
+		if (item.text === '地图导览') {
+			uni.switchTab({ url: '/pages/map/map' })
+		} else if (item.text === '联系我们') {
+			uni.makePhoneCall({ phoneNumber: '19993147273' })
+		} else {
+			uni.showToast({ title: `${item.text}功能开发中`, icon: 'none' })
+		}
+	}
+	
+	const viewMore = (type) => {
+		uni.showToast({ title: `${type}更多功能开发中`, icon: 'none' })
+	}
+	
+	const handleSearch = () => {
+		uni.showToast({ title: '搜索功能开发中', icon: 'none' })
+	}
+</script>
+
+<style>
+	.home-page {
+		min-height: 100vh;
+		background: linear-gradient(180deg, #FFF8E7 0%, #F5E6D3 100%);
+		padding-bottom: 120rpx;
+	}
+	
+	.search-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: linear-gradient(180deg, #8B4513 0%, #C46210 100%);
+	}
+	
+	.search-input-wrap {
+		flex: 1;
+		height: 72rpx;
+		background: rgba(255, 248, 231, 0.95);
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 28rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+	
+	.search-icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-right: 16rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.icon-lens {
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #8B4513;
+		border-radius: 50%;
+		position: relative;
+	}
+	
+	.icon-lens::after {
+		content: '';
+		position: absolute;
+		bottom: -6rpx;
+		right: -6rpx;
+		width: 10rpx;
+		height: 3rpx;
+		background: #8B4513;
+		border-radius: 2rpx;
+		transform: rotate(45deg);
+		transform-origin: left center;
+	}
+	
+	.search-placeholder {
+		flex: 1;
+		font-size: 28rpx;
+		color: #9A8B7A;
+	}
+	
+	.search-btn {
+		margin-left: 20rpx;
+		padding: 0 24rpx;
+		height: 72rpx;
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+		border-radius: 36rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4rpx 12rpx rgba(212, 168, 106, 0.4);
+	}
+	
+	.search-btn-text {
+		font-size: 28rpx;
+		color: #2C1810;
+		font-weight: 600;
+	}
+	
+	.banner-section {
+		position: relative;
+		background: linear-gradient(180deg, #8B4513 0%, #C46210 100%);
+	}
+	
+	.banner-swiper {
+		width: 100%;
+		height: 420rpx;
+	}
+	
+	.banner-item {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		border-radius: 0 0 40rpx 40rpx;
+		overflow: hidden;
+	}
+	
+	.banner-dots {
+		position: absolute;
+		bottom: 60rpx;
+		left: 0;
+		right: 0;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		z-index: 10;
+	}
+	
+	.banner-dot {
+		width: 12rpx;
+		height: 12rpx;
+		border-radius: 50%;
+		background: rgba(255, 248, 231, 0.6);
+		margin: 0 8rpx;
+		transition: all 0.3s ease;
+	}
+	
+	.banner-active {
+		width: 32rpx;
+		border-radius: 6rpx;
+		background: #FFF8E7;
+	}
+	
+	.banner-image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.banner-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.1) 0%, rgba(139, 69, 19, 0.7) 100%);
+	}
+	
+	.banner-decoration-top {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 24rpx;
+		background: linear-gradient(90deg, transparent, rgba(212, 168, 106, 0.6), transparent);
+	}
+	
+	.banner-decoration-bottom {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 40rpx;
+		background: linear-gradient(90deg, rgba(139, 69, 19, 0.8), rgba(212, 168, 106, 0.4), rgba(139, 69, 19, 0.8));
+	}
+	
+	.banner-text {
+		position: absolute;
+		bottom: 50rpx;
+		left: 40rpx;
+		color: #FFF8E7;
+	}
+	
+	.banner-title-wrap {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 16rpx;
+	}
+	
+	.title-decoration-left, .title-decoration-right {
+		width: 30rpx;
+		height: 3rpx;
+		background: #D4A86A;
+		margin: 0 16rpx;
+		border-radius: 2rpx;
+	}
+	
+	.banner-title {
+		font-size: 44rpx;
+		font-weight: bold;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+		letter-spacing: 4rpx;
+	}
+	
+	.banner-desc {
+		display: block;
+		font-size: 26rpx;
+		opacity: 0.95;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+		letter-spacing: 2rpx;
+	}
+	
+	.quick-entry {
+		position: relative;
+		padding: 36rpx 20rpx 28rpx;
+		background: #FFFFFF;
+		margin: -30rpx 24rpx 24rpx;
+		border-radius: 32rpx;
+		box-shadow: 0 12rpx 32rpx rgba(139, 69, 19, 0.15);
+		z-index: 1;
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	
+	.entry-bg-decoration {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.06'%3E%3Cpath d='M0 24h24v24H0V24zm12 12h12v12H12V36z'/%3E%3C/g%3E%3C/svg%3E");
+		border-radius: 32rpx;
+		pointer-events: none;
+	}
+	
+	.entry-item {
+		width: 33.333%;
+		flex: none;
+		text-align: center;
+		padding: 20rpx 0;
+		position: relative;
+		z-index: 1;
+		font-size: 26rpx;
+		line-height: 1.5;
+		box-sizing: border-box;
+	}
+	
+	.entry-icon {
+		width: 96rpx;
+		height: 96rpx;
+		border-radius: 24rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 16rpx;
+		position: relative;
+		overflow: hidden;
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+	}
+	
+	.entry-icon::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, transparent 50%);
+		border-radius: 28rpx;
+	}
+	
+	.entry-icon::after {
+		content: '';
+		position: absolute;
+		top: 4rpx;
+		left: 4rpx;
+		right: 4rpx;
+		bottom: 4rpx;
+		border: 1rpx solid rgba(255, 255, 255, 0.3);
+		border-radius: 22rpx;
+	}
+	
+	.entry-icon-map {
+		background: linear-gradient(135deg, #8B4513, #A0522D);
+	}
+	
+	.entry-icon-spot {
+		background: linear-gradient(135deg, #D4A86A, #E8C895);
+	}
+	
+	.entry-icon-culture {
+		background: linear-gradient(135deg, #4A8F6D, #5EAA7F);
+	}
+	
+	.entry-icon-food {
+		background: linear-gradient(135deg, #C46210, #D47220);
+	}
+	
+	.entry-icon-ticket {
+		background: linear-gradient(135deg, #CC8800, #DC9810);
+	}
+	
+	.entry-icon-phone {
+		background: linear-gradient(135deg, #6B7B8B, #8B9BA9);
+	}
+	
+	.entry-icon-img {
+		width: 52rpx;
+		height: 52rpx;
+		position: relative;
+		z-index: 1;
+	}
+	
+	.entry-text {
+		font-size: 26rpx;
+		color: #2C1810;
+		font-weight: 500;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.section {
+		padding: 28rpx 24rpx 8rpx;
+	}
+	
+	.section-header {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 20rpx;
+		width: 100%;
+	}
+	
+	.section-title-wrap {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		flex: 1;
+	}
+	
+	.section-icon {
+		width: 44rpx;
+		height: 44rpx;
+		margin-right: 14rpx;
+		border-radius: 12rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+		position: relative;
+	}
+	
+	.section-icon::before {
+		content: '';
+		position: absolute;
+		top: 3rpx;
+		left: 3rpx;
+		right: 3rpx;
+		bottom: 3rpx;
+		border: 1rpx solid rgba(255, 255, 255, 0.25);
+		border-radius: 8rpx;
+	}
+	
+	.section-icon-spot {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+	
+	.icon-star-shape {
+		width: 22rpx;
+		height: 22rpx;
+		background: #FFF8E7;
+		clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+	}
+	
+	.section-icon-culture {
+		background: linear-gradient(135deg, #4A8F6D, #3A7A5D);
+	}
+	
+	.icon-flower-shape {
+		width: 22rpx;
+		height: 22rpx;
+		position: relative;
+	}
+	
+	.icon-flower-shape::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 8rpx;
+		height: 8rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+		box-shadow: -8rpx -6rpx 0 -2rpx #FFF8E7, 8rpx -6rpx 0 -2rpx #FFF8E7, -10rpx 2rpx 0 -2rpx #FFF8E7, 10rpx 2rpx 0 -2rpx #FFF8E7, 0 -10rpx 0 -2rpx #FFF8E7, 0 10rpx 0 -2rpx #FFF8E7;
+	}
+	
+	.section-icon-food {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+	
+	.icon-bowl-shape {
+		width: 22rpx;
+		height: 14rpx;
+		background: #FFF8E7;
+		border-radius: 0 0 12rpx 12rpx;
+		position: relative;
+	}
+	
+	.icon-bowl-shape::before {
+		content: '';
+		position: absolute;
+		top: -4rpx;
+		left: -2rpx;
+		right: -2rpx;
+		height: 4rpx;
+		background: #FFF8E7;
+		border-radius: 2rpx;
+	}
+	
+	.section-icon-event {
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+	}
+	
+	.icon-flag-shape {
+		width: 16rpx;
+		height: 22rpx;
+		border-left: 3rpx solid #FFF8E7;
+		position: relative;
+	}
+	
+	.icon-flag-shape::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 3rpx;
+		width: 14rpx;
+		height: 14rpx;
+		background: #FFF8E7;
+		border-radius: 0 6rpx 6rpx 0;
+	}
+	
+	.section-title {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 2rpx;
+	}
+	
+	.section-more {
+		font-size: 26rpx;
+		color: #8B4513;
+		font-weight: 500;
+		flex-shrink: 0;
+	}
+	
+	.section-scroll {
+		width: 100%;
+		white-space: nowrap;
+	}
+	
+	.card-list {
+		display: inline-block;
+		width: 1500rpx;
+		padding-right: 24rpx;
+		white-space: nowrap;
+		font-size: 0;
+	}
+	
+	.card-item {
+		width: 280rpx;
+		display: inline-block;
+		vertical-align: top;
+		margin-right: 20rpx;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+		white-space: normal;
+		font-size: 26rpx;
+	}
+	
+	.card-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 200rpx;
+	}
+	
+	.card-image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.card-image-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.05) 0%, rgba(139, 69, 19, 0.35) 100%);
+	}
+	
+	.card-corner {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 52rpx;
+		height: 52rpx;
+		background: linear-gradient(135deg, #D4A86A 50%, transparent 50%);
+	}
+	
+	.corner-inner {
+		position: absolute;
+		top: 8rpx;
+		right: 8rpx;
+		width: 16rpx;
+		height: 16rpx;
+		border: 2rpx solid rgba(255, 255, 255, 0.7);
+		border-radius: 50%;
+	}
+	
+	.card-rating-badge {
+		position: absolute;
+		bottom: 16rpx;
+		left: 16rpx;
+		background: linear-gradient(135deg, rgba(212, 168, 106, 0.95), rgba(180, 136, 74, 0.95));
+		padding: 6rpx 16rpx;
+		border-radius: 16rpx;
+		backdrop-filter: blur(10px);
+	}
+	
+	.rating-badge-text {
+		font-size: 22rpx;
+		color: #2C1810;
+		font-weight: bold;
+	}
+	
+	.card-info {
+		padding: 20rpx 24rpx 24rpx;
+	}
+	
+	.card-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 12rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 1rpx;
+	}
+	
+	.card-tags {
+		display: flex;
+		flex-direction: row;
+		margin-bottom: 14rpx;
+		flex-wrap: wrap;
+	}
+	
+	.card-tag {
+		font-size: 22rpx;
+		background: linear-gradient(135deg, rgba(212, 168, 106, 0.2), rgba(212, 168, 106, 0.1));
+		color: #8B4513;
+		padding: 6rpx 14rpx;
+		border-radius: 14rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+		border: 1rpx solid rgba(212, 168, 106, 0.3);
+	}
+	
+	.card-bottom {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+	
+	.card-location {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.location-pin-mini {
+		width: 14rpx;
+		height: 18rpx;
+		margin-right: 8rpx;
+		position: relative;
+	}
+	
+	.pin-dot {
+		width: 10rpx;
+		height: 10rpx;
+		background: #4A8F6D;
+		border-radius: 50%;
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	
+	.location-text {
+		font-size: 22rpx;
+		color: #7A6B5A;
+	}
+	
+	.card-price {
+		padding: 6rpx 16rpx;
+		background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(139, 69, 19, 0.05));
+		border-radius: 12rpx;
+		border: 1rpx solid rgba(139, 69, 19, 0.15);
+	}
+	
+	.price-text {
+		font-size: 22rpx;
+		color: #8B4513;
+		font-weight: 500;
+	}
+	
+	.culture-list {
+		display: inline-block;
+		width: 1200rpx;
+		padding-right: 24rpx;
+		white-space: nowrap;
+		font-size: 0;
+	}
+	
+	.culture-item {
+		width: 160rpx;
+		display: inline-block;
+		vertical-align: top;
+		margin-right: 20rpx;
+		text-align: center;
+		white-space: normal;
+		font-size: 26rpx;
+	}
+	
+	.culture-icon-wrap {
+		width: 110rpx;
+		height: 110rpx;
+		border-radius: 50%;
+		margin: 0 auto 14rpx;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.15);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.culture-icon-image {
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+	}
+
+	.culture-icon-ring {
+		position: absolute;
+		top: -4rpx;
+		left: -4rpx;
+		right: -4rpx;
+		bottom: -4rpx;
+		border: 2rpx dashed rgba(212, 168, 106, 0.4);
+		border-radius: 50%;
+	}
+	
+	.culture-name {
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #2C1810;
+		margin-bottom: 8rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 1rpx;
+	}
+	
+	.culture-desc {
+		font-size: 24rpx;
+		color: #7A6B5A;
+		text-align: center;
+	}
+	
+	.food-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	
+	.food-item {
+		width: calc(50% - 12rpx);
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		margin-right: 24rpx;
+		margin-bottom: 24rpx;
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+	}
+	
+	.food-item:nth-child(2n) {
+		margin-right: 0;
+	}
+	
+	.food-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 200rpx;
+	}
+	
+	.food-image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.food-image-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, transparent, rgba(139, 69, 19, 0.25));
+	}
+	
+	.food-corner {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 44rpx;
+		height: 44rpx;
+		background: linear-gradient(135deg, #D4A86A 50%, transparent 50%);
+	}
+	
+	.food-info {
+		padding: 20rpx 24rpx;
+	}
+	
+	.food-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 1rpx;
+	}
+	
+	.food-area-wrap {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.area-dot {
+		width: 8rpx;
+		height: 8rpx;
+		background: #C46210;
+		border-radius: 50%;
+		margin-right: 8rpx;
+	}
+	
+	.food-area {
+		font-size: 22rpx;
+		color: #7A6B5A;
+	}
+	
+	.event-list {
+		background: #FFFFFF;
+		border-radius: 24rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+	}
+	
+	.event-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 28rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.15);
+	}
+	
+	.event-item:last-child {
+		border-bottom: none;
+	}
+	
+	.event-date {
+		position: relative;
+		width: 100rpx;
+		height: 100rpx;
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+		border-radius: 20rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		margin-right: 24rpx;
+		box-shadow: 0 4rpx 12rpx rgba(139, 69, 19, 0.2);
+		flex-shrink: 0;
+	}
+	
+	.date-decoration {
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		right: 8rpx;
+		bottom: 8rpx;
+		border: 2rpx solid rgba(255, 255, 255, 0.2);
+		border-radius: 14rpx;
+	}
+	
+	.event-month {
+		font-size: 22rpx;
+		color: #D4A86A;
+		font-weight: 500;
+	}
+	
+	.event-day {
+		font-size: 36rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.event-content {
+		flex: 1;
+	}
+	
+	.event-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 1rpx;
+	}
+	
+	.event-location {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.location-dot-small {
+		width: 6rpx;
+		height: 6rpx;
+		background: #4A8F6D;
+		border-radius: 50%;
+		margin-right: 6rpx;
+	}
+	
+	.location-text-small {
+		font-size: 22rpx;
+		color: #7A6B5A;
+	}
+	
+	.event-arrow-wrap {
+		width: 48rpx;
+		height: 48rpx;
+		background: linear-gradient(135deg, rgba(212, 168, 106, 0.15), rgba(212, 168, 106, 0.08));
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: 12rpx;
+	}
+	
+	.event-arrow {
+		width: 18rpx;
+		height: 18rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		margin-left: -4rpx;
+	}
+	
+	.footer {
+		padding: 48rpx 40rpx;
+		text-align: center;
+		background: linear-gradient(180deg, #FFF8E7 0%, #F5E6D3 100%);
+		margin-top: 16rpx;
+		position: relative;
+		border-top: 1rpx solid rgba(212, 168, 106, 0.2);
+	}
+	
+	.footer-decoration {
+		position: absolute;
+		top: -10rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120rpx;
+		height: 6rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+		border-radius: 3rpx;
+	}
+	
+	.footer-text {
+		font-size: 28rpx;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 12rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 2rpx;
+	}
+	
+	.footer-copyright {
+		font-size: 24rpx;
+		color: #7A6B5A;
+	}
+</style>
