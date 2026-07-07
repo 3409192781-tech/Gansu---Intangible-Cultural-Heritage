@@ -78,6 +78,7 @@
 
 <script setup lang="uts">
 	import { ref, onMounted } from 'vue'
+	import { images } from '../../data/images'
 	
 	const cityName = ref('兰州')
 	
@@ -85,139 +86,187 @@
 		'兰州': {
 			name: '兰州',
 			desc: '黄河之都 · 丝路重镇',
-			banner: '/static/city-lanzhou.jpg',
+			banner: images.cityLanzhou,
 			level: '国家级',
 			years: '2200+',
 			intro: '兰州，简称"兰"，是甘肃省省会，丝绸之路经济带的重要节点城市。兰州有着两千多年的建城史，自古就是"联络四域、襟带万里"的交通枢纽和军事要塞，被誉为"黄河明珠"。',
 			heritages: [
-				{ id: 6, name: '兰州太平鼓', image: '/static/culture6.jpg', desc: '黄河文化的杰出代表', tags: ['传统舞蹈', '国家级非遗'], level: '国家级' },
-				{ id: 8, name: '兰州刻葫芦', image: '/static/spot1.jpg', desc: '针尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
-				{ id: 7, name: '兰州牛肉面', image: '/static/food1.jpg', desc: '中华第一面', tags: ['传统技艺', '省级非遗'], level: '省级' }
+				{ id: 6, name: '兰州太平鼓', image: images.culture6, desc: '黄河文化的杰出代表', tags: ['传统舞蹈', '国家级非遗'], level: '国家级' },
+				{ id: 8, name: '兰州刻葫芦', image: images.spot1, desc: '针尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 7, name: '兰州牛肉面', image: images.food1, desc: '中华第一面', tags: ['传统技艺', '省级非遗'], level: '省级' }
 			]
 		},
 		'敦煌': {
 			name: '敦煌',
 			desc: '丝路明珠 · 艺术圣地',
-			banner: '/static/city-dunhuang.jpg',
+			banner: images.cityDunhuang,
 			level: '世界遗产',
 			years: '2000+',
 			intro: '敦煌市，隶属于甘肃省酒泉市，位于河西走廊的最西端，是丝绸之路的节点城市，以"敦煌石窟"、"敦煌壁画"闻名天下，是世界遗产莫高窟的所在地。',
 			heritages: [
-				{ id: 1, name: '敦煌彩塑', image: '/static/spot1.jpg', desc: '千年艺术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
-				{ id: 9, name: '敦煌壁画', image: '/static/culture1.jpg', desc: '墙壁上的博物馆', tags: ['传统美术', '世界遗产'], level: '世界级' },
-				{ id: 10, name: '敦煌曲子戏', image: '/static/culture5.jpg', desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+				{ id: 1, name: '敦煌彩塑', image: images.spot1, desc: '千年艺术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 9, name: '敦煌壁画', image: images.culture1, desc: '墙壁上的博物馆', tags: ['传统美术', '世界遗产'], level: '世界级' },
+				{ id: 10, name: '敦煌曲子戏', image: images.culture5, desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' }
 			]
 		},
 		'嘉峪关': {
 			name: '嘉峪关',
 			desc: '天下第一雄关',
-			banner: '/static/city-jiayuguan.jpg',
+			banner: images.cityJiayuguan,
 			level: '国家级',
 			years: '600+',
 			intro: '嘉峪关，号称"天下第一雄关"，位于甘肃省嘉峪关市西5千米处最狭窄的山谷中部，是明长城最西端的关口，历史上曾被称为河西咽喉。',
 			heritages: [
-				{ id: 11, name: '嘉峪关石砚', image: '/static/spot3.jpg', desc: '丝路文房瑰宝', tags: ['传统技艺', '省级非遗'], level: '省级' },
-				{ id: 12, name: '地蹦子', image: '/static/culture2.jpg', desc: '民间舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+				{ id: 11, name: '嘉峪关石砚', image: images.spot3, desc: '丝路文房瑰宝', tags: ['传统技艺', '省级非遗'], level: '省级' },
+				{ id: 12, name: '地蹦子', image: images.culture2, desc: '民间舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
 			]
 		},
 		'张掖': {
 			name: '张掖',
 			desc: '七彩丹霞 · 塞上江南',
-			banner: '/static/city-zhangye.jpg',
+			banner: images.cityZhangye,
 			level: '国家级',
 			years: '2100+',
 			intro: '张掖，以"张国臂掖，以通西域"而得名，位于甘肃省西北部，河西走廊中段。张掖有着悠久的历史、灿烂的文化、优美的自然风光和独特的人文景观。',
 			heritages: [
-				{ id: 13, name: '张掖剪纸', image: '/static/culture3.jpg', desc: '指尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
-				{ id: 14, name: '张掖高跷', image: '/static/culture6.jpg', desc: '民间舞蹈奇葩', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+				{ id: 13, name: '张掖剪纸', image: images.culture3, desc: '指尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 14, name: '张掖高跷', image: images.culture6, desc: '民间舞蹈奇葩', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
 			]
 		},
 		'天水': {
 			name: '天水',
 			desc: '羲皇故里 · 陇上江南',
-			banner: '/static/city-tianshui.jpg',
+			banner: images.cityTianshui,
 			level: '国家级',
 			years: '8000+',
 			intro: '天水，位于甘肃省东南部，是华夏文明和中华民族的重要发源地，相传是伏羲和女娲的诞生地，有"羲皇故里"之称，拥有8000多年的文明史。',
 			heritages: [
-				{ id: 3, name: '天水雕漆', image: '/static/spot3.jpg', desc: '传统技艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' },
-				{ id: 15, name: '天水呱呱', image: '/static/food4.jpg', desc: '秦州第一美食', tags: ['传统技艺', '省级非遗'], level: '省级' },
-				{ id: 16, name: '皮影戏', image: '/static/culture5.jpg', desc: '灯影里的戏曲', tags: ['传统戏剧', '国家级非遗'], level: '国家级' }
+				{ id: 3, name: '天水雕漆', image: images.spot3, desc: '传统技艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' },
+				{ id: 15, name: '天水呱呱', image: images.food4, desc: '秦州第一美食', tags: ['传统技艺', '省级非遗'], level: '省级' },
+				{ id: 16, name: '皮影戏', image: images.culture5, desc: '灯影里的戏曲', tags: ['传统戏剧', '国家级非遗'], level: '国家级' }
 			]
 		},
 		'酒泉': {
 			name: '酒泉',
 			desc: '航天城 · 丝路重镇',
-			banner: '/static/city-jiuquan.jpg',
+			banner: images.cityJiuquan,
 			level: '国家级',
 			years: '2100+',
 			intro: '酒泉，为甘肃省地级市，位于甘肃省西北部河西走廊西端的阿尔金山、祁连山与马鬃山之间，是现代航天的摇篮，也是敦煌艺术的故乡。',
 			heritages: [
-				{ id: 4, name: '夜光杯雕', image: '/static/spot4.jpg', desc: '葡萄美酒夜光杯', tags: ['传统美术', '国家级非遗'], level: '国家级' },
-				{ id: 17, name: '酒泉剪纸', image: '/static/culture3.jpg', desc: '民间艺术之花', tags: ['传统美术', '省级非遗'], level: '省级' },
-				{ id: 10, name: '敦煌曲子戏', image: '/static/culture5.jpg', desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+				{ id: 4, name: '夜光杯雕', image: images.spot4, desc: '葡萄美酒夜光杯', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 17, name: '酒泉剪纸', image: images.culture3, desc: '民间艺术之花', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 10, name: '敦煌曲子戏', image: images.culture5, desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' }
 			]
 		},
 		'武威': {
 			name: '武威',
 			desc: '六朝古都 · 马踏飞燕',
-			banner: '/static/city-wuwei.jpg',
+			banner: images.cityWuwei,
 			level: '国家级',
 			years: '2100+',
 			intro: '武威，简称"武"或"凉"，古称凉州、姑臧，是甘肃省辖地级市，被命名为"中国葡萄酒城"，是中国旅游标志"马踏飞燕"的出土地。',
 			heritages: [
-				{ id: 18, name: '武威重刻剪纸', image: '/static/culture3.jpg', desc: '西域特色剪纸', tags: ['传统美术', '省级非遗'], level: '省级' },
-				{ id: 19, name: '凉州贤孝', image: '/static/culture2.jpg', desc: '河西曲艺之冠', tags: ['传统曲艺', '国家级非遗'], level: '国家级' },
-				{ id: 20, name: '攻鼓子', image: '/static/culture6.jpg', desc: '西部鼓魂', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+				{ id: 18, name: '武威重刻剪纸', image: images.culture3, desc: '西域特色剪纸', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 19, name: '凉州贤孝', image: images.culture2, desc: '河西曲艺之冠', tags: ['传统曲艺', '国家级非遗'], level: '国家级' },
+				{ id: 20, name: '攻鼓子', image: images.culture6, desc: '西部鼓魂', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
 			]
 		},
 		'临夏': {
 			name: '临夏',
 			desc: '中国花儿之乡',
-			banner: '/static/city-linxia.jpg',
+			banner: images.cityLinxia,
 			level: '国家级',
 			years: '5000+',
 			intro: '临夏回族自治州，位于甘肃省中部西南面，黄河上游，是中国两大回族自治州之一，被誉为"中国花儿之乡"，拥有丰富多彩的民族文化。',
 			heritages: [
-				{ id: 2, name: '临夏砖雕', image: '/static/spot2.jpg', desc: '传统美术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
-				{ id: 21, name: '花儿', image: '/static/culture2.jpg', desc: '西北民歌之魂', tags: ['传统音乐', '世界级非遗'], level: '世界级' },
-				{ id: 5, name: '保安腰刀', image: '/static/spot5.jpg', desc: '民族工艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' }
+				{ id: 2, name: '临夏砖雕', image: images.spot2, desc: '传统美术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 21, name: '花儿', image: images.culture2, desc: '西北民歌之魂', tags: ['传统音乐', '世界级非遗'], level: '世界级' },
+				{ id: 5, name: '保安腰刀', image: images.spot5, desc: '民族工艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' }
 			]
 		},
 		'平凉': {
 			name: '平凉',
 			desc: '崆峒问道 · 陇东旱码头',
-			banner: '/static/city-lanzhou.jpg',
+			banner: images.cityLanzhou,
 			level: '省级',
 			years: '3000+',
 			intro: '平凉，位于甘肃省东部，六盘山东麓，泾河上游，是陕甘宁交汇几何中心"金三角"，历史上为兵家必争之地，素有"陇上旱码头"之称。',
 			heritages: [
-				{ id: 22, name: '平凉剪纸', image: '/static/culture3.jpg', desc: '民间艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
-				{ id: 23, name: '静宁烧鸡', image: '/static/food3.jpg', desc: '陇东名吃', tags: ['传统技艺', '省级非遗'], level: '省级' }
+				{ id: 22, name: '平凉剪纸', image: images.culture3, desc: '民间艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 23, name: '静宁烧鸡', image: images.food3, desc: '陇东名吃', tags: ['传统技艺', '省级非遗'], level: '省级' }
 			]
 		},
 		'庆阳': {
 			name: '庆阳',
 			desc: '香包之乡 · 陇东粮仓',
-			banner: '/static/city-lanzhou.jpg',
+			banner: images.cityLanzhou,
 			level: '国家级',
 			years: '2000+',
 			intro: '庆阳，位于甘肃省最东部，陕甘宁三省区的交汇处，系黄河中下游黄土高原沟壑区，素有"陇东粮仓"之称，是中国香包刺绣之乡。',
 			heritages: [
-				{ id: 6, name: '庆阳香包', image: '/static/banner2.jpg', desc: '传统手工艺瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
-				{ id: 24, name: '庆阳剪纸', image: '/static/culture3.jpg', desc: '窗花艺术之乡', tags: ['传统美术', '省级非遗'], level: '省级' }
+				{ id: 6, name: '庆阳香包', image: images.banner2, desc: '传统手工艺瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 24, name: '庆阳剪纸', image: images.culture3, desc: '窗花艺术之乡', tags: ['传统美术', '省级非遗'], level: '省级' }
 			]
 		},
 		'陇南': {
 			name: '陇南',
 			desc: '陇上江南 · 秦地锁钥',
-			banner: '/static/city-tianshui.jpg',
+			banner: images.cityLongnan,
 			level: '省级',
 			years: '2200+',
 			intro: '陇南，甘肃省下辖地级行政区，位于甘肃省东南部，地处秦巴山区，素称"秦陇锁钥，巴蜀咽喉"，是甘肃省唯一属于长江水系的地区。',
 			heritages: [
-				{ id: 25, name: '陇南高山戏', image: '/static/culture5.jpg', desc: '地方戏曲奇葩', tags: ['传统戏剧', '省级非遗'], level: '省级' },
-				{ id: 26, name: '文县傩舞', image: '/static/culture6.jpg', desc: '舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+				{ id: 25, name: '陇南高山戏', image: images.culture5, desc: '地方戏曲奇葩', tags: ['传统戏剧', '省级非遗'], level: '省级' },
+				{ id: 26, name: '文县傩舞', image: images.culture6, desc: '舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+			]
+		},
+		'白银': {
+			name: '白银',
+			desc: '铜城 · 黄河上游明珠',
+			banner: images.cityBaiyin,
+			level: '省级',
+			years: '600+',
+			intro: '白银，位于甘肃省中部，因矿得名，因企设市，是全国重要的有色金属工业基地和黄河上游重要的生态屏障。白银有着丰富的矿产资源和悠久的历史文化。',
+			heritages: [
+				{ id: 27, name: '白银剪纸', image: images.culture3, desc: '民间艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 28, name: '白银皮影戏', image: images.culture5, desc: '灯影里的艺术', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+			]
+		},
+		'金昌': {
+			name: '金昌',
+			desc: '镍都 · 戈壁花城',
+			banner: images.cityJinchang,
+			level: '省级',
+			years: '40+',
+			intro: '金昌，位于甘肃省河西走廊中段，因盛产镍而被誉为"祖国的镍都"，是中国最大的镍钴生产基地和铂族金属提炼中心。',
+			heritages: [
+				{ id: 29, name: '金昌剪纸', image: images.culture3, desc: '戈壁艺术之花', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 30, name: '金昌民歌', image: images.culture2, desc: '塞上歌声', tags: ['传统音乐', '市级非遗'], level: '市级' }
+			]
+		},
+		'定西': {
+			name: '定西',
+			desc: '马铃薯之乡 · 千年药乡',
+			banner: images.cityDingxi,
+			level: '省级',
+			years: '2000+',
+			intro: '定西，位于甘肃省中部，是古丝绸之路重镇，新欧亚大陆桥必经之地。定西以"千年药乡"、"中国马铃薯之乡"闻名遐迩。',
+			heritages: [
+				{ id: 31, name: '定西剪纸', image: images.culture3, desc: '陇中艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 32, name: '定西皮影戏', image: images.culture5, desc: '乡土戏曲', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+			]
+		},
+		'甘南': {
+			name: '甘南',
+			desc: '九色甘南 · 香巴拉',
+			banner: images.cityGannan,
+			level: '国家级',
+			years: '3000+',
+			intro: '甘南藏族自治州，位于甘肃省西南部，是全国十个藏族自治州之一。甘南有着壮丽的自然风光和独特的藏族文化，被誉为"九色甘南·香巴拉"。',
+			heritages: [
+				{ id: 33, name: '甘南民歌', image: images.culture2, desc: '草原之声', tags: ['传统音乐', '国家级非遗'], level: '国家级' },
+				{ id: 34, name: '锅庄舞', image: images.culture6, desc: '欢乐的舞蹈', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
 			]
 		}
 	}

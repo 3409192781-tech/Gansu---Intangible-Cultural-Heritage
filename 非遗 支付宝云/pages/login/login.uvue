@@ -1,7 +1,7 @@
 <template>
 	<view class="login-page">
 		<view class="bg-layer">
-			<image class="bg-image" src="/static/login-bg.jpg" mode="aspectFill"></image>
+			<image class="bg-image" :src="loginBg" mode="aspectFill"></image>
 			<view class="bg-overlay"></view>
 			<view class="bg-pattern"></view>
 		</view>
@@ -36,6 +36,9 @@
 </template>
 
 <script setup lang="uts">
+	import { images } from '../../data/images'
+	const loginBg = images.loginBg
+	
 	const handleLogin = () => {
 		uni.showLoading({ title: '登录中...' })
 		setTimeout(() => {

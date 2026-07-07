@@ -1,15 +1,32 @@
-<template>
+﻿<template>
 	<view class="detail-page">
-		<scroll-view scroll-y class="detail-scroll">
-			<view class="swiper-section">
-				<image :src="detail.images[0]" mode="aspectFill" class="detail-image"></image>
-				<view class="image-overlay"></view>
-				<view class="swiper-decoration"></view>
-				<view class="image-counter">
-					<text class="counter-text">1/{{detail.images.length}}</text>
-				</view>
+		<view class="swiper-section">
+			<swiper 
+				class="detail-swiper" 
+				:indicator-dots="true" 
+				:autoplay="true" 
+				:interval="4000" 
+				:duration="800" 
+				:circular="true"
+				indicator-color="rgba(255, 248, 231, 0.4)"
+				indicator-active-color="#FFF8E7"
+				@change="onSwiperChange"
+			>
+				<swiper-item v-for="(img, index) in detail.images" :key="index">
+					<image :src="img" mode="aspectFill" class="detail-image"></image>
+				</swiper-item>
+			</swiper>
+			<view class="image-overlay"></view>
+			<view class="swiper-decoration"></view>
+			<view class="image-counter">
+				<text class="counter-text">{{currentIndex + 1}}/{{detail.images.length}}</text>
 			</view>
-			
+			<view class="image-title-overlay">
+				<text class="image-title">{{detail.name}}</text>
+			</view>
+		</view>
+		
+		<scroll-view scroll-y class="detail-scroll">
 			<view class="detail-info">
 				<view class="detail-header">
 					<view class="title-wrap">
@@ -38,6 +55,28 @@
 						<view class="pin-body"></view>
 					</view>
 					<text class="location-text">{{detail.location}}</text>
+				</view>
+				
+				<view class="detail-divider"></view>
+				
+				<view class="detail-section" v-if="detail.videoUrl">
+					<view class="section-header">
+						<view class="section-icon icon-video">
+							<view class="icon-play"></view>
+						</view>
+						<text class="section-title">视频介绍</text>
+						<view class="section-line"></view>
+					</view>
+					<view class="video-container">
+						<video 
+							:src="detail.videoUrl" 
+							class="detail-video"
+							controls
+							poster="https://img.cdn.sugarat.top/mdImg/MTY1OTU3MjY0NDI0MQ==659572644241"
+							:show-center-play-btn="true"
+							:enable-progress-gesture="true"
+						></video>
+					</view>
 				</view>
 				
 				<view class="detail-divider"></view>
@@ -143,8 +182,14 @@
 <script setup lang="uts">
 	import { ref, reactive, computed } from 'vue'
 	import { onLoad } from '@dcloudio/uni-app'
+	import { images } from '../../data/images'
 	
 	const isCollected = ref(false)
+	const currentIndex = ref(0)
+	
+	const onSwiperChange = (e: any) => {
+		currentIndex.value = e.detail.current
+	}
 	
 	const ratingInt = computed(() => {
 		const r = parseFloat(detail.rating)
@@ -166,10 +211,11 @@
 			transport: '公交：敦煌火车站乘12路公交直达\n自驾：距敦煌市区约25公里，车程约40分钟',
 			tips: ['建议提前30分钟到达', '洞窟内禁止拍照', '夏季注意防晒', '建议请讲解员讲解'],
 			images: [
-				'/static/spot1.jpg',
-				'/static/detail1-2.jpg',
-				'/static/detail1-3.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail1-1.jpg',
+				'https://gansu-culture.xyz/details/detail1-2.jpg',
+				'https://gansu-culture.xyz/details/detail1-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail1.mp4'
 		},
 		{
 			id: '2',
@@ -184,10 +230,11 @@
 			transport: '公交：临夏汽车站乘2路公交到八坊十三巷站\n自驾：距临夏市区约1公里',
 			tips: ['可以参观雕刻过程', '建议购买小型砖雕作品', '八坊十三巷值得一游', '注意辨别手工和机制'],
 			images: [
-				'/static/spot2.jpg',
-				'/static/detail2-2.jpg',
-				'/static/detail2-3.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail2-1.jpg',
+				'https://gansu-culture.xyz/details/detail2-2.jpg',
+				'https://gansu-culture.xyz/details/detail2-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail2.mp4'
 		},
 		{
 			id: '3',
@@ -202,10 +249,11 @@
 			transport: '公交：天水火车站乘6路公交到秦州站\n自驾：距天水市区约2公里',
 			tips: ['可以参观制作过程', '建议购买小型工艺品', '注意漆器保养方法', '适合作为高端礼品'],
 			images: [
-				'/static/spot3.jpg',
-				'/static/detail3-2.jpg',
-				'/static/detail3-3.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail3-1.jpg',
+				'https://gansu-culture.xyz/details/detail3-2.jpg',
+				'https://gansu-culture.xyz/details/detail3-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail3.mp4'
 		},
 		{
 			id: '4',
@@ -220,10 +268,11 @@
 			transport: '公交：酒泉火车站乘1路公交到夜光杯厂站\n自驾：距酒泉市区约3公里',
 			tips: ['可以现场观看雕刻', '建议购买正品夜光杯', '注意辨别玉石真伪', '适合作为收藏礼品'],
 			images: [
-				'/static/spot4.jpg',
-				'/static/detail4-2.jpg',
-				'/static/detail4-3.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail4-1.jpg',
+				'https://gansu-culture.xyz/details/detail4-2.jpg',
+				'https://gansu-culture.xyz/details/detail4-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail4.mp4'
 		},
 		{
 			id: '5',
@@ -238,10 +287,11 @@
 			transport: '公交：积石山县城乘城乡公交到大河家镇\n自驾：距县城约25公里',
 			tips: ['可以参观锻造过程', '建议购买正品保安腰刀', '注意刀具携带规定', '适合作为收藏礼品'],
 			images: [
-				'/static/spot5.jpg',
-				'/static/culture4.jpg',
-				'/static/culture6.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail5-1.jpg',
+				'https://gansu-culture.xyz/details/detail5-2.jpg',
+				'https://gansu-culture.xyz/details/detail5-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail5.mp4'
 		},
 		{
 			id: '6',
@@ -256,10 +306,11 @@
 			transport: '公交：庆阳汽车站乘1路公交到民俗村站\n自驾：距庆阳市区约3公里',
 			tips: ['可以亲手体验制作', '建议购买成品作为伴手礼', '端午节期间有香包文化节', '注意辨别手工和机制'],
 			images: [
-				'/static/banner2.jpg',
-				'/static/culture3.jpg',
-				'/static/culture2.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail6-1.jpg',
+				'https://gansu-culture.xyz/details/detail6-2.jpg',
+				'https://gansu-culture.xyz/details/detail6-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail6.mp4'
 		},
 		{
 			id: '7',
@@ -274,10 +325,524 @@
 			transport: '公交：乘1路、6路、9路等多路公交到西关站\n地铁：1号线西关站',
 			tips: ['建议早上去吃最新鲜', '可以加肉加蛋', '推荐老字号店铺', '小心烫口'],
 			images: [
-				'/static/banner3.jpg',
-				'/static/food1.jpg',
-				'/static/food2.jpg'
-			]
+				'https://gansu-culture.xyz/details/detail7-1.jpg',
+				'https://gansu-culture.xyz/details/detail7-2.jpg',
+				'https://gansu-culture.xyz/details/detail7-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail7.mp4'
+		},
+		{
+			id: '8',
+			name: '兰州刻葫芦',
+			rating: '4.6',
+			reviews: '3250',
+			tags: ['省级非遗', '传统美术', '兰州特色'],
+			location: '甘肃省兰州市',
+			description: '兰州刻葫芦是兰州市的传统民间雕刻艺术，以葫芦为载体，以刀代笔，刻画各种精美的图案和文字。兰州刻葫芦题材广泛，技艺精湛，是兰州地区最具代表性的传统工艺品之一。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：58元/人',
+			transport: '公交：乘15路公交到文化宫站\n自驾：距市中心约3公里',
+			tips: ['可以亲手体验雕刻', '建议购买小型葫芦作品', '注意辨别手工和机制', '适合作为伴手礼'],
+			images: [
+				'https://gansu-culture.xyz/details/detail8-1.jpg',
+				'https://gansu-culture.xyz/details/detail8-2.jpg',
+				'https://gansu-culture.xyz/details/detail8-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail8.mp4'
+		},
+		{
+			id: '9',
+			name: '敦煌壁画',
+			rating: '4.9',
+			reviews: '18650',
+			tags: ['世界遗产', '传统美术', '敦煌文化'],
+			location: '甘肃省酒泉市敦煌市',
+			description: '敦煌壁画是敦煌石窟艺术的重要组成部分，现存壁画4.5万平方米，内容丰富，技艺精湛。壁画题材包括佛教故事、神话传说、历史事件等，是研究中国古代社会、文化、艺术的珍贵资料。',
+			openTime: '08:00 - 18:00 (旺季)\n09:00 - 17:30 (淡季)',
+			ticketInfo: '全价票：238元/人\n优惠票：119元/人',
+			transport: '公交：敦煌火车站乘12路公交直达\n自驾：距市区约25公里',
+			tips: ['建议请讲解员', '洞窟内禁止拍照', '夏季注意防晒', '提前网上预约'],
+			images: [
+				'https://gansu-culture.xyz/details/detail9-1.jpg',
+				'https://gansu-culture.xyz/details/detail9-2.jpg',
+				'https://gansu-culture.xyz/details/detail9-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail9.mp4'
+		},
+		{
+			id: '10',
+			name: '敦煌曲子戏',
+			rating: '4.5',
+			reviews: '2860',
+			tags: ['省级非遗', '传统戏剧', '敦煌文化'],
+			location: '甘肃省酒泉市',
+			description: '敦煌曲子戏是流传于敦煌及河西地区的传统戏曲剧种，历史悠久，风格独特。曲子戏以其质朴的语言、优美的唱腔和浓郁的地方特色著称，是敦煌文化的重要组成部分。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：50-100元/人',
+			transport: '在敦煌市区各大剧场观看',
+			tips: ['提前购票', '可以体验戏曲服装', '适合带孩子观看', '感受传统文化魅力'],
+			images: [
+				'https://gansu-culture.xyz/details/detail10-1.jpg',
+				'https://gansu-culture.xyz/details/detail10-2.jpg',
+				'https://gansu-culture.xyz/details/detail10-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail10.mp4'
+		},
+		{
+			id: '11',
+			name: '嘉峪关石砚',
+			rating: '4.6',
+			reviews: '2150',
+			tags: ['省级非遗', '传统技艺', '嘉峪关特色'],
+			location: '甘肃省嘉峪关市',
+			description: '嘉峪关石砚是嘉峪关市的传统石雕技艺，以祁连山砚石为原料，雕刻各种精美的砚台。石砚质地细腻，色泽温润，雕刻精美，是嘉峪关地区最具代表性的传统工艺品之一。',
+			openTime: '09:00 - 17:30',
+			ticketInfo: '免费参观\n购买：按品质定价',
+			transport: '公交：嘉峪关火车站乘2路公交到文化街站\n自驾：距市区约2公里',
+			tips: ['可以参观制作过程', '建议购买精品砚台', '注意辨别石材真伪', '适合作为收藏礼品'],
+			images: [
+				'https://gansu-culture.xyz/details/detail11-1.jpg',
+				'https://gansu-culture.xyz/details/detail11-2.jpg',
+				'https://gansu-culture.xyz/details/detail11-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail11.mp4'
+		},
+		{
+			id: '12',
+			name: '地蹦子',
+			rating: '4.5',
+			reviews: '1890',
+			tags: ['省级非遗', '传统舞蹈', '嘉峪关特色'],
+			location: '甘肃省嘉峪关市',
+			description: '地蹦子是流传于嘉峪关及河西地区的传统民间舞蹈，动作粗犷有力，节奏明快，风格独特。地蹦子以其独特的表演形式和浓郁的地方特色著称，是嘉峪关地区最具代表性的民间舞蹈之一。',
+			openTime: '春节、元宵节等传统节日演出\n具体时间请关注通知',
+			ticketInfo: '免费观看',
+			transport: '在嘉峪关市区广场观看',
+			tips: ['节日期间演出较多', '可以参与互动', '适合带孩子观看', '感受民俗文化'],
+			images: [
+				'https://gansu-culture.xyz/details/detail12-1.jpg',
+				'https://gansu-culture.xyz/details/detail12-2.jpg',
+				'https://gansu-culture.xyz/details/detail12-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail12.mp4'
+		},
+		{
+			id: '13',
+			name: '张掖剪纸',
+			rating: '4.6',
+			reviews: '2450',
+			tags: ['省级非遗', '传统美术', '张掖特色'],
+			location: '甘肃省张掖市',
+			description: '张掖剪纸是张掖市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：张掖火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail13-1.jpg',
+				'https://gansu-culture.xyz/details/detail13-2.jpg',
+				'https://gansu-culture.xyz/details/detail13-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail13.mp4'
+		},
+		{
+			id: '14',
+			name: '张掖高跷',
+			rating: '4.5',
+			reviews: '1980',
+			tags: ['省级非遗', '传统舞蹈', '张掖特色'],
+			location: '甘肃省张掖市',
+			description: '张掖高跷是张掖市的传统民间舞蹈，舞者脚踩高跷，表演各种惊险动作和优美舞姿。高跷以其独特的表演形式和精湛的技艺著称，是张掖地区最具代表性的民间舞蹈之一。',
+			openTime: '春节、元宵节等传统节日演出\n具体时间请关注通知',
+			ticketInfo: '免费观看',
+			transport: '在张掖市区广场观看',
+			tips: ['节日期间演出较多', '注意安全距离', '适合带孩子观看', '感受民俗文化'],
+			images: [
+				'https://gansu-culture.xyz/details/detail14-1.jpg',
+				'https://gansu-culture.xyz/details/detail14-2.jpg',
+				'https://gansu-culture.xyz/details/detail14-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail14.mp4'
+		},
+		{
+			id: '15',
+			name: '天水呱呱',
+			rating: '4.7',
+			reviews: '5680',
+			tags: ['省级非遗', '传统美食', '天水特色'],
+			location: '甘肃省天水市',
+			description: '天水呱呱是天水市的传统特色小吃，以荞麦为原料，制作独特，口感筋道。呱呱配以各种调料，味道鲜美，是天水人最喜爱的早餐之一，被誉为"秦州第一美食"。',
+			openTime: '06:00 - 14:00',
+			ticketInfo: '品尝：5-10元/碗',
+			transport: '公交：天水火车站乘6路公交到秦州站\n自驾：距市区约2公里',
+			tips: ['建议早上去吃最新鲜', '可以加肉加蛋', '推荐老字号店铺', '小心辣油'],
+			images: [
+				'https://gansu-culture.xyz/details/detail15-1.jpg',
+				'https://gansu-culture.xyz/details/detail15-2.jpg',
+				'https://gansu-culture.xyz/details/detail15-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail15.mp4'
+		},
+		{
+			id: '16',
+			name: '皮影戏',
+			rating: '4.7',
+			reviews: '3420',
+			tags: ['国家级非遗', '传统戏剧', '天水特色'],
+			location: '甘肃省天水市',
+			description: '皮影戏是流传于天水及西北地区的传统戏曲剧种，以皮影为表演道具，通过灯光投影进行演出。皮影戏以其独特的表演形式、精美的皮影制作和动人的故事情节著称。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：30-80元/人',
+			transport: '在天水市区各大剧场观看',
+			tips: ['提前购票', '可以参观皮影制作', '适合带孩子观看', '感受传统文化魅力'],
+			images: [
+				'https://gansu-culture.xyz/details/detail16-1.jpg',
+				'https://gansu-culture.xyz/details/detail16-2.jpg',
+				'https://gansu-culture.xyz/details/detail16-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail16.mp4'
+		},
+		{
+			id: '17',
+			name: '酒泉剪纸',
+			rating: '4.5',
+			reviews: '2180',
+			tags: ['省级非遗', '传统美术', '酒泉特色'],
+			location: '甘肃省酒泉市',
+			description: '酒泉剪纸是酒泉市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：酒泉火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail17-1.jpg',
+				'https://gansu-culture.xyz/details/detail17-2.jpg',
+				'https://gansu-culture.xyz/details/detail17-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail17.mp4'
+		},
+		{
+			id: '18',
+			name: '武威重刻剪纸',
+			rating: '4.5',
+			reviews: '1960',
+			tags: ['省级非遗', '传统美术', '武威特色'],
+			location: '甘肃省武威市',
+			description: '武威重刻剪纸是武威市的传统民间剪纸艺术，与普通剪纸不同，重刻剪纸采用多层纸张叠加雕刻，层次分明，立体感强。武威重刻剪纸以其独特的技艺和精美的图案著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：48元/人',
+			transport: '公交：武威火车站乘3路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以参观制作过程', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为收藏'],
+			images: [
+				'https://gansu-culture.xyz/details/detail18-1.jpg',
+				'https://gansu-culture.xyz/details/detail18-2.jpg',
+				'https://gansu-culture.xyz/details/detail18-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail18.mp4'
+		},
+		{
+			id: '19',
+			name: '凉州贤孝',
+			rating: '4.6',
+			reviews: '2580',
+			tags: ['国家级非遗', '传统曲艺', '武威特色'],
+			location: '甘肃省武威市',
+			description: '凉州贤孝是流传于武威及河西地区的传统曲艺形式，以说唱为主，内容多为劝人向善、弘扬孝道。贤孝以其质朴的语言、优美的唱腔和深刻的教育意义著称，被誉为"河西曲艺之冠"。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：30-50元/人',
+			transport: '在武威市区各大剧场观看',
+			tips: ['提前购票', '感受传统文化魅力', '适合中老年人', '可以了解当地历史'],
+			images: [
+				'https://gansu-culture.xyz/details/detail19-1.jpg',
+				'https://gansu-culture.xyz/details/detail19-2.jpg',
+				'https://gansu-culture.xyz/details/detail19-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail19.mp4'
+		},
+		{
+			id: '20',
+			name: '攻鼓子',
+			rating: '4.5',
+			reviews: '1890',
+			tags: ['省级非遗', '传统舞蹈', '武威特色'],
+			location: '甘肃省武威市',
+			description: '攻鼓子是流传于武威及河西地区的传统民间舞蹈，以鼓为主要道具，舞者边击鼓边舞蹈，动作粗犷有力，气势磅礴。攻鼓子以其独特的表演形式和强烈的艺术感染力著称，被誉为"西部鼓魂"。',
+			openTime: '春节、元宵节等传统节日演出\n具体时间请关注通知',
+			ticketInfo: '免费观看',
+			transport: '在武威市区广场观看',
+			tips: ['节日期间演出较多', '感受鼓乐魅力', '适合带孩子观看', '注意安全'],
+			images: [
+				'https://gansu-culture.xyz/details/detail20-1.jpg',
+				'https://gansu-culture.xyz/details/detail20-2.jpg',
+				'https://gansu-culture.xyz/details/detail20-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail20.mp4'
+		},
+		{
+			id: '21',
+			name: '花儿',
+			rating: '4.8',
+			reviews: '6780',
+			tags: ['世界级非遗', '传统音乐', '临夏特色'],
+			location: '甘肃省临夏州',
+			description: '花儿是流传于甘肃、青海、宁夏等地区的传统民歌，是中国西北地区最具代表性的民间音乐形式。花儿以其优美的旋律、丰富的内容和独特的演唱方式著称，被誉为"西北民歌之魂"。',
+			openTime: '花儿会期间集中演唱\n具体时间请关注通知',
+			ticketInfo: '免费聆听',
+			transport: '在临夏各大花儿会会场聆听',
+			tips: ['花儿会期间最热闹', '可以参与对歌', '感受西北风情', '注意防晒'],
+			images: [
+				'https://gansu-culture.xyz/details/detail21-1.jpg',
+				'https://gansu-culture.xyz/details/detail21-2.jpg',
+				'https://gansu-culture.xyz/details/detail21-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail21.mp4'
+		},
+		{
+			id: '22',
+			name: '平凉剪纸',
+			rating: '4.5',
+			reviews: '2150',
+			tags: ['省级非遗', '传统美术', '平凉特色'],
+			location: '甘肃省平凉市',
+			description: '平凉剪纸是平凉市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：平凉火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail22-1.jpg',
+				'https://gansu-culture.xyz/details/detail22-2.jpg',
+				'https://gansu-culture.xyz/details/detail22-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail22.mp4'
+		},
+		{
+			id: '23',
+			name: '静宁烧鸡',
+			rating: '4.7',
+			reviews: '4320',
+			tags: ['省级非遗', '传统美食', '平凉特色'],
+			location: '甘肃省平凉市静宁县',
+			description: '静宁烧鸡是平凉市静宁县的传统特色美食，以当地优质土鸡为原料，采用传统工艺卤制而成。烧鸡色泽金黄，肉质鲜嫩，味道鲜美，是陇东地区最具代表性的特色美食之一。',
+			openTime: '08:00 - 20:00',
+			ticketInfo: '品尝：按重量计价\n整只约50-80元',
+			transport: '在静宁县城各大烧鸡店购买',
+			tips: ['建议购买老字号', '可以真空包装带走', '适合作为礼品', '小心烫口'],
+			images: [
+				'https://gansu-culture.xyz/details/detail23-1.jpg',
+				'https://gansu-culture.xyz/details/detail23-2.jpg',
+				'https://gansu-culture.xyz/details/detail23-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail23.mp4'
+		},
+		{
+			id: '24',
+			name: '庆阳剪纸',
+			rating: '4.6',
+			reviews: '2680',
+			tags: ['省级非遗', '传统美术', '庆阳特色'],
+			location: '甘肃省庆阳市',
+			description: '庆阳剪纸是庆阳市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称，是庆阳"民俗四绝"之一。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：庆阳火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail24-1.jpg',
+				'https://gansu-culture.xyz/details/detail24-2.jpg',
+				'https://gansu-culture.xyz/details/detail24-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail24.mp4'
+		},
+		{
+			id: '25',
+			name: '陇南高山戏',
+			rating: '4.5',
+			reviews: '1860',
+			tags: ['省级非遗', '传统戏剧', '陇南特色'],
+			location: '甘肃省陇南市',
+			description: '陇南高山戏是流传于陇南及周边地区的传统戏曲剧种，以其独特的唱腔、优美的舞姿和浓郁的地方特色著称。高山戏题材广泛，形式多样，是陇南地区最具代表性的地方戏曲之一。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：30-60元/人',
+			transport: '在陇南市区各大剧场观看',
+			tips: ['提前购票', '感受地方戏曲魅力', '适合带孩子观看', '可以了解当地文化'],
+			images: [
+				'https://gansu-culture.xyz/details/detail25-1.jpg',
+				'https://gansu-culture.xyz/details/detail25-2.jpg',
+				'https://gansu-culture.xyz/details/detail25-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail25.mp4'
+		},
+		{
+			id: '26',
+			name: '文县傩舞',
+			rating: '4.6',
+			reviews: '2180',
+			tags: ['省级非遗', '传统舞蹈', '陇南特色'],
+			location: '甘肃省陇南市文县',
+			description: '文县傩舞是流传于文县及周边地区的传统民间舞蹈，历史悠久，风格独特。傩舞以其神秘的面具、独特的舞步和浓厚的宗教色彩著称，被誉为"舞蹈活化石"，是研究古代祭祀文化的珍贵资料。',
+			openTime: '春节、元宵节等传统节日演出\n具体时间请关注通知',
+			ticketInfo: '免费观看',
+			transport: '在文县各乡镇观看',
+			tips: ['节日期间演出较多', '感受古老文化', '注意尊重当地习俗', '可以拍照留念'],
+			images: [
+				'https://gansu-culture.xyz/details/detail26-1.jpg',
+				'https://gansu-culture.xyz/details/detail26-2.jpg',
+				'https://gansu-culture.xyz/details/detail26-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail26.mp4'
+		},
+		{
+			id: '27',
+			name: '白银剪纸',
+			rating: '4.5',
+			reviews: '1860',
+			tags: ['省级非遗', '传统美术', '白银特色'],
+			location: '甘肃省白银市',
+			description: '白银剪纸是白银市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：白银火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail27-1.jpg',
+				'https://gansu-culture.xyz/details/detail27-2.jpg',
+				'https://gansu-culture.xyz/details/detail27-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail27.mp4'
+		},
+		{
+			id: '28',
+			name: '白银皮影戏',
+			rating: '4.5',
+			reviews: '1780',
+			tags: ['省级非遗', '传统戏剧', '白银特色'],
+			location: '甘肃省白银市',
+			description: '白银皮影戏是流传于白银及周边地区的传统戏曲剧种，以皮影为表演道具，通过灯光投影进行演出。皮影戏以其独特的表演形式、精美的皮影制作和动人的故事情节著称。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：30-60元/人',
+			transport: '在白银市区各大剧场观看',
+			tips: ['提前购票', '可以参观皮影制作', '适合带孩子观看', '感受传统文化魅力'],
+			images: [
+				'https://gansu-culture.xyz/details/detail28-1.jpg',
+				'https://gansu-culture.xyz/details/detail28-2.jpg',
+				'https://gansu-culture.xyz/details/detail28-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail28.mp4'
+		},
+		{
+			id: '29',
+			name: '金昌剪纸',
+			rating: '4.4',
+			reviews: '1560',
+			tags: ['省级非遗', '传统美术', '金昌特色'],
+			location: '甘肃省金昌市',
+			description: '金昌剪纸是金昌市的传统民间剪纸艺术，在戈壁绿洲中绽放的艺术之花。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：金昌火车站乘2路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail29-1.jpg',
+				'https://gansu-culture.xyz/details/detail29-2.jpg',
+				'https://gansu-culture.xyz/details/detail29-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail29.mp4'
+		},
+		{
+			id: '30',
+			name: '金昌民歌',
+			rating: '4.3',
+			reviews: '1280',
+			tags: ['市级非遗', '传统音乐', '金昌特色'],
+			location: '甘肃省金昌市',
+			description: '金昌民歌是流传于金昌及周边地区的传统民歌，以其质朴的语言、优美的旋律和浓郁的地方特色著称。民歌内容广泛，包括劳动号子、情歌、叙事歌等，是金昌地区人民群众表达情感的重要方式。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '免费聆听',
+			transport: '在金昌市区广场观看',
+			tips: ['节日期间演出较多', '可以参与互动', '感受地方风情', '注意防晒'],
+			images: [
+				'https://gansu-culture.xyz/details/detail30-1.jpg',
+				'https://gansu-culture.xyz/details/detail30-2.jpg',
+				'https://gansu-culture.xyz/details/detail30-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail30.mp4'
+		},
+		{
+			id: '31',
+			name: '定西剪纸',
+			rating: '4.5',
+			reviews: '1980',
+			tags: ['省级非遗', '传统美术', '定西特色'],
+			location: '甘肃省定西市',
+			description: '定西剪纸是定西市的传统民间剪纸艺术，历史悠久，风格独特。剪纸题材广泛，包括花鸟鱼虫、人物故事、吉祥图案等，以其精美的图案和浓郁的地方特色著称，是陇中地区最具代表性的民间艺术之一。',
+			openTime: '09:00 - 17:00',
+			ticketInfo: '免费参观\n体验制作：38元/人',
+			transport: '公交：定西火车站乘1路公交到文化馆站\n自驾：距市区约2公里',
+			tips: ['可以亲手体验剪纸', '建议购买剪纸作品', '注意辨别手工和机制', '适合作为装饰'],
+			images: [
+				'https://gansu-culture.xyz/details/detail31-1.jpg',
+				'https://gansu-culture.xyz/details/detail31-2.jpg',
+				'https://gansu-culture.xyz/details/detail31-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail31.mp4'
+		},
+		{
+			id: '32',
+			name: '定西皮影戏',
+			rating: '4.5',
+			reviews: '1820',
+			tags: ['省级非遗', '传统戏剧', '定西特色'],
+			location: '甘肃省定西市',
+			description: '定西皮影戏是流传于定西及周边地区的传统戏曲剧种，以皮影为表演道具，通过灯光投影进行演出。皮影戏以其独特的表演形式、精美的皮影制作和动人的故事情节著称，是乡土文化的重要载体。',
+			openTime: '周末及节假日演出\n具体时间请关注通知',
+			ticketInfo: '演出票：30-60元/人',
+			transport: '在定西市区各大剧场观看',
+			tips: ['提前购票', '可以参观皮影制作', '适合带孩子观看', '感受传统文化魅力'],
+			images: [
+				'https://gansu-culture.xyz/details/detail32-1.jpg',
+				'https://gansu-culture.xyz/details/detail32-2.jpg',
+				'https://gansu-culture.xyz/details/detail32-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail32.mp4'
+		},
+		{
+			id: '33',
+			name: '甘南民歌',
+			rating: '4.8',
+			reviews: '5680',
+			tags: ['国家级非遗', '传统音乐', '甘南特色'],
+			location: '甘肃省甘南州',
+			description: '甘南民歌是流传于甘南藏族自治州及周边地区的传统民歌，以其优美的旋律、独特的演唱方式和浓郁的藏族文化内涵著称。甘南民歌内容广泛，包括情歌、叙事歌、劳动号子等，是藏族文化的重要组成部分。',
+			openTime: '节日期间集中演唱\n具体时间请关注通知',
+			ticketInfo: '免费聆听',
+			transport: '在甘南各大草原和广场聆听',
+			tips: ['草原上演唱最有韵味', '可以参与对歌', '感受藏族风情', '注意防晒'],
+			images: [
+				'https://gansu-culture.xyz/details/detail33-1.jpg',
+				'https://gansu-culture.xyz/details/detail33-2.jpg',
+				'https://gansu-culture.xyz/details/detail33-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail33.mp4'
+		},
+		{
+			id: '34',
+			name: '锅庄舞',
+			rating: '4.7',
+			reviews: '4250',
+			tags: ['省级非遗', '传统舞蹈', '甘南特色'],
+			location: '甘肃省甘南州',
+			description: '锅庄舞是流传于甘南藏族自治州及周边地区的传统民间舞蹈，是藏族人民表达欢乐和祝福的重要方式。锅庄舞以其独特的舞步、优美的舞姿和浓郁的藏族文化内涵著称，是甘南地区最具代表性的民间舞蹈之一。',
+			openTime: '节日期间集中表演\n具体时间请关注通知',
+			ticketInfo: '免费观看',
+			transport: '在甘南各大草原和广场观看',
+			tips: ['可以参与跳舞', '感受藏族风情', '注意保暖', '适合带孩子观看'],
+			images: [
+				'https://gansu-culture.xyz/details/detail34-1.jpg',
+				'https://gansu-culture.xyz/details/detail34-2.jpg',
+				'https://gansu-culture.xyz/details/detail34-3.jpg'
+			],
+			videoUrl: 'https://gansu-culture.xyz/videos/detail34.mp4'
 		}
 	]
 	
@@ -292,7 +857,8 @@
 		ticketInfo: '',
 		transport: '',
 		tips: [],
-		images: []
+		images: [],
+		videoUrl: ''
 	})
 	
 	onLoad((options) => {
@@ -330,17 +896,19 @@
 	}
 	
 	.detail-scroll {
-		height: calc(100vh - 130rpx - env(safe-area-inset-bottom));
+		height: calc(100vh - 480rpx - 130rpx - env(safe-area-inset-bottom));
 		width: 100%;
 	}
 	
 	.swiper-section {
 		position: relative;
+		width: 100%;
+		height: 480rpx;
 	}
 	
 	.detail-swiper {
 		width: 100%;
-		height: 520rpx;
+		height: 480rpx;
 	}
 	
 	.detail-image {
@@ -355,6 +923,7 @@
 		width: 100%;
 		height: 100%;
 		background: linear-gradient(180deg, rgba(139, 69, 19, 0.1) 0%, rgba(139, 69, 19, 0.5) 100%);
+		pointer-events: none;
 	}
 	
 	.swiper-decoration {
@@ -364,6 +933,7 @@
 		width: 100%;
 		height: 60rpx;
 		background: linear-gradient(180deg, rgba(255, 248, 231, 0), #FFF8E7);
+		pointer-events: none;
 	}
 	
 	.image-counter {
@@ -382,6 +952,24 @@
 		font-size: 24rpx;
 		color: #FFF8E7;
 		font-weight: 500;
+	}
+	
+	.image-title-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 30rpx 24rpx;
+		background: linear-gradient(180deg, transparent, rgba(139, 69, 19, 0.7));
+		pointer-events: none;
+	}
+	
+	.image-title {
+		font-size: 40rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
 	}
 	
 	.detail-info {
@@ -589,6 +1177,10 @@
 		background: linear-gradient(135deg, #4A8F6D, #3A7A5D);
 	}
 	
+	.icon-video {
+		background: linear-gradient(135deg, #E84A4A, #C83A3A);
+	}
+	
 	.icon-mountain {
 		width: 22rpx;
 		height: 18rpx;
@@ -746,6 +1338,25 @@
 		border-radius: 50%;
 	}
 	
+	.icon-play {
+		width: 18rpx;
+		height: 18rpx;
+		position: relative;
+	}
+	
+	.icon-play::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-40%, -50%);
+		width: 0;
+		height: 0;
+		border-top: 8rpx solid transparent;
+		border-bottom: 8rpx solid transparent;
+		border-left: 12rpx solid #FFF8E7;
+	}
+	
 	.section-title {
 		font-size: 30rpx;
 		font-weight: bold;
@@ -764,6 +1375,20 @@
 		font-size: 28rpx;
 		color: #4A3B2A;
 		line-height: 2;
+	}
+	
+	.video-container {
+		width: 100%;
+		background: #1A1A1A;
+		border-radius: 16rpx;
+		overflow: hidden;
+		margin-top: 16rpx;
+		position: relative;
+	}
+	
+	.detail-video {
+		width: 100%;
+		height: 380rpx;
 	}
 	
 	.tips-list {

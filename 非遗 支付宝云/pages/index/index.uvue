@@ -193,13 +193,14 @@
 
 <script setup lang="uts">
 	import { ref } from 'vue'
+	import { images } from '../../data/images'
 	
 	const currentBanner = ref(0)
 	
 	const banners = [
-		{ id: 1, image: '/static/banner1.jpg', title: '敦煌彩塑', desc: '千年非遗 · 匠心传承' },
-		{ id: 6, image: '/static/banner2.jpg', title: '庆阳香包', desc: '传统手工艺 · 国家级非遗' },
-		{ id: 7, image: '/static/banner3.jpg', title: '兰州牛肉面', desc: '中华第一面 · 舌尖非遗' }
+		{ id: 1, image: images.banner1, title: '敦煌彩塑', desc: '千年非遗 · 匠心传承' },
+		{ id: 6, image: images.banner2, title: '庆阳香包', desc: '传统手工艺 · 国家级非遗' },
+		{ id: 7, image: images.banner3, title: '兰州牛肉面', desc: '中华第一面 · 舌尖非遗' }
 	]
 	
 	const onBannerChange = (e: any) => {
@@ -216,27 +217,27 @@
 	]
 	
 	const hotSpots = [
-		{ id: 1, name: '敦煌彩塑', image: '/static/spot1.jpg', tags: ['国家级非遗', '敦煌文化'], location: '酒泉市敦煌市', rating: '4.9' },
-		{ id: 2, name: '临夏砖雕', image: '/static/spot2.jpg', tags: ['传统美术', '国家级非遗'], location: '临夏州临夏市', rating: '4.8' },
-		{ id: 3, name: '天水雕漆', image: '/static/spot3.jpg', tags: ['传统技艺', '国家级非遗'], location: '天水市', rating: '4.9' },
-		{ id: 4, name: '夜光杯雕', image: '/static/spot4.jpg', tags: ['传统美术', '酒泉特产'], location: '酒泉市', rating: '4.8' },
-		{ id: 5, name: '保安腰刀', image: '/static/spot5.jpg', tags: ['传统技艺', '国家级非遗'], location: '临夏州积石山县', rating: '4.7' }
+		{ id: 1, name: '敦煌彩塑', image: images.spot1, tags: ['国家级非遗', '敦煌文化'], location: '酒泉市敦煌市', rating: '4.9' },
+		{ id: 2, name: '临夏砖雕', image: images.spot2, tags: ['传统美术', '国家级非遗'], location: '临夏州临夏市', rating: '4.8' },
+		{ id: 3, name: '天水雕漆', image: images.spot3, tags: ['传统技艺', '国家级非遗'], location: '天水市', rating: '4.9' },
+		{ id: 4, name: '夜光杯雕', image: images.spot4, tags: ['传统美术', '酒泉特产'], location: '酒泉市', rating: '4.8' },
+		{ id: 5, name: '保安腰刀', image: images.spot5, tags: ['传统技艺', '国家级非遗'], location: '临夏州积石山县', rating: '4.7' }
 	]
 	
 	const cultures = [
-		{ name: '敦煌彩塑', desc: '千年艺术瑰宝', image: '/static/culture1.jpg' },
-		{ name: '花儿', desc: '国家级非遗', image: '/static/culture2.jpg' },
-		{ name: '庆阳香包', desc: '传统手工艺', image: '/static/culture3.jpg' },
-		{ name: '临夏砖雕', desc: '传统美术', image: '/static/culture4.jpg' },
-		{ name: '敦煌曲子戏', desc: '西北戏曲之魂', image: '/static/culture5.jpg' },
-		{ name: '兰州太平鼓', desc: '黄河文化', image: '/static/culture6.jpg' }
+		{ name: '敦煌彩塑', desc: '千年艺术瑰宝', image: images.culture1 },
+		{ name: '花儿', desc: '国家级非遗', image: images.culture2 },
+		{ name: '庆阳香包', desc: '传统手工艺', image: images.culture3 },
+		{ name: '临夏砖雕', desc: '传统美术', image: images.culture4 },
+		{ name: '敦煌曲子戏', desc: '西北戏曲之魂', image: images.culture5 },
+		{ name: '兰州太平鼓', desc: '黄河文化', image: images.culture6 }
 	]
 	
 	const foods = [
-		{ name: '兰州牛肉面', area: '兰州', image: '/static/food1.jpg' },
-		{ name: '陇西腊肉', area: '定西', image: '/static/food2.jpg' },
-		{ name: '静宁烧鸡', area: '平凉', image: '/static/food3.jpg' },
-		{ name: '天水呱呱', area: '天水', image: '/static/food4.jpg' }
+		{ name: '兰州牛肉面', area: '兰州', image: images.food1 },
+		{ name: '陇西腊肉', area: '定西', image: images.food2 },
+		{ name: '静宁烧鸡', area: '平凉', image: images.food3 },
+		{ name: '天水呱呱', area: '天水', image: images.food4 }
 	]
 	
 	const events = [

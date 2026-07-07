@@ -79,15 +79,24 @@
 </template>
 
 <script setup lang="uts">
+	import { images } from '../../data/images'
+	
 	const cities = [
-		{ name: '兰州', desc: '甘肃省省会 · 黄河之都', image: '/static/city-lanzhou.jpg', spots: ['太平鼓', '刻葫芦', '牛肉面'] },
-		{ name: '敦煌', desc: '丝路明珠 · 艺术圣地', image: '/static/city-dunhuang.jpg', spots: ['彩塑', '壁画', '剪纸'] },
-		{ name: '嘉峪关', desc: '天下第一雄关', image: '/static/city-jiayuguan.jpg', spots: ['石砚', '地蹦子', '烤肉'] },
-		{ name: '张掖', desc: '七彩丹霞 · 塞上江南', image: '/static/city-zhangye.jpg', spots: ['剪纸', '太平鼓', '高跷'] },
-		{ name: '天水', desc: '羲皇故里 · 陇上江南', image: '/static/city-tianshui.jpg', spots: ['雕漆', '呱呱', '皮影戏'] },
-		{ name: '酒泉', desc: '航天城 · 丝路重镇', image: '/static/city-jiuquan.jpg', spots: ['夜光杯', '剪纸', '曲子戏'] },
-		{ name: '武威', desc: '六朝古都 · 马踏飞燕', image: '/static/city-wuwei.jpg', spots: ['重刻剪纸', '贤孝', '攻鼓子'] },
-		{ name: '临夏', desc: '中国花儿之乡', image: '/static/city-linxia.jpg', spots: ['砖雕', '花儿', '腰刀'] }
+		{ name: '兰州', desc: '甘肃省省会 · 黄河之都', image: images.cityLanzhou, spots: ['太平鼓', '刻葫芦', '牛肉面'] },
+		{ name: '敦煌', desc: '丝路明珠 · 艺术圣地', image: images.cityDunhuang, spots: ['彩塑', '壁画', '曲子戏'] },
+		{ name: '嘉峪关', desc: '天下第一雄关', image: images.cityJiayuguan, spots: ['石砚', '地蹦子'] },
+		{ name: '张掖', desc: '七彩丹霞 · 塞上江南', image: images.cityZhangye, spots: ['剪纸', '高跷'] },
+		{ name: '天水', desc: '羲皇故里 · 陇上江南', image: images.cityTianshui, spots: ['雕漆', '呱呱', '皮影戏'] },
+		{ name: '酒泉', desc: '航天城 · 丝路重镇', image: images.cityJiuquan, spots: ['夜光杯', '剪纸', '曲子戏'] },
+		{ name: '武威', desc: '六朝古都 · 马踏飞燕', image: images.cityWuwei, spots: ['重刻剪纸', '贤孝', '攻鼓子'] },
+		{ name: '临夏', desc: '中国花儿之乡', image: images.cityLinxia, spots: ['砖雕', '花儿', '腰刀'] },
+		{ name: '白银', desc: '铜城 · 黄河上游明珠', image: images.cityBaiyin, spots: ['剪纸', '皮影戏'] },
+		{ name: '金昌', desc: '镍都 · 戈壁花城', image: images.cityJinchang, spots: ['剪纸', '民歌'] },
+		{ name: '定西', desc: '马铃薯之乡 · 千年药乡', image: images.cityDingxi, spots: ['剪纸', '皮影戏'] },
+		{ name: '平凉', desc: '崆峒问道 · 陇东旱码头', image: images.cityPingliang, spots: ['剪纸', '烧鸡'] },
+		{ name: '庆阳', desc: '香包之乡 · 陇东粮仓', image: images.cityQingyang, spots: ['香包', '剪纸'] },
+		{ name: '陇南', desc: '陇上江南 · 秦地锁钥', image: images.cityLongnan, spots: ['高山戏', '傩舞'] },
+		{ name: '甘南', desc: '九色甘南 · 香巴拉', image: images.cityGannan, spots: ['民歌', '锅庄舞'] }
 	]
 	
 	const cityMarkers = [
