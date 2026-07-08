@@ -1,13 +1,13 @@
 export const images = {
-	banner1: 'https://gansu-culture.xyz/banners/banner1.jpg',
-	banner2: 'https://gansu-culture.xyz/banners/banner2.jpg',
-	banner3: 'https://gansu-culture.xyz/banners/banner3.jpg',
+	banner1: 'https://gansu-culture.xyz/spots/spot101-1.jpg',
+	banner2: 'https://gansu-culture.xyz/spots/spot103-1.jpg',
+	banner3: 'https://gansu-culture.xyz/spots/spot104-1.jpg',
 	
-	spot1: 'https://images.unsplash.com/photo-1614468069959-7a141561a6c8?q=80&w=600&auto=format&fit=crop',
-	spot2: 'https://images.unsplash.com/photo-1585314062607-d6806c325835?q=80&w=600&auto=format&fit=crop',
-	spot3: 'https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=600&auto=format&fit=crop',
-	spot4: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=600&auto=format&fit=crop',
-	spot5: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?q=80&w=600&auto=format&fit=crop',
+	spot1: 'https://gansu-culture.xyz/spots/spot101-1.jpg',
+	spot2: 'https://gansu-culture.xyz/spots/spot102-1.jpg',
+	spot3: 'https://gansu-culture.xyz/spots/spot103-1.jpg',
+	spot4: 'https://gansu-culture.xyz/spots/spot104-1.jpg',
+	spot5: 'https://gansu-culture.xyz/spots/spot105-1.jpg',
 	
 	culture1: 'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=400&auto=format&fit=crop',
 	culture2: 'https://images.unsplash.com/photo-1514306191717-452242416957?q=80&w=400&auto=format&fit=crop',

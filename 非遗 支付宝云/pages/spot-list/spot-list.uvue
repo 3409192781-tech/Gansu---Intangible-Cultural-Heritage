@@ -1,0 +1,857 @@
+<template>
+	<view class="spot-list-page">
+		<view class="search-bar">
+			<view class="search-input-wrap" @click="focusSearch">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<input 
+					class="search-input" 
+					placeholder="搜索景点名称" 
+					v-model="searchText" 
+					@confirm="handleSearch"
+					:focus="searchFocused"
+				/>
+				<view class="search-clear" v-if="searchText" @click="clearSearch"></view>
+			</view>
+			<view class="filter-btn" @click="showFilter = true">
+				<view class="filter-icon"></view>
+				<text class="filter-text">筛选</text>
+			</view>
+		</view>
+		
+		<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
+			<view class="tabs-inner">
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'all' }"
+					@click="activeCategory = 'all'"
+				>
+					<text class="tab-text">全部</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === '5a' }"
+					@click="activeCategory = '5a'"
+				>
+					<text class="tab-text">5A景区</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'world' }"
+					@click="activeCategory = 'world'"
+				>
+					<text class="tab-text">世界遗产</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'nature' }"
+					@click="activeCategory = 'nature'"
+				>
+					<text class="tab-text">自然景观</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'culture' }"
+					@click="activeCategory = 'culture'"
+				>
+					<text class="tab-text">人文古迹</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'ethnic' }"
+					@click="activeCategory = 'ethnic'"
+				>
+					<text class="tab-text">民族风情</text>
+				</view>
+			</view>
+		</scroll-view>
+		
+		<view class="spot-count">
+			<text class="count-text">共 {{filteredSpots.length}} 个景点</text>
+		</view>
+		
+		<scroll-view 
+			class="spot-list" 
+			scroll-y 
+			@scrolltolower="loadMore"
+			:refresher-enabled="true"
+			:refresher-triggered="refreshing"
+			@refresherrefresh="onRefresh"
+		>
+			<view class="spots-grid">
+				<view 
+					class="spot-card" 
+					v-for="(spot, index) in displaySpots" 
+					:key="index"
+					@click="goToDetail(spot.id)"
+				>
+					<view class="spot-image-wrap">
+						<image :src="spot.image" mode="aspectFill" class="spot-image"></image>
+						<view class="spot-overlay"></view>
+						<view class="spot-rating">
+							<view class="star-icon"></view>
+							<text class="rating-text">{{spot.rating}}</text>
+						</view>
+						<view class="spot-badge" v-if="has5ATag(spot.tags)">
+							<text class="badge-text">5A</text>
+						</view>
+						<view class="spot-badge-world" v-if="hasWorldTag(spot.tags)">
+							<text class="badge-text-world">世界遗产</text>
+						</view>
+					</view>
+					<view class="spot-info">
+						<text class="spot-name">{{spot.name}}</text>
+						<text class="spot-location">{{spot.location}}</text>
+						<view class="spot-tags">
+							<text class="spot-tag" v-for="(tag, tIndex) in spot.tags.slice(0, 2)" :key="tIndex">{{tag}}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			
+			<view class="load-more" v-if="loading">
+				<view class="loading-icon"></view>
+				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<view class="no-more" v-if="!loading && displaySpots.length >= filteredSpots.length && filteredSpots.length > 0">
+				<text class="no-more-text">- 已经到底了 -</text>
+			</view>
+			
+			<view class="empty-state" v-if="filteredSpots.length === 0">
+				<view class="empty-icon"></view>
+				<text class="empty-text">暂无相关景点</text>
+			</view>
+		</scroll-view>
+		
+		<view class="filter-modal" v-if="showFilter" @click="showFilter = false">
+			<view class="filter-content" @click.stop>
+				<view class="filter-header">
+					<text class="filter-title">筛选条件</text>
+					<view class="filter-close" @click="showFilter = false"></view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">景区等级</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '' }"
+							@click="selectedLevel = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '5A' }"
+							@click="selectedLevel = '5A'"
+						>
+							<text class="option-text">AAAAA</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '4A' }"
+							@click="selectedLevel = '4A'"
+						>
+							<text class="option-text">AAAA</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">所在城市</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '' }"
+							@click="selectedCity = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '兰州' }"
+							@click="selectedCity = '兰州'"
+						>
+							<text class="option-text">兰州</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '酒泉' }"
+							@click="selectedCity = '酒泉'"
+						>
+							<text class="option-text">酒泉</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '天水' }"
+							@click="selectedCity = '天水'"
+						>
+							<text class="option-text">天水</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '张掖' }"
+							@click="selectedCity = '张掖'"
+						>
+							<text class="option-text">张掖</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '嘉峪关' }"
+							@click="selectedCity = '嘉峪关'"
+						>
+							<text class="option-text">嘉峪关</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedCity === '临夏' }"
+							@click="selectedCity = '临夏'"
+						>
+							<text class="option-text">临夏</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-actions">
+					<view class="reset-btn" @click="resetFilter">
+						<text class="btn-text">重置</text>
+					</view>
+					<view class="confirm-btn" @click="applyFilter">
+						<text class="btn-text">确定</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed } from 'vue'
+	import { images } from '../../data/images'
+	
+	const searchText = ref('')
+	const searchFocused = ref(false)
+	const activeCategory = ref('all')
+	const showFilter = ref(false)
+	const selectedLevel = ref('')
+	const selectedCity = ref('')
+	const loading = ref(false)
+	const refreshing = ref(false)
+	const pageSize = 10
+	const currentPage = ref(1)
+	
+	const spotsData = ref([
+		{ id: '101', name: '莫高窟', image: images.spot1, tags: ['世界文化遗产', 'AAAAA级景区', '敦煌文化'], location: '敦煌市', rating: '4.9', level: '5A', category: 'culture' },
+		{ id: '103', name: '麦积山石窟', image: images.spot3, tags: ['世界文化遗产', 'AAAAA级景区', '佛教艺术'], location: '天水市麦积区', rating: '4.9', level: '5A', category: 'culture' },
+		{ id: '104', name: '嘉峪关关城', image: images.spot4, tags: ['AAAAA级景区', '万里长城', '历史遗迹'], location: '嘉峪关市', rating: '4.8', level: '5A', category: 'culture' },
+		{ id: '105', name: '张掖丹霞', image: images.spot5, tags: ['AAAAA级景区', '世界地质公园', '自然奇观'], location: '张掖市临泽县', rating: '4.8', level: '5A', category: 'nature' },
+		{ id: '102', name: '八坊十三巷', image: images.spot2, tags: ['AAAA级景区', '民族风情', '历史街区'], location: '临夏州临夏市', rating: '4.8', level: '4A', category: 'ethnic' },
+		{ id: '106', name: '崆峒山', image: images.spot1, tags: ['AAAAA级景区', '道教圣地', '自然景观'], location: '平凉市崆峒区', rating: '4.7', level: '5A', category: 'nature' },
+		{ id: '107', name: '鸣沙山月牙泉', image: images.spot4, tags: ['AAAAA级景区', '沙漠奇观', '自然景观'], location: '敦煌市', rating: '4.8', level: '5A', category: 'nature' },
+		{ id: '108', name: '拉卜楞寺', image: images.spot2, tags: ['AAAAA级景区', '藏传佛教', '民族风情'], location: '甘南州夏河县', rating: '4.8', level: '5A', category: 'ethnic' },
+		{ id: '109', name: '炳灵寺石窟', image: images.spot3, tags: ['AAAA级景区', '佛教艺术', '历史遗迹'], location: '临夏州永靖县', rating: '4.7', level: '4A', category: 'culture' },
+		{ id: '110', name: '雅丹魔鬼城', image: images.spot5, tags: ['AAAA级景区', '地质奇观', '自然景观'], location: '敦煌市', rating: '4.6', level: '4A', category: 'nature' },
+		{ id: '111', name: '白塔山公园', image: images.spot1, tags: ['AAAA级景区', '历史文化', '城市公园'], location: '兰州市城关区', rating: '4.5', level: '4A', category: 'culture' },
+		{ id: '112', name: '水车博览园', image: images.spot4, tags: ['AAAA级景区', '黄河文化', '城市公园'], location: '兰州市城关区', rating: '4.5', level: '4A', category: 'culture' },
+		{ id: '113', name: '贵清山', image: images.spot2, tags: ['AAAA级景区', '自然景观', '道教圣地'], location: '定西市漳县', rating: '4.6', level: '4A', category: 'nature' },
+		{ id: '114', name: '冶力关', image: images.spot3, tags: ['AAAA级景区', '自然景观', '森林生态'], location: '甘南州临潭县', rating: '4.6', level: '4A', category: 'nature' },
+		{ id: '115', name: '松鸣岩', image: images.spot5, tags: ['AAAA级景区', '自然景观', '花儿之乡'], location: '临夏州和政县', rating: '4.5', level: '4A', category: 'nature' }
+	])
+	
+	const filteredSpots = computed(() => {
+		let result = spotsData.value
+		
+		if (searchText.value) {
+			result = result.filter(s => s.name.includes(searchText.value))
+		}
+		
+		if (activeCategory.value !== 'all') {
+			if (activeCategory.value === '5a') {
+				result = result.filter(s => s.level === '5A')
+			} else if (activeCategory.value === 'world') {
+				result = result.filter(s => s.tags.some(t => t.includes('世界')))
+			} else {
+				result = result.filter(s => s.category === activeCategory.value)
+			}
+		}
+		
+		if (selectedLevel.value) {
+			result = result.filter(s => s.level === selectedLevel.value)
+		}
+		
+		if (selectedCity.value) {
+			result = result.filter(s => s.location.includes(selectedCity.value))
+		}
+		
+		return result
+	})
+	
+	const displaySpots = computed(() => {
+		return filteredSpots.value.slice(0, currentPage.value * pageSize)
+	})
+	
+	const has5ATag = (tags) => {
+		return tags.some(t => t.includes('AAAAA'))
+	}
+	
+	const hasWorldTag = (tags) => {
+		return tags.some(t => t.includes('世界'))
+	}
+	
+	const handleSearch = () => {
+		currentPage.value = 1
+		searchFocused.value = false
+	}
+	
+	const clearSearch = () => {
+		searchText.value = ''
+		currentPage.value = 1
+	}
+	
+	const focusSearch = () => {
+		searchFocused.value = true
+	}
+	
+	const loadMore = () => {
+		if (loading.value) return
+		if (displaySpots.value.length >= filteredSpots.value.length) return
+		
+		loading.value = true
+		setTimeout(() => {
+			currentPage.value++
+			loading.value = false
+		}, 1000)
+	}
+	
+	const onRefresh = () => {
+		refreshing.value = true
+		currentPage.value = 1
+		setTimeout(() => {
+			refreshing.value = false
+		}, 1000)
+	}
+	
+	const applyFilter = () => {
+		currentPage.value = 1
+		showFilter.value = false
+	}
+	
+	const resetFilter = () => {
+		selectedLevel.value = ''
+		selectedCity.value = ''
+	}
+	
+	const goToDetail = (id) => {
+		uni.navigateTo({
+			url: '/pages/detail/detail?id=' + id
+		})
+	}
+</script>
+
+<style>
+	.spot-list-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	.search-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: #FFFFFF;
+	}
+
+	.search-input-wrap {
+		flex: 1;
+		height: 72rpx;
+		background: #F5F5F5;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 28rpx;
+		margin-right: 20rpx;
+	}
+
+	.search-icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-right: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.icon-lens {
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #8B4513;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.icon-lens:after {
+		content: '';
+		position: absolute;
+		bottom: -6rpx;
+		right: -6rpx;
+		width: 10rpx;
+		height: 3rpx;
+		background: #8B4513;
+		border-radius: 2rpx;
+		transform: rotate(45deg);
+		transform-origin: left center;
+	}
+
+	.search-input {
+		flex: 1;
+		height: 72rpx;
+		font-size: 28rpx;
+		color: #333;
+	}
+
+	.search-clear {
+		width: 32rpx;
+		height: 32rpx;
+		background: #999;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.search-clear:before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(45deg);
+	}
+
+	.search-clear:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(-45deg);
+	}
+
+	.filter-btn {
+		padding: 0 24rpx;
+		height: 72rpx;
+		background: #8B4513;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.filter-icon {
+		width: 24rpx;
+		height: 24rpx;
+		border: 3rpx solid #FFFFFF;
+		border-radius: 6rpx;
+		position: relative;
+		margin-right: 8rpx;
+	}
+
+	.filter-icon:after {
+		content: '';
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		right: 8rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+	}
+
+	.filter-text {
+		font-size: 26rpx;
+		color: #FFFFFF;
+	}
+
+	.category-tabs {
+		width: 100%;
+		background: #FFFFFF;
+		height: 88rpx;
+		white-space: nowrap;
+		padding: 10rpx 0;
+	}
+
+	.tabs-inner {
+		display: inline-block;
+		width: 1000rpx;
+		padding-right: 24rpx;
+		white-space: nowrap;
+		font-size: 0;
+	}
+
+	.tab-item {
+		display: inline-block;
+		vertical-align: top;
+		padding: 16rpx 32rpx;
+		background: #F5F5F5;
+		border-radius: 30rpx;
+		margin-right: 16rpx;
+		white-space: normal;
+		font-size: 26rpx;
+	}
+
+	.tab-item.active {
+		background: #D4A86A;
+	}
+
+	.tab-item.active .tab-text {
+		color: #FFFFFF;
+	}
+
+	.tab-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.spot-count {
+		padding: 16rpx 24rpx;
+	}
+
+	.count-text {
+		font-size: 24rpx;
+		color: #8B7355;
+	}
+
+	.spot-list {
+		height: calc(100vh - 320rpx);
+		padding: 0 20rpx;
+	}
+
+	.spots-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.spot-card {
+		width: calc(50% - 10rpx);
+		margin-right: 20rpx;
+		margin-bottom: 20rpx;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 4rpx 20rpx rgba(139, 69, 19, 0.1);
+	}
+
+	.spot-card:nth-child(2n) {
+		margin-right: 0;
+	}
+
+	.spot-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 240rpx;
+	}
+
+	.spot-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.spot-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 80rpx;
+		background: linear-gradient(transparent, rgba(0,0,0,0.3));
+	}
+
+	.spot-rating {
+		position: absolute;
+		bottom: 16rpx;
+		left: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: rgba(0,0,0,0.6);
+		padding: 6rpx 12rpx;
+		border-radius: 16rpx;
+	}
+
+	.star-icon {
+		width: 24rpx;
+		height: 24rpx;
+		background: #FFD700;
+		clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+		margin-right: 6rpx;
+	}
+
+	.rating-text {
+		font-size: 24rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-badge {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #FF6B6B;
+		padding: 6rpx 14rpx;
+		border-radius: 12rpx;
+	}
+
+	.spot-badge-world {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #8B4513;
+		padding: 6rpx 10rpx;
+		border-radius: 12rpx;
+	}
+
+	.badge-text {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.badge-text-world {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-info {
+		padding: 20rpx;
+	}
+
+	.spot-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+
+	.spot-location {
+		font-size: 24rpx;
+		color: #999;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+
+	.spot-tags {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.spot-tag {
+		font-size: 20rpx;
+		color: #D4A86A;
+		background: rgba(212, 168, 106, 0.1);
+		padding: 6rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 10rpx;
+	}
+
+	.load-more {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: 40rpx;
+	}
+
+	.loading-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border: 4rpx solid #D4A86A;
+		border-top-color: transparent;
+		border-radius: 50%;
+		margin-right: 16rpx;
+	}
+
+	.loading-text {
+		font-size: 26rpx;
+		color: #999;
+	}
+
+	.no-more {
+		text-align: center;
+		padding: 40rpx;
+	}
+
+	.no-more-text {
+		font-size: 24rpx;
+		color: #CCC;
+	}
+
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 100rpx 0;
+	}
+
+	.empty-icon {
+		width: 120rpx;
+		height: 120rpx;
+		background: #DDD;
+		border-radius: 50%;
+		margin-bottom: 20rpx;
+	}
+
+	.empty-text {
+		font-size: 28rpx;
+		color: #999;
+	}
+
+	.filter-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0,0,0,0.5);
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+		z-index: 1000;
+	}
+
+	.filter-content {
+		width: 100%;
+		background: #FFFFFF;
+		border-radius: 30rpx 30rpx 0 0;
+		padding: 30rpx;
+		padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+	}
+
+	.filter-header {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 30rpx;
+	}
+
+	.filter-title {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #8B4513;
+	}
+
+	.filter-close {
+		width: 40rpx;
+		height: 40rpx;
+		background: #999;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.filter-close:before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 24rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(45deg);
+	}
+
+	.filter-close:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 24rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(-45deg);
+	}
+
+	.filter-section {
+		margin-bottom: 30rpx;
+	}
+
+	.filter-label {
+		font-size: 28rpx;
+		color: #333;
+		display: block;
+		margin-bottom: 20rpx;
+	}
+
+	.filter-options {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.filter-option {
+		padding: 16rpx 28rpx;
+		background: #F5F5F5;
+		border-radius: 30rpx;
+		margin-right: 16rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.filter-option.active {
+		background: #D4A86A;
+	}
+
+	.filter-option.active .option-text {
+		color: #FFFFFF;
+	}
+
+	.option-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.filter-actions {
+		display: flex;
+		flex-direction: row;
+		margin-top: 40rpx;
+	}
+
+	.reset-btn {
+		flex: 1;
+		height: 88rpx;
+		background: #F5F5F5;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-right: 20rpx;
+	}
+
+	.reset-btn .btn-text {
+		font-size: 30rpx;
+		color: #666;
+	}
+
+	.confirm-btn {
+		flex: 1;
+		height: 88rpx;
+		background: #D4A86A;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.confirm-btn .btn-text {
+		font-size: 30rpx;
+		color: #FFFFFF;
+	}
+</style>

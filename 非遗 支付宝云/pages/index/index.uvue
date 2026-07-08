@@ -112,7 +112,7 @@
 			</view>
 			<scroll-view class="section-scroll" scroll-x :show-scrollbar="false">
 				<view class="culture-list">
-					<view class="culture-item" v-for="(culture, index) in cultures" :key="index">
+					<view class="culture-item" v-for="(culture, index) in cultures" :key="index" @click="goToDetail(culture.id)">
 						<view class="culture-icon-wrap">
 							<image :src="culture.image" mode="aspectFill" class="culture-icon-image"></image>
 							<view class="culture-icon-ring"></view>
@@ -135,7 +135,7 @@
 				<text class="section-more" @click="viewMore('food')">更多 ›</text>
 			</view>
 			<view class="food-grid">
-				<view class="food-item" v-for="(food, index) in foods" :key="index">
+				<view class="food-item" v-for="(food, index) in foods" :key="index" @click="goToDetail(food.id)">
 					<view class="food-image-wrap">
 						<image :src="food.image" mode="aspectFill" class="food-image"></image>
 						<view class="food-image-overlay"></view>
@@ -198,9 +198,9 @@
 	const currentBanner = ref(0)
 	
 	const banners = [
-		{ id: 1, image: images.banner1, title: '敦煌彩塑', desc: '千年非遗 · 匠心传承' },
-		{ id: 6, image: images.banner2, title: '庆阳香包', desc: '传统手工艺 · 国家级非遗' },
-		{ id: 7, image: images.banner3, title: '兰州牛肉面', desc: '中华第一面 · 舌尖非遗' }
+		{ id: 101, image: images.banner1, title: '莫高窟', desc: '世界文化遗产 · 千年艺术瑰宝' },
+		{ id: 103, image: images.banner2, title: '麦积山石窟', desc: '东方雕塑艺术陈列馆' },
+		{ id: 104, image: images.banner3, title: '嘉峪关关城', desc: '天下第一雄关 · 万里长城' }
 	]
 	
 	const onBannerChange = (e: any) => {
@@ -217,31 +217,31 @@
 	]
 	
 	const hotSpots = [
-		{ id: 1, name: '敦煌彩塑', image: images.spot1, tags: ['国家级非遗', '敦煌文化'], location: '酒泉市敦煌市', rating: '4.9' },
-		{ id: 2, name: '临夏砖雕', image: images.spot2, tags: ['传统美术', '国家级非遗'], location: '临夏州临夏市', rating: '4.8' },
-		{ id: 3, name: '天水雕漆', image: images.spot3, tags: ['传统技艺', '国家级非遗'], location: '天水市', rating: '4.9' },
-		{ id: 4, name: '夜光杯雕', image: images.spot4, tags: ['传统美术', '酒泉特产'], location: '酒泉市', rating: '4.8' },
-		{ id: 5, name: '保安腰刀', image: images.spot5, tags: ['传统技艺', '国家级非遗'], location: '临夏州积石山县', rating: '4.7' }
+		{ id: 101, name: '莫高窟', image: 'https://gansu-culture.xyz/details/detail101-1.jpg', tags: ['世界文化遗产', 'AAAAA级景区'], location: '敦煌市', rating: '4.9' },
+		{ id: 103, name: '麦积山石窟', image: 'https://gansu-culture.xyz/details/detail103-1.jpg', tags: ['世界文化遗产', 'AAAAA级景区'], location: '天水市', rating: '4.9' },
+		{ id: 104, name: '嘉峪关关城', image: 'https://gansu-culture.xyz/details/detail104-1.jpg', tags: ['AAAAA级景区', '万里长城'], location: '嘉峪关市', rating: '4.8' },
+		{ id: 105, name: '张掖丹霞', image: 'https://gansu-culture.xyz/details/detail105-1.jpg', tags: ['AAAAA级景区', '世界地质公园'], location: '张掖市临泽县', rating: '4.8' },
+		{ id: 102, name: '八坊十三巷', image: 'https://gansu-culture.xyz/details/detail102-1.jpg', tags: ['AAAA级景区', '民族风情'], location: '临夏市', rating: '4.8' }
 	]
 	
 	const cultures = [
-		{ name: '敦煌彩塑', desc: '千年艺术瑰宝', image: images.culture1 },
-		{ name: '花儿', desc: '国家级非遗', image: images.culture2 },
-		{ name: '庆阳香包', desc: '传统手工艺', image: images.culture3 },
-		{ name: '临夏砖雕', desc: '传统美术', image: images.culture4 },
-		{ name: '敦煌曲子戏', desc: '西北戏曲之魂', image: images.culture5 },
-		{ name: '兰州太平鼓', desc: '黄河文化', image: images.culture6 }
+		{ id: 1, name: '敦煌彩塑', desc: '千年艺术瑰宝', image: 'https://gansu-culture.xyz/details/detail1-1.jpg' },
+		{ id: 21, name: '花儿', desc: '世界级非遗', image: 'https://gansu-culture.xyz/details/detail21-1.jpg' },
+		{ id: 6, name: '庆阳香包绣制', desc: '传统手工艺', image: 'https://gansu-culture.xyz/details/detail6-1.jpg' },
+		{ id: 2, name: '临夏砖雕', desc: '传统美术', image: 'https://gansu-culture.xyz/details/detail2-1.jpg' },
+		{ id: 10, name: '敦煌曲子戏', desc: '西北戏曲之魂', image: 'https://gansu-culture.xyz/details/detail10-1.jpg' },
+		{ id: 3, name: '天水雕漆技艺', desc: '传统工艺美术', image: 'https://gansu-culture.xyz/details/detail3-1.jpg' }
 	]
 	
 	const foods = [
-		{ name: '兰州牛肉面', area: '兰州', image: images.food1 },
-		{ name: '陇西腊肉', area: '定西', image: images.food2 },
-		{ name: '静宁烧鸡', area: '平凉', image: images.food3 },
-		{ name: '天水呱呱', area: '天水', image: images.food4 }
+		{ id: 7, name: '兰州牛肉面', area: '兰州', image: 'https://gansu-culture.xyz/details/detail7-1.jpg' },
+		{ id: 54, name: '陇西腊肉', area: '定西', image: 'https://gansu-culture.xyz/details/detail54-1.jpg' },
+		{ id: 23, name: '静宁烧鸡', area: '平凉', image: 'https://gansu-culture.xyz/details/detail23-1.jpg' },
+		{ id: 15, name: '天水呱呱', area: '天水', image: 'https://gansu-culture.xyz/details/detail15-1.jpg' }
 	]
 	
 	const events = [
-		{ month: '7月', day: '15日', title: '敦煌飞天文化节', location: '酒泉市敦煌市' },
+		{ month: '7月', day: '15日', title: '敦煌飞天文化节', location: '敦煌市' },
 		{ month: '8月', day: '8日', title: '张掖丹霞旅游节', location: '张掖市临泽县' },
 		{ month: '9月', day: '1日', title: '嘉峪关国际马拉松', location: '嘉峪关市' },
 		{ month: '10月', day: '1日', title: '国庆文化旅游周', location: '全省各地' }
@@ -256,6 +256,12 @@
 	const handleQuickEntry = (item) => {
 		if (item.text === '地图导览') {
 			uni.switchTab({ url: '/pages/map/map' })
+		} else if (item.text === '景点推荐') {
+			uni.navigateTo({ url: '/pages/spot-list/spot-list' })
+		} else if (item.text === '非遗文化') {
+			uni.navigateTo({ url: '/pages/culture-list/culture-list' })
+		} else if (item.text === '特色美食') {
+			uni.navigateTo({ url: '/pages/food-list/food-list' })
 		} else if (item.text === '联系我们') {
 			uni.makePhoneCall({ phoneNumber: '19993147273' })
 		} else {
@@ -264,7 +270,15 @@
 	}
 	
 	const viewMore = (type) => {
-		uni.showToast({ title: `${type}更多功能开发中`, icon: 'none' })
+		if (type === 'spots') {
+			uni.navigateTo({ url: '/pages/spot-list/spot-list' })
+		} else if (type === 'culture') {
+			uni.navigateTo({ url: '/pages/culture-list/culture-list' })
+		} else if (type === 'food') {
+			uni.navigateTo({ url: '/pages/food-list/food-list' })
+		} else {
+			uni.showToast({ title: `${type}更多功能开发中`, icon: 'none' })
+		}
 	}
 	
 	const handleSearch = () => {

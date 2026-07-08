@@ -1,0 +1,955 @@
+<template>
+	<view class="spot-list-page">
+		<view class="search-bar">
+			<view class="search-input-wrap" @click="focusSearch">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<input 
+					class="search-input" 
+					placeholder="搜索美食" 
+					v-model="searchText" 
+					@confirm="handleSearch"
+					:focus="searchFocused"
+				/>
+				<view class="search-clear" v-if="searchText" @click="clearSearch"></view>
+			</view>
+			<view class="filter-btn" @click="showFilter = true">
+				<view class="filter-icon"></view>
+				<text class="filter-text">筛选</text>
+			</view>
+		</view>
+		
+		<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
+			<view class="tabs-inner">
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'all' }"
+					@click="activeCategory = 'all'"
+				>
+					<text class="tab-text">全部</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'noodles' }"
+					@click="activeCategory = 'noodles'"
+				>
+					<text class="tab-text">面食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'meat' }"
+					@click="activeCategory = 'meat'"
+				>
+					<text class="tab-text">肉食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'snack' }"
+					@click="activeCategory = 'snack'"
+				>
+					<text class="tab-text">小吃</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'drink' }"
+					@click="activeCategory = 'drink'"
+				>
+					<text class="tab-text">特色饮品</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'lanzhou' }"
+					@click="activeCategory = 'lanzhou'"
+				>
+					<text class="tab-text">兰州美食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'tianshui' }"
+					@click="activeCategory = 'tianshui'"
+				>
+					<text class="tab-text">天水美食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'donghuang' }"
+					@click="activeCategory = 'donghuang'"
+				>
+					<text class="tab-text">敦煌美食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'linxia' }"
+					@click="activeCategory = 'linxia'"
+				>
+					<text class="tab-text">临夏美食</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'gannan' }"
+					@click="activeCategory = 'gannan'"
+				>
+					<text class="tab-text">甘南美食</text>
+				</view>
+			</view>
+		</scroll-view>
+		
+		<view class="spot-count">
+			<text class="count-text">共 {{filteredFoods.length}} 个美食</text>
+		</view>
+		
+		<scroll-view 
+			class="spot-list" 
+			scroll-y 
+			@scrolltolower="loadMore"
+			:refresher-enabled="true"
+			:refresher-triggered="refreshing"
+			@refresherrefresh="onRefresh"
+		>
+			<view class="spots-grid">
+				<view 
+					class="spot-card" 
+					v-for="(food, index) in displayFoods" 
+					:key="index"
+					@click="goToDetail(food.id)"
+				>
+					<view class="spot-image-wrap">
+						<image :src="food.image" mode="aspectFill" class="spot-image"></image>
+						<view class="spot-overlay"></view>
+						<view class="spot-rating">
+							<view class="star-icon"></view>
+							<text class="rating-text">{{food.rating}}</text>
+						</view>
+						<view class="spot-badge" v-if="hasTag(food.tags, '非遗美食')">
+							<text class="badge-text">非遗美食</text>
+						</view>
+						<view class="spot-badge-world" v-if="hasTag(food.tags, '中华名吃')">
+							<text class="badge-text-world">中华名吃</text>
+						</view>
+					</view>
+					<view class="spot-info">
+						<text class="spot-name">{{food.name}}</text>
+						<text class="spot-location">{{food.location}}</text>
+						<view class="spot-tags">
+							<text class="spot-tag" v-for="(tag, tIndex) in food.tags.slice(0, 2)" :key="tIndex">{{tag}}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			
+			<view class="load-more" v-if="loading">
+				<view class="loading-icon"></view>
+				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<view class="no-more" v-if="!loading && displayFoods.length >= filteredFoods.length && filteredFoods.length > 0">
+				<text class="no-more-text">- 已经到底了 -</text>
+			</view>
+			
+			<view class="empty-state" v-if="filteredFoods.length === 0">
+				<view class="empty-icon"></view>
+				<text class="empty-text">暂无相关美食</text>
+			</view>
+		</scroll-view>
+		
+		<view class="filter-modal" v-if="showFilter" @click="showFilter = false">
+			<view class="filter-content" @click.stop>
+				<view class="filter-header">
+					<text class="filter-title">筛选条件</text>
+					<view class="filter-close" @click="showFilter = false"></view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">美食类型</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '' }"
+							@click="selectedType = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '面食' }"
+							@click="selectedType = '面食'"
+						>
+							<text class="option-text">面食</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '肉食' }"
+							@click="selectedType = '肉食'"
+						>
+							<text class="option-text">肉食</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '小吃' }"
+							@click="selectedType = '小吃'"
+						>
+							<text class="option-text">小吃</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '特色饮品' }"
+							@click="selectedType = '特色饮品'"
+						>
+							<text class="option-text">特色饮品</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">地区</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '' }"
+							@click="selectedArea = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '兰州' }"
+							@click="selectedArea = '兰州'"
+						>
+							<text class="option-text">兰州</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '天水' }"
+							@click="selectedArea = '天水'"
+						>
+							<text class="option-text">天水</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '敦煌' }"
+							@click="selectedArea = '敦煌'"
+						>
+							<text class="option-text">敦煌</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '临夏' }"
+							@click="selectedArea = '临夏'"
+						>
+							<text class="option-text">临夏</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '甘南' }"
+							@click="selectedArea = '甘南'"
+						>
+							<text class="option-text">甘南</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '张掖' }"
+							@click="selectedArea = '张掖'"
+						>
+							<text class="option-text">张掖</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '武威' }"
+							@click="selectedArea = '武威'"
+						>
+							<text class="option-text">武威</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '平凉' }"
+							@click="selectedArea = '平凉'"
+						>
+							<text class="option-text">平凉</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedArea === '庆阳' }"
+							@click="selectedArea = '庆阳'"
+						>
+							<text class="option-text">庆阳</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-actions">
+					<view class="filter-btn-reset" @click="resetFilter">
+						<text class="btn-text">重置</text>
+					</view>
+					<view class="filter-btn-confirm" @click="confirmFilter">
+						<text class="btn-text">确定</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed } from 'vue'
+	
+	const searchText = ref('')
+	const searchFocused = ref(false)
+	const showFilter = ref(false)
+	const activeCategory = ref('all')
+	const selectedType = ref('')
+	const selectedArea = ref('')
+	const loading = ref(false)
+	const refreshing = ref(false)
+	const pageSize = 10
+	const currentPage = ref(1)
+	
+	const foods = [
+		{ id: '7', name: '兰州牛肉面', image: 'https://gansu-culture.xyz/details/detail7-1.jpg', tags: ['面食', '中华名吃', '非遗美食'], location: '兰州市', rating: '4.9', reviews: '15320' },
+		{ id: '54', name: '陇西腊肉', image: 'https://gansu-culture.xyz/details/detail54-1.jpg', tags: ['肉食', '非遗美食', '百年老字号'], location: '定西市陇西县', rating: '4.6', reviews: '3890' },
+		{ id: '23', name: '静宁烧鸡', image: 'https://gansu-culture.xyz/details/detail23-1.jpg', tags: ['肉食', '非遗美食', '平凉特色'], location: '平凉市静宁县', rating: '4.7', reviews: '4320' },
+		{ id: '15', name: '天水呱呱', image: 'https://gansu-culture.xyz/details/detail15-1.jpg', tags: ['小吃', '非遗美食', '天水特色'], location: '天水市', rating: '4.7', reviews: '5680' },
+		{ id: '205', name: '天水浆水面', image: 'https://gansu-culture.xyz/details/detail205-1.jpg', tags: ['面食', '天水特色', '清凉解暑'], location: '天水市', rating: '4.5', reviews: '3250' },
+		{ id: '206', name: '张掖臊面', image: 'https://gansu-culture.xyz/details/detail206-1.jpg', tags: ['面食', '张掖特色', '早餐首选'], location: '张掖市', rating: '4.6', reviews: '2890' },
+		{ id: '207', name: '武威面皮子', image: 'https://gansu-culture.xyz/details/detail207-1.jpg', tags: ['小吃', '武威特色', '酸辣可口'], location: '武威市', rating: '4.6', reviews: '4120' },
+		{ id: '208', name: '酒泉糊锅', image: 'https://gansu-culture.xyz/details/detail208-1.jpg', tags: ['小吃', '酒泉特色', '地方名吃'], location: '酒泉市', rating: '4.5', reviews: '2680' },
+		{ id: '209', name: '临夏手抓羊肉', image: 'https://gansu-culture.xyz/details/detail209-1.jpg', tags: ['肉食', '中华名吃', '临夏特色'], location: '临夏州', rating: '4.8', reviews: '6780' },
+		{ id: '210', name: '敦煌驴肉黄面', image: 'https://gansu-culture.xyz/details/detail210-1.jpg', tags: ['面食', '敦煌特色', '历史名吃'], location: '敦煌市', rating: '4.6', reviews: '3450' },
+		{ id: '211', name: '定西宽粉', image: 'https://gansu-culture.xyz/details/detail211-1.jpg', tags: ['小吃', '定西特色', '火锅必备'], location: '定西市', rating: '4.5', reviews: '3890' },
+		{ id: '212', name: '平凉锅盔', image: 'https://gansu-culture.xyz/details/detail212-1.jpg', tags: ['小吃', '平凉特色', '传统美食'], location: '平凉市', rating: '4.4', reviews: '2340' },
+		{ id: '213', name: '陇南洋芋搅团', image: 'https://gansu-culture.xyz/details/detail213-1.jpg', tags: ['小吃', '陇南特色', '农家美食'], location: '陇南市', rating: '4.5', reviews: '2680' },
+		{ id: '214', name: '庆阳饸饹面', image: 'https://gansu-culture.xyz/details/detail214-1.jpg', tags: ['面食', '庆阳特色', '传统美食'], location: '庆阳市', rating: '4.5', reviews: '2890' },
+		{ id: '215', name: '甘南藏包', image: 'https://gansu-culture.xyz/details/detail215-1.jpg', tags: ['小吃', '甘南特色', '民族美食'], location: '甘南州', rating: '4.6', reviews: '3250' },
+		{ id: '216', name: '金昌羊肉垫卷子', image: 'https://gansu-culture.xyz/details/detail216-1.jpg', tags: ['面食', '金昌特色', '地方名吃'], location: '金昌市', rating: '4.5', reviews: '2450' },
+		{ id: '217', name: '白银酸烂肉', image: 'https://gansu-culture.xyz/details/detail217-1.jpg', tags: ['肉食', '白银特色', '农家美食'], location: '白银市', rating: '4.4', reviews: '2180' },
+		{ id: '218', name: '嘉峪关烤肉', image: 'https://gansu-culture.xyz/details/detail218-1.jpg', tags: ['肉食', '嘉峪关特色', '烧烤'], location: '嘉峪关市', rating: '4.7', reviews: '4560' },
+		{ id: '219', name: '兰州灰豆子', image: 'https://gansu-culture.xyz/details/detail219-1.jpg', tags: ['特色饮品', '兰州特色', '甜品'], location: '兰州市', rating: '4.5', reviews: '3120' },
+		{ id: '220', name: '兰州甜醅子', image: 'https://gansu-culture.xyz/details/detail220-1.jpg', tags: ['特色饮品', '兰州特色', '传统小吃'], location: '兰州市', rating: '4.6', reviews: '3560' },
+		{ id: '221', name: '敦煌沙葱炒蛋', image: 'https://gansu-culture.xyz/details/detail221-1.jpg', tags: ['小吃', '敦煌特色', '地方美食'], location: '敦煌市', rating: '4.4', reviews: '2340' },
+		{ id: '222', name: '临夏酿皮子', image: 'https://gansu-culture.xyz/details/detail222-1.jpg', tags: ['小吃', '临夏特色', '清真美食'], location: '临夏州', rating: '4.6', reviews: '3890' },
+		{ id: '223', name: '甘南酥油茶', image: 'https://gansu-culture.xyz/details/detail223-1.jpg', tags: ['特色饮品', '甘南特色', '民族美食'], location: '甘南州', rating: '4.5', reviews: '2890' },
+		{ id: '224', name: '天水油糕', image: 'https://gansu-culture.xyz/details/detail224-1.jpg', tags: ['小吃', '天水特色', '油炸食品'], location: '天水市', rating: '4.4', reviews: '2560' }
+	]
+	
+	const filteredFoods = computed(() => {
+		let result = foods
+		
+		if (searchText.value) {
+			const keyword = searchText.value.toLowerCase()
+			result = result.filter(f => 
+				f.name.toLowerCase().includes(keyword) ||
+				f.location.toLowerCase().includes(keyword)
+			)
+		}
+		
+		if (selectedType.value) {
+			result = result.filter(f => f.tags.some(t => t.includes(selectedType.value)))
+		}
+		
+		if (selectedArea.value) {
+			result = result.filter(f => f.location.includes(selectedArea.value))
+		}
+		
+		if (activeCategory.value !== 'all') {
+			const categoryMap: Record<string, string[]> = {
+				'noodles': ['面食'],
+				'meat': ['肉食'],
+				'snack': ['小吃'],
+				'drink': ['特色饮品'],
+				'lanzhou': ['兰州市'],
+				'tianshui': ['天水市'],
+				'donghuang': ['敦煌市'],
+				'linxia': ['临夏州'],
+				'gannan': ['甘南州']
+			}
+			const keywords = categoryMap[activeCategory.value] || []
+			result = result.filter(f => keywords.some(k => f.location.includes(k) || f.tags.some(t => t.includes(k))))
+		}
+		
+		return result
+	})
+	
+	const displayFoods = computed(() => {
+		return filteredFoods.value.slice(0, currentPage.value * pageSize)
+	})
+	
+	const focusSearch = () => {
+		searchFocused.value = true
+	}
+	
+	const clearSearch = () => {
+		searchText.value = ''
+	}
+	
+	const handleSearch = () => {
+		currentPage.value = 1
+	}
+	
+	const goToDetail = (id) => {
+		uni.navigateTo({
+			url: '/pages/detail/detail?id=' + id
+		})
+	}
+	
+	const hasTag = (tags: string[], tag: string) => {
+		return tags.some(t => t.includes(tag))
+	}
+	
+	const loadMore = () => {
+		if (loading.value) return
+		if (displayFoods.value.length >= filteredFoods.value.length) return
+		
+		loading.value = true
+		setTimeout(() => {
+			currentPage.value++
+			loading.value = false
+		}, 500)
+	}
+	
+	const onRefresh = () => {
+		refreshing.value = true
+		currentPage.value = 1
+		setTimeout(() => {
+			refreshing.value = false
+		}, 1000)
+	}
+	
+	const resetFilter = () => {
+		selectedType.value = ''
+		selectedArea.value = ''
+	}
+	
+	const confirmFilter = () => {
+		currentPage.value = 1
+		showFilter.value = false
+	}
+</script>
+
+<style>
+	.spot-list-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	.search-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: #FFFFFF;
+	}
+
+	.search-input-wrap {
+		flex: 1;
+		height: 72rpx;
+		background: #F5F5F5;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 28rpx;
+		margin-right: 20rpx;
+	}
+
+	.search-icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-right: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.icon-lens {
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #8B4513;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.icon-lens:after {
+		content: '';
+		position: absolute;
+		bottom: -6rpx;
+		right: -6rpx;
+		width: 10rpx;
+		height: 3rpx;
+		background: #8B4513;
+		border-radius: 2rpx;
+		transform: rotate(45deg);
+		transform-origin: left center;
+	}
+
+	.search-input {
+		flex: 1;
+		height: 72rpx;
+		font-size: 28rpx;
+		color: #333;
+	}
+
+	.search-clear {
+		width: 32rpx;
+		height: 32rpx;
+		background: #999;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.search-clear:before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(45deg);
+	}
+
+	.search-clear:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(-45deg);
+	}
+
+	.filter-btn {
+		padding: 0 24rpx;
+		height: 72rpx;
+		background: #8B4513;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.filter-icon {
+		width: 24rpx;
+		height: 24rpx;
+		border: 3rpx solid #FFFFFF;
+		border-radius: 6rpx;
+		position: relative;
+		margin-right: 8rpx;
+	}
+
+	.filter-icon:after {
+		content: '';
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		right: 8rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+	}
+
+	.filter-text {
+		font-size: 26rpx;
+		color: #FFFFFF;
+	}
+
+	.category-tabs {
+		width: 100%;
+		background: #FFFFFF;
+		height: 100rpx;
+		white-space: nowrap;
+		padding: 14rpx 0;
+	}
+
+	.tabs-inner {
+		display: inline-block;
+		width: 1000rpx;
+		padding-right: 24rpx;
+		white-space: nowrap;
+		font-size: 0;
+	}
+
+	.tab-item {
+		display: inline-block;
+		vertical-align: top;
+		padding: 16rpx 32rpx;
+		background: #F5F5F5;
+		border-radius: 30rpx;
+		margin-right: 16rpx;
+		white-space: normal;
+		font-size: 26rpx;
+	}
+
+	.tab-item.active {
+		background: #D4A86A;
+	}
+
+	.tab-item.active .tab-text {
+		color: #FFFFFF;
+	}
+
+	.tab-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.spot-count {
+		padding: 16rpx 24rpx;
+	}
+
+	.count-text {
+		font-size: 24rpx;
+		color: #8B7355;
+	}
+
+	.spot-list {
+		height: calc(100vh - 320rpx);
+	}
+
+	.spots-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		padding: 0 24rpx;
+	}
+
+	.spot-card {
+		width: 48%;
+		margin-bottom: 24rpx;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+	}
+
+	.spot-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 240rpx;
+	}
+
+	.spot-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.spot-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 80rpx;
+		background: linear-gradient(transparent, rgba(0,0,0,0.3));
+	}
+
+	.spot-rating {
+		position: absolute;
+		bottom: 16rpx;
+		left: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: rgba(0,0,0,0.6);
+		padding: 6rpx 12rpx;
+		border-radius: 16rpx;
+	}
+
+	.star-icon {
+		width: 24rpx;
+		height: 24rpx;
+		background: #FFD700;
+		clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+		margin-right: 6rpx;
+	}
+
+	.rating-text {
+		font-size: 24rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-badge {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #FF6B6B;
+		padding: 6rpx 14rpx;
+		border-radius: 12rpx;
+	}
+
+	.spot-badge-world {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #8B4513;
+		padding: 6rpx 10rpx;
+		border-radius: 12rpx;
+	}
+
+	.badge-text {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.badge-text-world {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-info {
+		padding: 20rpx;
+	}
+
+	.spot-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+
+	.spot-location {
+		font-size: 24rpx;
+		color: #999;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+
+	.spot-tags {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.spot-tag {
+		font-size: 22rpx;
+		color: #8B4513;
+		background: rgba(139, 69, 19, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+	}
+
+	.load-more {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: 30rpx 0;
+	}
+
+	.loading-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border: 3rpx solid #8B4513;
+		border-top-color: transparent;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-right: 16rpx;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+
+	.loading-text {
+		font-size: 26rpx;
+		color: #999;
+	}
+
+	.no-more {
+		text-align: center;
+		padding: 30rpx 0;
+	}
+
+	.no-more-text {
+		font-size: 24rpx;
+		color: #CCC;
+	}
+
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 100rpx 0;
+	}
+
+	.empty-icon {
+		width: 120rpx;
+		height: 120rpx;
+		background: #F5F5F5;
+		border-radius: 50%;
+		margin-bottom: 24rpx;
+		position: relative;
+	}
+
+	.empty-icon:before {
+		content: '';
+		position: absolute;
+		top: 40rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-icon:after {
+		content: '';
+		position: absolute;
+		top: 50rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-text {
+		font-size: 28rpx;
+		color: #999;
+	}
+
+	.filter-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+		z-index: 1000;
+	}
+
+	.filter-content {
+		width: 100%;
+		background: #FFFFFF;
+		border-radius: 30rpx 30rpx 0 0;
+		padding: 30rpx 24rpx;
+		padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+	}
+
+	.filter-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 30rpx;
+	}
+
+	.filter-title {
+		font-size: 32rpx;
+		color: #333;
+		font-weight: 600;
+	}
+
+	.filter-close {
+		width: 40rpx;
+		height: 40rpx;
+		position: relative;
+	}
+
+	.filter-close:before,
+	.filter-close:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 3rpx;
+		background: #999;
+		border-radius: 2rpx;
+	}
+
+	.filter-close:before {
+		transform: rotate(45deg);
+	}
+
+	.filter-close:after {
+		transform: rotate(-45deg);
+	}
+
+	.filter-section {
+		margin-bottom: 30rpx;
+	}
+
+	.filter-label {
+		font-size: 28rpx;
+		color: #333;
+		font-weight: 500;
+		display: block;
+		margin-bottom: 20rpx;
+	}
+
+	.filter-options {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.filter-option {
+		padding: 16rpx 28rpx;
+		background: #F5F5F5;
+		border-radius: 20rpx;
+		margin-right: 20rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.filter-option.active {
+		background: #8B4513;
+	}
+
+	.option-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.filter-option.active .option-text {
+		color: #FFFFFF;
+	}
+
+	.filter-actions {
+		display: flex;
+		flex-direction: row;
+		margin-top: 40rpx;
+	}
+
+	.filter-btn-reset {
+		flex: 1;
+		height: 88rpx;
+		background: #F5F5F5;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-right: 20rpx;
+	}
+
+	.filter-btn-confirm {
+		flex: 1;
+		height: 88rpx;
+		background: #8B4513;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.btn-text {
+		font-size: 30rpx;
+		color: #FFFFFF;
+		font-weight: 600;
+	}
+
+	.filter-btn-reset .btn-text {
+		color: #666;
+	}
+</style>

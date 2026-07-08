@@ -69,6 +69,30 @@
 				"navigationBarBackgroundColor": "#D4A86A",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path": "pages/spot-list/spot-list",
+			"style": {
+				"navigationBarTitleText": "景点推荐",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/culture-list/culture-list",
+			"style": {
+				"navigationBarTitleText": "非遗文化",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/food-list/food-list",
+			"style": {
+				"navigationBarTitleText": "美食推荐",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"globalStyle": {

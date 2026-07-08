@@ -1,0 +1,35 @@
+美食名称,美食ID,详情页图片1,详情页图片2,详情页图片3,详情页视频,列表页图片
+兰州牛肉面,7,detail7-1.jpg,detail7-2.jpg,detail7-3.jpg,detail7.mp4,food1-1.jpg
+陇西腊肉,54,detail54-1.jpg,detail54-2.jpg,detail54-3.jpg,detail54.mp4,food2-1.jpg
+静宁烧鸡,23,detail23-1.jpg,detail23-2.jpg,detail23-3.jpg,detail23.mp4,food3-1.jpg
+天水呱呱,15,detail15-1.jpg,detail15-2.jpg,detail15-3.jpg,detail15.mp4,food4-1.jpg
+天水浆水面,205,detail205-1.jpg,detail205-2.jpg,detail205-3.jpg,detail205.mp4,food5-1.jpg
+张掖臊面,206,detail206-1.jpg,detail206-2.jpg,detail206-3.jpg,detail206.mp4,food6-1.jpg
+武威面皮子,207,detail207-1.jpg,detail207-2.jpg,detail207-3.jpg,detail207.mp4,food7-1.jpg
+酒泉糊锅,208,detail208-1.jpg,detail208-2.jpg,detail208-3.jpg,detail208.mp4,food8-1.jpg
+临夏手抓羊肉,209,detail209-1.jpg,detail209-2.jpg,detail209-3.jpg,detail209.mp4,food9-1.jpg
+敦煌驴肉黄面,210,detail210-1.jpg,detail210-2.jpg,detail210-3.jpg,detail210.mp4,food10-1.jpg
+定西宽粉,211,detail211-1.jpg,detail211-2.jpg,detail211-3.jpg,detail211.mp4,food11-1.jpg
+平凉锅盔,212,detail212-1.jpg,detail212-2.jpg,detail212-3.jpg,detail212.mp4,food12-1.jpg
+陇南洋芋搅团,213,detail213-1.jpg,detail213-2.jpg,detail213-3.jpg,detail213.mp4,food13-1.jpg
+庆阳饸饹面,214,detail214-1.jpg,detail214-2.jpg,detail214-3.jpg,detail214.mp4,food14-1.jpg
+甘南藏包,215,detail215-1.jpg,detail215-2.jpg,detail215-3.jpg,detail215.mp4,food15-1.jpg
+金昌羊肉垫卷子,216,detail216-1.jpg,detail216-2.jpg,detail216-3.jpg,detail216.mp4,food16-1.jpg
+白银酸烂肉,217,detail217-1.jpg,detail217-2.jpg,detail217-3.jpg,detail217.mp4,food17-1.jpg
+嘉峪关烤肉,218,detail218-1.jpg,detail218-2.jpg,detail218-3.jpg,detail218.mp4,food18-1.jpg
+兰州灰豆子,219,detail219-1.jpg,detail219-2.jpg,detail219-3.jpg,detail219.mp4,food19-1.jpg
+兰州甜醅子,220,detail220-1.jpg,detail220-2.jpg,detail220-3.jpg,detail220.mp4,food20-1.jpg
+敦煌沙葱炒蛋,221,detail221-1.jpg,detail221-2.jpg,detail221-3.jpg,detail221.mp4,food21-1.jpg
+临夏酿皮子,222,detail222-1.jpg,detail222-2.jpg,detail222-3.jpg,detail222.mp4,food22-1.jpg
+甘南酥油茶,223,detail223-1.jpg,detail223-2.jpg,detail223-3.jpg,detail223.mp4,food23-1.jpg
+天水油糕,224,detail224-1.jpg,detail224-2.jpg,detail224-3.jpg,detail224.mp4,food24-1.jpg
+,,,,,,
+命名规则说明,,,,,,
+1. 详情页图片命名：detail{美食ID}-{序号}.jpg（序号从1开始）,,,,,,
+2. 详情页视频命名：detail{美食ID}.mp4,,,,,,
+3. 列表页图片命名：food{序号}-1.jpg（序号按列表顺序从1开始）,,,,,,
+4. 图片格式：JPG格式，推荐尺寸750x500px,,,,,,
+5. 视频格式：MP4格式，推荐分辨率720P或1080P,,,,,,
+6. 图片上传目录：服务器/details/ 目录下,,,,,,
+7. 视频上传目录：服务器/videos/ 目录下,,,,,,
+8. 列表图上传目录：服务器/foods/ 目录下,,,,,,
