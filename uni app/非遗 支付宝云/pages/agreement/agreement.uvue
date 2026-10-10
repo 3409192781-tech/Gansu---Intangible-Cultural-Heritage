@@ -1,0 +1,129 @@
+<template>
+	<view class="agreement-page">
+		<scroll-view scroll-y class="agreement-scroll">
+			<view class="agreement-content">
+				<text class="agreement-title">用户协议</text>
+				<text class="agreement-version">版本号：1.1.0</text>
+				<text class="agreement-date">更新日期：2026年7月25日</text>
+				
+				<view class="agreement-section">
+					<text class="section-title">一、协议范围</text>
+					<text class="section-content">本协议是您与陇韵匠心小程序（以下简称"本小程序"）之间关于使用本小程序服务的法律协议。您通过微信或其他方式进入本小程序，即表示您同意接受本协议的全部内容。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">二、服务内容</text>
+					<text class="section-content">1. 本小程序提供甘肃省旅游景点、非遗文化、特色美食等信息的展示和推荐服务。</text>
+					<text class="section-content">2. 本小程序可能会提供门票预订、导航等增值服务，具体以本小程序实际提供的服务为准。</text>
+					<text class="section-content">3. 本小程序保留随时变更、中断或终止部分或全部服务的权利。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">三、用户义务</text>
+					<text class="section-content">1. 用户在使用本小程序时，应当遵守法律法规的规定，不得利用本小程序从事违法活动。</text>
+					<text class="section-content">2. 用户应当妥善保管自己的账号信息，不得将账号转让或出借他人使用。</text>
+					<text class="section-content">3. 用户在使用本小程序时，应当尊重他人的知识产权和合法权益。</text>
+					<text class="section-content">4. 用户应当遵守本小程序的相关规定和公告。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">四、知识产权</text>
+					<text class="section-content">1. 本小程序的所有内容，包括但不限于文字、图片、音频、视频、软件等，均受知识产权法的保护。</text>
+					<text class="section-content">2. 用户在使用本小程序时，不得复制、传播、修改或使用本小程序的内容，除非获得本小程序的书面授权。</text>
+					<text class="section-content">3. 用户上传或发布的内容，其知识产权归用户所有，但用户授予本小程序免费使用、传播、展示的权利。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">五、免责声明</text>
+					<text class="section-content">1. 本小程序提供的信息仅供参考，不保证信息的准确性和完整性。</text>
+					<text class="section-content">2. 用户在使用本小程序时，因自身原因造成的损失，本小程序不承担责任。</text>
+					<text class="section-content">3. 本小程序对不可抗力造成的服务中断或损失不承担责任。</text>
+					<text class="section-content">4. 本小程序不对用户之间的交易或互动承担责任。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">六、协议变更</text>
+					<text class="section-content">1. 本小程序有权随时修改本协议的内容，修改后的协议将在本小程序内发布。</text>
+					<text class="section-content">2. 用户继续使用本小程序的服务，即视为同意修改后的协议。</text>
+					<text class="section-content">3. 如果用户不同意修改后的协议，应当停止使用本小程序的服务。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">七、终止条款</text>
+					<text class="section-content">1. 用户可以随时终止使用本小程序的服务。</text>
+					<text class="section-content">2. 如果用户违反本协议的规定，本小程序有权终止用户的使用权限。</text>
+					<text class="section-content">3. 终止使用后，用户的账号信息将被保留一段时间，之后可能被删除。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">八、法律适用</text>
+					<text class="section-content">本协议的解释和执行均适用中华人民共和国法律。如果发生争议，双方应当通过友好协商解决；协商不成的，可以向有管辖权的人民法院提起诉讼。</text>
+				</view>
+				
+				<view class="agreement-section">
+					<text class="section-title">九、其他</text>
+					<text class="section-content">1. 本协议的标题仅为方便阅读，不影响协议的解释。</text>
+					<text class="section-content">2. 如果本协议的任何条款被认定为无效或不可执行，其他条款仍然有效。</text>
+					<text class="section-content">3. 本协议的最终解释权归本小程序所有。</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+</script>
+
+<style>
+	.agreement-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+	}
+	
+	.agreement-scroll {
+		height: 100vh;
+	}
+	
+	.agreement-content {
+		padding: 30rpx;
+		background: #FFFFFF;
+		min-height: 100%;
+	}
+	
+	.agreement-title {
+		font-size: 40rpx;
+		font-weight: bold;
+		color: #333;
+		display: block;
+		text-align: center;
+		margin-bottom: 20rpx;
+	}
+	
+	.agreement-version, .agreement-date {
+		font-size: 24rpx;
+		color: #999;
+		display: block;
+		text-align: center;
+		margin-bottom: 10rpx;
+	}
+	
+	.agreement-section {
+		margin-top: 30rpx;
+	}
+	
+	.section-title {
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #333;
+		display: block;
+		margin-bottom: 16rpx;
+	}
+	
+	.section-content {
+		font-size: 26rpx;
+		color: #666;
+		line-height: 1.8;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+</style>

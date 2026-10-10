@@ -1,0 +1,427 @@
+<template>
+	<view class="settings-page">
+		<view class="settings-header">
+			<view class="header-bg-layer">
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			<view class="header-content">
+				<view class="header-icon-wrap">
+					<view class="header-icon"></view>
+				</view>
+				<text class="header-title">设置</text>
+				<text class="header-subtitle">个性化你的云游体验</text>
+			</view>
+		</view>
+
+		<view class="settings-content">
+			<view class="settings-group">
+				<view class="group-header">
+					<view class="group-icon-wrap group-icon-policy"><image src="/static/icons/menu-policy.svg" mode="aspectFit" class="group-icon-img"></image></view>
+					<text class="group-title">协议与政策</text>
+					<view class="group-line"></view>
+				</view>
+				<view class="settings-item" @click="goToPrivacy">
+					<view class="item-icon item-icon-privacy"><image src="/static/icons/menu-privacy.svg" mode="aspectFit" class="item-icon-img"></image></view>
+					<text class="settings-text">隐私政策</text>
+					<view class="item-arrow"></view>
+				</view>
+				<view class="settings-item" @click="goToAgreement">
+					<view class="item-icon item-icon-agreement"><image src="/static/icons/menu-agreement.svg" mode="aspectFit" class="item-icon-img"></image></view>
+					<text class="settings-text">用户协议</text>
+					<view class="item-arrow"></view>
+				</view>
+				<view class="settings-item" @click="goToAbout">
+					<view class="item-icon item-icon-about"><image src="/static/icons/menu-about.svg" mode="aspectFit" class="item-icon-img"></image></view>
+					<text class="settings-text">关于我们</text>
+					<view class="item-arrow"></view>
+				</view>
+			</view>
+
+			<view class="settings-group">
+				<view class="group-header">
+					<view class="group-icon-wrap group-icon-feedback"><image src="/static/icons/menu-feedback.svg" mode="aspectFit" class="group-icon-img"></image></view>
+					<text class="group-title">帮助与反馈</text>
+					<view class="group-line"></view>
+				</view>
+				<view class="settings-item" @click="handleFeedback">
+					<view class="item-icon item-icon-suggest"><image src="/static/icons/menu-suggest.svg" mode="aspectFit" class="item-icon-img"></image></view>
+					<text class="settings-text">意见反馈</text>
+					<view class="item-arrow"></view>
+				</view>
+				<view class="settings-item" @click="handleContact">
+					<view class="item-icon item-icon-contact"><image src="/static/icons/menu-contact.svg" mode="aspectFit" class="item-icon-img"></image></view>
+					<text class="settings-text">联系客服</text>
+					<view class="item-arrow"></view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 退出登录 -->
+		<view class="logout-section" v-if="loggedIn">
+			<view class="logout-btn" @click="handleLogout">
+				<text class="logout-text">退出登录</text>
+			</view>
+		</view>
+
+		<view class="settings-footer">
+			<view class="footer-decoration"></view>
+			<text class="footer-text">陇韵匠心 v1.1.0</text>
+			<text class="footer-sub">© 2026 陇韵匠心小程序</text>
+			<text class="footer-slogan">丝路文化 · 敦煌风韵</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { isLoggedIn } from '../../utils/identity'
+
+const loggedIn = ref(false)
+onMounted(() => {
+  loggedIn.value = isLoggedIn()
+})
+
+const goToPrivacy = () => {
+	uni.navigateTo({ url: '/pages/privacy/privacy' })
+}
+
+const goToAgreement = () => {
+	uni.navigateTo({ url: '/pages/agreement/agreement' })
+}
+
+const goToAbout = () => {
+	uni.showModal({
+		title: '关于我们',
+		content: '陇韵匠心小程序致力于为游客提供甘肃省旅游景点、非遗文化、特色美食等信息的一站式服务平台。',
+		showCancel: false
+	})
+}
+
+const handleFeedback = () => {
+	uni.showModal({
+		title: '意见反馈',
+		content: '感谢您的反馈！如有问题，请联系客服：13800000000',
+		showCancel: false
+	})
+}
+
+const handleContact = () => {
+	uni.makePhoneCall({ phoneNumber: '13800000000' })
+}
+
+const handleLogout = () => {
+	uni.showModal({
+		title: '退出登录',
+		content: '退出后收藏和订单将不会同步，确定退出？',
+		success: (res) => {
+			if (res.confirm) {
+				uni.removeStorageSync('token')
+				uni.removeStorageSync('userInfo')
+				uni.showToast({ title: '已退出', icon: 'none' })
+				setTimeout(() => {
+					uni.switchTab({ url: '/pages/index/index' })
+				}, 600)
+			}
+		}
+	})
+}
+</script>
+
+<style>
+	.settings-page {
+		min-height: 100vh;
+		background: #FFF8E7;
+		padding-bottom: 120rpx;
+	}
+
+	.settings-header {
+		position: relative;
+		padding: 60rpx 30rpx 50rpx;
+		overflow: hidden;
+	}
+
+	.header-bg-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.header-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.85) 0%, rgba(196, 98, 16, 0.9) 100%);
+	}
+
+	.header-pattern {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+	}
+
+	.header-content {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.header-icon-wrap {
+		width: 100rpx;
+		height: 100rpx;
+		background: rgba(255, 248, 231, 0.2);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 24rpx;
+		border: 3rpx solid rgba(212, 168, 106, 0.5);
+	}
+
+	.header-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.header-icon::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 12rpx;
+		height: 12rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+
+	.header-icon::after {
+		content: '';
+		position: absolute;
+		top: -6rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 6rpx solid transparent;
+		border-right: 6rpx solid transparent;
+		border-bottom: 8rpx solid #FFF8E7;
+	}
+
+	.header-title {
+		font-size: 48rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		margin-bottom: 10rpx;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+	}
+
+	.header-subtitle {
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.8);
+		letter-spacing: 2rpx;
+	}
+
+	.settings-content {
+		padding: 20rpx 24rpx;
+		margin-top: -20rpx;
+		position: relative;
+		z-index: 2;
+	}
+
+	.settings-group {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		margin-bottom: 20rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+
+	.group-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.12);
+		background: linear-gradient(180deg, rgba(212, 168, 106, 0.06), transparent);
+	}
+
+	.group-icon-wrap {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 8rpx;
+		margin-right: 14rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.group-icon-policy {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+
+	.group-icon-feedback {
+		background: linear-gradient(135deg, #5EAA7F, #4A8F6D);
+	}
+
+	.group-icon-img {
+		width: 100%;
+		height: 100%;
+	}
+
+	.group-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+
+	.group-line {
+		flex: 1;
+		height: 2rpx;
+		background: linear-gradient(90deg, #D4A86A, transparent);
+		margin-left: 16rpx;
+	}
+
+	.settings-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 24rpx 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.1);
+	}
+
+	.settings-item:last-child {
+		border-bottom: none;
+	}
+
+	.item-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border-radius: 8rpx;
+		margin-right: 18rpx;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.item-icon-privacy {
+		background: linear-gradient(135deg, #8B9BA9, #6B7B8B);
+	}
+
+	.item-icon-agreement {
+		background: linear-gradient(135deg, #C46210, #A45200);
+	}
+
+	.item-icon-about {
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+	}
+
+	.item-icon-suggest {
+		background: linear-gradient(135deg, #5EAA7F, #4A8F6D);
+	}
+
+	.item-icon-contact {
+		background: linear-gradient(135deg, #6B8FA3, #4A6B7F);
+	}
+
+	.item-icon-img {
+		width: 100%;
+		height: 100%;
+	}
+
+	.settings-text {
+		flex: 1;
+		font-size: 30rpx;
+		color: #2C1810;
+	}
+
+	.item-arrow {
+		width: 24rpx;
+		height: 24rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		flex-shrink: 0;
+	}
+
+	
+	.logout-section {
+		padding: 20rpx 24rpx;
+	}
+
+	.logout-btn {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		padding: 28rpx 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 2rpx solid rgba(212, 105, 90, 0.3);
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.08);
+	}
+
+	.logout-btn:active {
+		background: rgba(212, 105, 90, 0.05);
+	}
+
+	.logout-text {
+		font-size: 30rpx;
+		color: #D4695A;
+		font-weight: 500;
+	}
+
+	.settings-footer {
+		padding: 48rpx 40rpx;
+		text-align: center;
+		position: relative;
+	}
+
+	.footer-decoration {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120rpx;
+		height: 4rpx;
+		background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	}
+
+	.footer-text {
+		font-size: 26rpx;
+		color: #7A6B5A;
+		display: block;
+		margin-bottom: 8rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+
+	.footer-sub {
+		font-size: 22rpx;
+		color: #B0A090;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+
+	.footer-slogan {
+		font-size: 22rpx;
+		color: #D4A86A;
+		display: block;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 4rpx;
+	}
+</style>

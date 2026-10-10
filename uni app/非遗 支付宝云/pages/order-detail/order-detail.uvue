@@ -1,0 +1,437 @@
+<template>
+	<view class="order-detail-page">
+		<view class="detail-header">
+			<view class="header-bg-layer">
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			<view class="header-content">
+				<view :class="'status-big status-big-' + order.status">
+					<view class="status-dot"></view>
+					<text class="status-big-text">{{ statusLabel(order.status) }}</text>
+				</view>
+				<text class="status-desc">{{ statusDesc(order.status) }}</text>
+			</view>
+		</view>
+
+		<scroll-view class="detail-body" scroll-y>
+			<!-- 进度条 -->
+			<view class="progress-section">
+				<view class="progress-bar">
+					<view class="progress-track">
+						<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
+					</view>
+					<view class="progress-steps">
+						<view v-for="(s, i) in steps" :key="s.key" :class="stepClass(i)">
+							<view :class="stepDotClass(i)"></view>
+							<text class="step-label">{{ s.label }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 物流信息 -->
+			<view class="info-card" v-if="(order.logistics || order.logisticsCompany) && (order.status === 'shipped' || order.status === 'completed')">
+				<view class="card-title-row">
+					<view class="title-dot title-dot-blue"></view>
+					<text class="card-title">物流信息</text>
+				</view>
+				<view class="logistics-info">
+					<view class="logi-row">
+						<text class="logi-label">快递公司</text>
+						<text class="logi-value">{{ order.logisticsCompany || '--' }}</text>
+					</view>
+					<view class="logi-row">
+						<text class="logi-label">快递单号</text>
+						<view class="logi-copy-wrap">
+							<text class="logi-value">{{ order.logistics || '--' }}</text>
+							<text class="copy-btn" v-if="order.logistics" @click="copyLogistics">复制</text>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 产品信息 -->
+			<view class="info-card">
+				<view class="card-title-row">
+					<view class="title-dot"></view>
+					<text class="card-title">产品信息</text>
+				</view>
+				<view class="product-row">
+					<image :src="order.productImage || '/static/logo.png'" mode="aspectFill" class="prod-img"></image>
+					<view class="prod-info">
+						<text class="prod-name">{{ order.productName }}</text>
+						<text class="prod-price">¥{{ order.price }}</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 收货信息 -->
+			<view class="info-card">
+				<view class="card-title-row">
+					<view class="title-dot title-dot-green"></view>
+					<text class="card-title">收货信息</text>
+				</view>
+				<view class="info-row">
+					<text class="info-label">收货人</text>
+					<text class="info-value">{{ order.customerName }}</text>
+				</view>
+				<view class="info-row">
+					<text class="info-label">手机号</text>
+					<text class="info-value">{{ order.customerPhone }}</text>
+				</view>
+				<view class="info-row">
+					<text class="info-label">收货地址</text>
+					<text class="info-value">{{ order.customerAddress }}</text>
+				</view>
+			</view>
+
+			<!-- 订单信息 -->
+			<view class="info-card">
+				<view class="card-title-row">
+					<view class="title-dot title-dot-gold"></view>
+					<text class="card-title">订单信息</text>
+				</view>
+				<view class="info-row">
+					<text class="info-label">订单编号</text>
+					<view class="logi-copy-wrap">
+						<text class="info-value">{{ order.orderNo }}</text>
+						<text class="copy-btn" @click="copyOrderNo">复制</text>
+					</view>
+				</view>
+				<view class="info-row">
+					<text class="info-label">下单时间</text>
+					<text class="info-value">{{ formatTime(order.createdAt) }}</text>
+				</view>
+				<view class="info-row" v-if="order.paidAt">
+					<text class="info-label">付款时间</text>
+					<text class="info-value">{{ formatTime(order.paidAt) }}</text>
+				</view>
+				<view class="info-row" v-if="order.shippedAt">
+					<text class="info-label">发货时间</text>
+					<text class="info-value">{{ formatTime(order.shippedAt) }}</text>
+				</view>
+				<view class="info-row" v-if="order.refundReason">
+					<text class="info-label">退款原因</text>
+					<text class="info-value refund-reason-text">{{ order.refundReason }}</text>
+				</view>
+			</view>
+
+			<!-- 退款状态 -->
+			<view class="info-card" v-if="order.refundStatus">
+				<view class="card-title-row">
+					<view class="title-dot title-dot-red"></view>
+					<text class="card-title">售后状态</text>
+				</view>
+				<view class="refund-status-row">
+					<view :class="'refund-badge refund-' + order.refundStatus">
+						<text class="refund-badge-text">{{ order.refundStatus === 'pending' ? '等待处理' : order.refundStatus === 'approved' ? '已同意退款' : '已拒绝退款' }}</text>
+					</view>
+					<text class="refund-time" v-if="order.refundedAt">{{ formatTime(order.refundedAt) }}</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 底部操作栏 -->
+		<view class="detail-footer">
+			<view v-if="order.status === 'pending' || order.status === 'paid'" class="footer-btn footer-btn-cancel" @click="handleCancel">
+				<text class="footer-btn-text">取消订单</text>
+			</view>
+			<view v-if="order.status === 'pending' || order.status === 'paid'" class="footer-btn footer-btn-contact" @click="handleContact">
+				<text class="footer-btn-text">联系客服</text>
+			</view>
+			<view v-if="order.status === 'shipped'" class="footer-btn footer-btn-confirm" @click="handleConfirm">
+				<text class="footer-btn-text">确认收货</text>
+			</view>
+			<view v-if="order.status === 'shipped' || order.status === 'completed'" class="footer-btn footer-btn-refund" @click="handleRefund">
+				<text class="footer-btn-text">申请退款</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref } from 'vue'
+	import { onLoad } from '@dcloudio/uni-app'
+	import { api } from '../../utils/api'
+	import { getDeviceId } from '../../utils/identity'
+
+	const order = ref<any>({})
+	const orderNo = ref('')
+
+	const steps = [
+		{ key: 'pending', label: '下单' },
+		{ key: 'paid', label: '付款' },
+		{ key: 'shipped', label: '发货' },
+		{ key: 'completed', label: '完成' }
+	]
+
+	const stepOrder = ['pending', 'paid', 'shipped', 'completed']
+
+	const progressPercent = ref(0)
+	const computedProgress = () => {
+		var idx = stepOrder.indexOf(order.value.status)
+		if (idx === -1) idx = 0
+		progressPercent.value = ((idx + 1) / stepOrder.length) * 100
+	}
+
+	
+
+	const statusLabel = (s: string) => {
+		var m: Record<string, string> = {
+			pending: '待付款', paid: '已付款', shipped: '已发货',
+			completed: '已完成', cancelled: '已取消', refunding: '退款中'
+		}
+		return m[s] || s
+	}
+
+	const statusDesc = (s: string) => {
+		var m: Record<string, string> = {
+			pending: '请尽快完成支付', paid: '商家正在准备发货',
+			shipped: '商品已发出，请注意查收', completed: '交易已完成',
+			cancelled: '订单已取消', refunding: '退款处理中'
+		}
+		return m[s] || ''
+	}
+
+	const stepClass = (i: number) => {
+		var idx = stepOrder.indexOf(order.value.status)
+		if (idx === -1) idx = 0
+		return i <= idx ? 'step-item step-done' : 'step-item'
+	}
+
+	const stepDotClass = (i: number) => {
+		var idx = stepOrder.indexOf(order.value.status)
+		if (idx === -1) idx = 0
+		return i <= idx ? 'step-dot step-dot-done' : 'step-dot'
+	}
+
+	const formatTime = (t: string) => {
+		if (!t) return ''
+		var d = new Date(t)
+		var y = d.getFullYear()
+		var M = String(d.getMonth() + 1).padStart(2, '0')
+		var dd = String(d.getDate()).padStart(2, '0')
+		var h = String(d.getHours()).padStart(2, '0')
+		var mi = String(d.getMinutes()).padStart(2, '0')
+		return y + '-' + M + '-' + dd + ' ' + h + ':' + mi
+	}
+
+	const loadOrder = async () => {
+		try {
+			var res = await api.orders.my(getDeviceId(), 1)
+			if (res && res.list) {
+				var found = res.list.find((o: any) => o.orderNo === orderNo.value)
+				if (found) {
+					order.value = found
+					computedProgress()
+				}
+			}
+		} catch (e) {
+			uni.showToast({ title: '加载订单失败，请稍后重试', icon: 'none' })
+		}
+	}
+
+	const copyOrderNo = () => {
+		uni.setClipboardData({ data: order.value.orderNo, success: () => uni.showToast({ title: '已复制', icon: 'success' }) })
+	}
+
+	const copyLogistics = () => {
+		uni.setClipboardData({ data: order.value.logistics, success: () => uni.showToast({ title: '单号已复制', icon: 'success' }) })
+	}
+
+	const handleCancel = () => {
+		uni.showModal({
+			title: '取消订单', content: '确定要取消该订单吗？',
+			success: async (res) => {
+				if (res.confirm) {
+					try {
+						await api.orders.cancel(order.value.orderNo, getDeviceId())
+						uni.showToast({ title: '已取消', icon: 'success' })
+						loadOrder()
+					} catch (e: any) {
+						uni.showToast({ title: e && e.message ? e.message : '取消失败', icon: 'none' })
+					}
+				}
+			}
+		})
+	}
+
+	const handleConfirm = () => {
+		uni.showModal({
+			title: '确认收货', content: '确认已收到商品？',
+			success: async (res) => {
+				if (res.confirm) {
+					try {
+						await api.orders.confirm(order.value.orderNo, getDeviceId())
+						uni.showToast({ title: '已确认收货', icon: 'success' })
+						loadOrder()
+					} catch (e: any) {
+						uni.showToast({ title: e && e.message ? e.message : '操作失败', icon: 'none' })
+					}
+				}
+			}
+		})
+	}
+
+	const handleRefund = () => {
+		if (order.value.refundStatus === 'pending') {
+			uni.showToast({ title: '退款正在处理中', icon: 'none' })
+			return
+		}
+		uni.showModal({
+			title: '申请退款', content: '请输入退款原因：',
+			editable: true, placeholderText: '如：商品与描述不符',
+			success: async (res) => {
+				if (res.confirm && res.content) {
+					try {
+						await api.orders.refund(order.value.orderNo, getDeviceId(), res.content)
+						uni.showToast({ title: '退款申请已提交', icon: 'success' })
+						loadOrder()
+					} catch (e: any) {
+						uni.showToast({ title: e && e.message ? e.message : '申请失败', icon: 'none' })
+					}
+				}
+			}
+		})
+	}
+
+	const handleContact = () => {
+		uni.makePhoneCall({ phoneNumber: '13800000000' })
+	}
+
+	onLoad((options: any) => {
+		orderNo.value = options.orderNo || ''
+		loadOrder()
+	})
+</script>
+
+<style>
+	.order-detail-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+		padding-bottom: 120rpx;
+	}
+
+	.detail-header {
+		position: relative;
+		padding: 50rpx 30rpx;
+		overflow: hidden;
+	}
+
+	.header-bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+	.header-overlay {
+		position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.85), #8B4513);
+	}
+
+	.header-pattern {
+		position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+	}
+
+	.header-content {
+		position: relative; z-index: 1;
+		display: flex; flex-direction: column; align-items: center;
+	}
+
+	.status-big {
+		padding: 10rpx 32rpx; border-radius: 32rpx;
+		display: flex; flex-direction: row; align-items: center; gap: 10rpx; margin-bottom: 12rpx;
+	}
+
+	.status-big-pending { background: rgba(255, 255, 255, 0.2); }
+	.status-big-paid { background: rgba(255, 255, 255, 0.2); }
+	.status-big-shipped { background: rgba(255, 255, 255, 0.2); }
+	.status-big-completed { background: rgba(255, 255, 255, 0.2); }
+	.status-big-cancelled { background: rgba(255, 100, 100, 0.2); }
+	.status-big-refunding { background: rgba(255, 180, 100, 0.2); }
+
+	.status-dot {
+		width: 14rpx; height: 14rpx; border-radius: 50%; background: #FFF8E7;
+	}
+
+	.status-big-text {
+		font-size: 34rpx; font-weight: bold; color: #FFF8E7;
+	}
+
+	.status-desc {
+		font-size: 24rpx; color: rgba(255, 248, 231, 0.8);
+	}
+
+	.detail-body { padding: 20rpx 24rpx; }
+
+	/* Progress */
+	.progress-section { background: #FFFFFF; border-radius: 16rpx; padding: 32rpx 24rpx; margin-bottom: 20rpx; box-shadow: 0 2rpx 8rpx rgba(139,69,19,0.06); }
+
+	.progress-track { height: 8rpx; background: #F5E6D3; border-radius: 4rpx; margin-bottom: 24rpx; overflow: hidden; }
+	.progress-fill { height: 100%; background: linear-gradient(90deg, #D4A86A, #4A8F6D); border-radius: 4rpx; transition: width 0.5s ease; }
+
+	.progress-steps { display: flex; flex-direction: row; justify-content: space-between; }
+	.step-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+	.step-dot { width: 20rpx; height: 20rpx; border-radius: 50%; background: #E0D0C0; margin-bottom: 8rpx; }
+	.step-dot-done { background: linear-gradient(135deg, #D4A86A, #B4884A); }
+	.step-label { font-size: 20rpx; color: #B0A090; }
+	.step-done .step-label { color: #8B4513; font-weight: 500; }
+
+	/* Cards */
+	.info-card { background: #FFFFFF; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; box-shadow: 0 2rpx 8rpx rgba(139,69,19,0.06); border: 1rpx solid rgba(212,168,106,0.08); }
+	.card-title-row { display: flex; flex-direction: row; align-items: center; margin-bottom: 20rpx; }
+	.title-dot { width: 12rpx; height: 12rpx; border-radius: 50%; background: #D4A86A; margin-right: 12rpx; }
+	.title-dot-blue { background: #6B8FA3; }
+	.title-dot-green { background: #4A8F6D; }
+	.title-dot-gold { background: #D4A86A; }
+	.title-dot-red { background: #D4695A; }
+	.card-title { font-size: 28rpx; font-weight: bold; color: #2C1810; }
+
+	.product-row { display: flex; flex-direction: row; }
+	.prod-img { width: 120rpx; height: 120rpx; border-radius: 12rpx; background: #F5E6D3; flex-shrink: 0; }
+	.prod-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; justify-content: center; }
+	.prod-name { font-size: 28rpx; color: #2C1810; margin-bottom: 8rpx; }
+	.prod-price { font-size: 36rpx; font-weight: bold; color: #C46210; font-family: 'STKaiti','KaiTi',serif; }
+
+	.info-row { display: flex; flex-direction: row; margin-bottom: 14rpx; }
+	.info-row:last-child { margin-bottom: 0; }
+	.info-label { width: 140rpx; font-size: 26rpx; color: #7A6B5A; flex-shrink: 0; }
+	.info-value { flex: 1; font-size: 26rpx; color: #2C1810; }
+
+	.logi-row { display: flex; flex-direction: row; margin-bottom: 14rpx; }
+	.logi-row:last-child { margin-bottom: 0; }
+	.logi-label { width: 140rpx; font-size: 26rpx; color: #7A6B5A; flex-shrink: 0; }
+	.logi-value { flex: 1; font-size: 26rpx; color: #2C1810; }
+
+	.logi-copy-wrap { display: flex; flex-direction: row; align-items: center; flex: 1; }
+	.copy-btn { font-size: 22rpx; color: #D4A86A; margin-left: 16rpx; padding: 4rpx 12rpx; border: 1rpx solid rgba(212,168,106,0.3); border-radius: 8rpx; }
+
+	.refund-reason-text { color: #D4695A; }
+	.refund-status-row { display: flex; flex-direction: row; align-items: center; gap: 16rpx; }
+	.refund-badge { padding: 6rpx 18rpx; border-radius: 16rpx; }
+	.refund-pending { background: #FFF0DB; }
+	.refund-pending .refund-badge-text { color: #E07800; }
+	.refund-approved { background: #D4EDDA; }
+	.refund-approved .refund-badge-text { color: #155724; }
+	.refund-rejected { background: #F8D7DA; }
+	.refund-rejected .refund-badge-text { color: #721C24; }
+	.refund-badge-text { font-size: 22rpx; font-weight: bold; }
+	.refund-time { font-size: 22rpx; color: #B0A090; }
+
+	/* Footer */
+	.detail-footer {
+		position: fixed; bottom: 0; left: 0; width: 100%;
+		padding: 16rpx 24rpx; padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+		background: #FFFFFF; border-top: 1rpx solid rgba(212,168,106,0.12);
+		display: flex; flex-direction: row; gap: 16rpx; justify-content: flex-end;
+	}
+
+	.footer-btn { padding: 16rpx 36rpx; border-radius: 36rpx; }
+	.footer-btn-cancel { border: 1rpx solid #B0A090; }
+	.footer-btn-cancel .footer-btn-text { color: #7A6B5A; }
+	.footer-btn-contact { border: 1rpx solid #D4A86A; }
+	.footer-btn-contact .footer-btn-text { color: #D4A86A; }
+	.footer-btn-confirm { background: linear-gradient(135deg, #4A8F6D, #3E7A5B); }
+	.footer-btn-confirm .footer-btn-text { color: #FFFFFF; }
+	.footer-btn-refund { border: 1rpx solid #D4695A; }
+	.footer-btn-refund .footer-btn-text { color: #D4695A; }
+	.footer-btn-text { font-size: 26rpx; font-weight: 500; }
+</style>

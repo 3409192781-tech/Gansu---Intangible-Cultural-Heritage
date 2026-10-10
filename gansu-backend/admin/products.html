@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品管理 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item active" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">产品管理</div>
+        <div class="breadcrumb">首页 / <span>文创产品</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-primary" onclick="openModal()">＋ 新增产品</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="f_search" placeholder="搜索产品名称…" onkeyup="if(event.key==='Enter')load()">
+        </div>
+        <select id="f_category" onchange="load()">
+          <option value="">全部分类 📂</option>
+          <option value="artifact">工艺品</option><option value="textile">织物布艺</option>
+          <option value="food_gift">美食礼品</option><option value="stationery">文房用品</option>
+          <option value="home">家居装饰</option><option value="accessory">首饰配饰</option>
+        </select>
+        <select id="f_status" onchange="load()">
+          <option value="">全部状态 📌</option><option value="1">在售</option><option value="0">已下架</option>
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('f_search').value='';document.getElementById('f_category').value='';document.getElementById('f_status').value='';load()">清除</button>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>图片</th><th>名称</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>热销</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="max-width:650px">
+    <div class="modal-header">
+      <h3 id="modalTitle">新增产品</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>产品名称</label><input id="f_name" placeholder="输入产品名称"></div>
+      <div class="form-row">
+        <div class="form-group"><label>价格 ¥</label><input type="number" id="f_price" step="0.01" placeholder="0.00"></div>
+        <div class="form-group"><label>原价 ¥</label><input type="number" id="f_origPrice" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>分类</label><select id="f_category2">
+          <option value="artifact">工艺品</option><option value="textile">织物布艺</option>
+          <option value="food_gift">美食礼品</option><option value="stationery">文房用品</option>
+          <option value="home">家居装饰</option><option value="accessory">首饰配饰</option>
+        </select></div>
+        <div class="form-group"><label>库存</label><input type="number" id="f_stock" placeholder="0"></div>
+        <div class="form-group"><label>销量</label><input type="number" id="f_sold" placeholder="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>评分</label><input type="number" id="f_rating" step="0.1" min="0" max="5" placeholder="4.5"></div>
+        <div class="form-group"><label>评价条数</label><input type="number" id="f_reviews" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label>图片 URL</label><input id="f_image" placeholder="https://img.gansu-culture.xyz/..."></div>
+      <div class="form-group"><label>轮播图 URLs <span class="form-hint">（每行一个图片链接，用于详情页轮播）</span></label><textarea id="f_images" rows="3" placeholder="https://img.gansu-culture.xyz/details/detail1-1.jpg&#10;https://img.gansu-culture.xyz/details/detail1-2.jpg&#10;https://img.gansu-culture.xyz/details/detail1-3.jpg"></textarea></div>
+      <div class="form-group"><label>标签 <span class="form-hint">（逗号分隔）</span></label><input id="f_tags" placeholder="敦煌, 丝路, 手工"></div>
+      <div class="form-group"><label>所在地</label><input id="f_location" placeholder="甘肃兰州"></div>
+      <div class="form-row">
+        <div class="form-group"><label>材质</label><input id="f_material" placeholder="如：丝绸 / 陶瓷 / 铜"></div>
+        <div class="form-group"><label>规格</label><input id="f_specification" placeholder="如：30×20cm"></div>
+      </div>
+      <div class="form-group"><label>产品描述</label><textarea id="f_desc" rows="3" placeholder="描述产品的特色与故事…"></textarea></div>
+      <div class="form-group"><label>文化故事</label><textarea id="f_story" rows="2" placeholder="产品背后的非遗或历史文化…"></textarea></div>
+      <div class="form-group"><label>使用贴士 <span class="form-hint">（每行一条）</span></label><textarea id="f_tips" rows="2" placeholder="可悬挂于客厅或书房&#10;避免阳光直射&#10;定期用软布擦拭"></textarea></div>
+      <div class="form-group"><label>排序值 <span class="form-hint">（越大越靠前）</span></label><input type="number" id="f_sortOrder" value="0"></div>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="f_isHot"> 🔥 热销</label>
+        <label><input type="checkbox" id="f_isNew"> ✨ 新品</label>
+        <label><input type="checkbox" id="f_limited"> 💎 限量</label>
+      </div>
+      <p class="form-error" id="saveError"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveProduct()">保存 💾</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+var API = '/api';
+var TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+var editId = null;
+var products = [];
+var currentPage = 1;
+
+// ── XSS 防护 ──
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+var CATS = { artifact: '工艺品', textile: '织物布艺', food_gift: '美食礼品', stationery: '文房用品', home: '家居装饰', accessory: '首饰配饰' };
+
+// ── Toast ──
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+function tick() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+}
+tick(); setInterval(tick, 30000);
+
+async function api(path, method, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try { var res = await fetch(API + path, opts); var data = await res.json(); if (data.code === 401) { logout(); return null; } return data; }
+  catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+async function load(pg) {
+  if (pg) currentPage = pg;
+  var keyword = document.getElementById('f_search').value.trim();
+  var category = document.getElementById('f_category').value;
+  var status = document.getElementById('f_status').value;
+  var q = '?page=' + currentPage + '&pageSize=50&admin=1';
+  if (keyword) q += '&keyword=' + encodeURIComponent(keyword);
+  if (category) q += '&category=' + category;
+  if (status !== '') q += '&status=' + status;
+
+  var res = await api('/products' + q, 'GET');
+  if (!res || res.code !== 200) { document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="loading"><div class="spinner"></div>加载中…</div></td></tr>'; return; }
+  products = res.data.list || [];
+  var total = res.data.total || 0;
+
+  if (products.length === 0) {
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">暂无产品</div><div class="empty-desc">点击"新增产品"开始添加</div></div></td></tr>';
+  } else {
+    document.getElementById('tableBody').innerHTML = products.map(function(p) {
+      return '<tr>' +
+        '<td style="font-family:var(--font-mono);font-size:.82rem">' + p.id + '</td>' +
+        '<td><img src="' + p.image + '" class="table-img"></td>' +
+        '<td class="table-name">' + esc(p.name) + '</td>' +
+        '<td>' + (CATS[p.category] || p.category) + '</td>' +
+        '<td style="font-weight:600">¥' + p.price + '</td>' +
+        '<td>' + (p.stock || 0) + '</td>' +
+        '<td>' + (p.sold || 0) + '</td>' +
+        '<td>' + (p.isHot ? '🔥' : '<span style="color:var(--grey-light)">-</span>') + '</td>' +
+        '<td><span class="badge ' + (p.status === 1 ? 'badge-paid' : 'badge-cancelled') + '">' + (p.status === 1 ? '在售' : '已下架') + '</span></td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="btn btn-sm btn-primary" onclick="editProduct(\'' + p.id + '\')">编辑 ✏️</button> ' +
+          '<button class="btn btn-sm btn-red" onclick="deleteProduct(\'' + p.id + '\')">删除 🗑️</button> ' +
+          '<button class="btn btn-sm btn-outline" onclick="toggleStatus(\'' + p.id + '\',' + (p.status === 1 ? 0 : 1) + ')">' + (p.status === 1 ? '下架 ⬇️' : '上架 ⬆️') + '</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var totalPages = Math.ceil(total / 50);
+  document.getElementById('pagination').innerHTML = totalPages > 1
+    ? Array.from({length: totalPages}, function(_,i){ return '<button class="page-btn' + (i+1===currentPage?' active':'') + '" onclick="load(' + (i+1) + ')">' + (i+1) + '</button>'; }).join('') + '<span class="page-info">共 ' + totalPages + ' 页</span>'
+    : '';
+}
+
+function getF(id) { var el = document.getElementById(id); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; }
+function setF(id, v) { var el = document.getElementById(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v !== undefined && v !== null ? v : ''; }
+
+function openModal() { editId = null; document.getElementById('modalTitle').textContent = '新增产品'; clearForm(); document.getElementById('modal').style.display = 'flex'; document.getElementById('saveError').style.display = 'none'; }
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function clearForm() {
+  ['f_name','f_price','f_origPrice','f_image','f_images','f_tags','f_location','f_desc','f_story','f_stock','f_sold','f_rating','f_reviews','f_material','f_specification','f_tips','f_sortOrder'].forEach(function(id){ setF(id, ''); });
+  setF('f_stock', 0); setF('f_sold', 0); setF('f_rating', 4.5); setF('f_reviews', 0); setF('f_sortOrder', 0);
+  setF('f_isHot', false); setF('f_isNew', false); setF('f_limited', false);
+  document.getElementById('f_category2').value = 'home';
+}
+
+function editProduct(id) {
+  var p = products.find(function(pp){ return pp.id === id; });
+  if (!p) { toast('未找到该产品', 'error'); return; }
+  editId = id;
+  document.getElementById('modalTitle').textContent = '编辑产品 — ' + p.name;
+  setF('f_name', p.name); setF('f_price', p.price); setF('f_origPrice', p.originalPrice);
+  setF('f_image', p.image); setF('f_tags', (p.tags || []).join(', '));
+  setF('f_location', p.location); setF('f_desc', p.description); setF('f_story', p.culturalStory);
+  setF('f_stock', p.stock); setF('f_sold', p.sold || 0); setF('f_rating', p.rating || 4.5); setF('f_reviews', p.reviews || 0); setF('f_material', p.material); setF('f_specification', p.specification);
+  setF('f_images', (p.images || []).join('\n')); setF('f_tips', (p.tips || []).join('\n')); setF('f_sortOrder', p.sortOrder);
+  setF('f_isHot', p.isHot); setF('f_isNew', p.isNew); setF('f_limited', p.limited);
+  document.getElementById('f_category2').value = p.category || 'home';
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('saveError').style.display = 'none';
+}
+
+async function saveProduct() {
+  var body = {
+    name: getF('f_name'), price: parseFloat(getF('f_price')) || 0,
+    originalPrice: parseFloat(getF('f_origPrice')) || null,
+    image: getF('f_image'),
+    tags: getF('f_tags').split(',').map(function(t){ return t.trim(); }).filter(Boolean),
+    location: getF('f_location'), description: getF('f_desc'), culturalStory: getF('f_story'),
+    stock: parseInt(getF('f_stock')) || 0,
+    sold: parseInt(getF('f_sold')) || 0,
+    rating: parseFloat(getF('f_rating')) || null,
+    reviews: parseInt(getF('f_reviews')) || 0,
+    material: getF('f_material'), specification: getF('f_specification'),
+    images: getF('f_images').split('\n').map(function(t){ return t.trim(); }).filter(Boolean),
+    tips: getF('f_tips').split('\n').map(function(t){ return t.trim(); }).filter(Boolean),
+    sortOrder: parseInt(getF('f_sortOrder')) || 0,
+    isHot: getF('f_isHot'), isNew: getF('f_isNew'), limited: getF('f_limited'),
+    category: document.getElementById('f_category2').value
+  };
+  Object.keys(body).forEach(function(k){ if (body[k] === '' || body[k] === undefined || body[k] === null) delete body[k]; });
+
+  var res;
+  if (editId) {
+    res = await api('/products/' + editId, 'PUT', body);
+  } else {
+    var maxId = Math.max.apply(null, products.map(function(p){ return parseInt(p.id) || 0; }));
+    if (maxId < 300) maxId = 300;
+    body.id = String(maxId + 1);
+    body.type = 'product';
+    res = await api('/products', 'POST', body);
+  }
+
+  if (res && res.code === 200) { closeModal(); toast(editId ? '产品已更新' : '产品已创建', 'success'); load(); }
+  else { var el = document.getElementById('saveError'); el.textContent = (res && res.message) ? res.message : '保存失败'; el.style.display = 'block'; }
+}
+
+async function toggleStatus(id, newStatus) {
+  if (!confirm('确认' + (newStatus === 0 ? '下架' : '上架') + '该产品？')) return;
+  var res = await api('/products/' + id, 'PUT', { status: newStatus });
+  if (res && res.code === 200) { toast(newStatus === 0 ? '已下架' : '已上架', 'success'); load(); }
+  else toast((res && res.message) || '操作失败', 'error');
+}
+
+async function deleteProduct(id) {
+  if (!confirm('确认删除该产品？\n此操作不可恢复。')) return;
+  var res = await api('/products/' + id, 'DELETE');
+  if (res && res.code === 200) { toast('产品已删除', 'success'); load(); }
+  else toast((res && res.message) || '删除失败', 'error');
+}
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<template>
+	<view class="search-page">
+		<view class="search-bar">
+			<view class="search-input-wrap">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<input
+					class="search-input"
+					placeholder="搜索景点、美食、非遗..."
+					v-model="keyword"
+					@confirm="doSearch"
+					:focus="true"
+				/>
+				<view class="search-clear" v-if="keyword" @click="keyword = ''; doSearch()"></view>
+			</view>
+			<view class="search-btn" @click="doSearch">
+				<text class="search-btn-text">搜索</text>
+			</view>
+		</view>
+
+		<scroll-view scroll-y class="search-results" v-if="hasSearched">
+			<view class="empty-state" v-if="totalCount === 0">
+				<view class="empty-icon"></view>
+				<text class="empty-text">未找到相关内容</text>
+				<text class="empty-hint">换个关键词试试吧</text>
+			</view>
+
+			<view v-if="cultures.length > 0" class="result-section">
+				<view class="section-header">
+					<view class="section-icon culture-icon"></view>
+					<text class="section-title">非遗文化 ({{cultures.length}})</text>
+				</view>
+				<view class="result-list">
+					<view class="result-card" v-for="item in cultures" :key="item.id" @click="goToDetail(item.id, 'culture')">
+						<image :src="item.image" mode="aspectFill" class="result-image"></image>
+						<view class="result-info">
+							<text class="result-name">{{item.name}}</text>
+							<text class="result-location">{{item.location}}</text>
+							<view class="result-tags">
+								<text class="result-tag" v-for="(t, i) in item.tags.slice(0, 3)" :key="i">{{t}}</text>
+							</view>
+						</view>
+						<view class="result-arrow"></view>
+					</view>
+				</view>
+			</view>
+
+			<view v-if="spots.length > 0" class="result-section">
+				<view class="section-header">
+					<view class="section-icon spot-icon"></view>
+					<text class="section-title">景点 ({{spots.length}})</text>
+				</view>
+				<view class="result-list">
+					<view class="result-card" v-for="item in spots" :key="item.id" @click="goToDetail(item.id, 'spot')">
+						<image :src="item.image" mode="aspectFill" class="result-image"></image>
+						<view class="result-info">
+							<text class="result-name">{{item.name}}</text>
+							<text class="result-location">{{item.location}}</text>
+							<view class="result-tags">
+								<text class="result-tag" v-for="(t, i) in item.tags.slice(0, 3)" :key="i">{{t}}</text>
+							</view>
+						</view>
+						<view class="result-arrow"></view>
+					</view>
+				</view>
+			</view>
+
+			<view v-if="foods.length > 0" class="result-section">
+				<view class="section-header">
+					<view class="section-icon food-icon"></view>
+					<text class="section-title">美食 ({{foods.length}})</text>
+				</view>
+				<view class="result-list">
+					<view class="result-card" v-for="item in foods" :key="item.id" @click="goToDetail(item.id, 'food')">
+						<image :src="item.image" mode="aspectFill" class="result-image"></image>
+						<view class="result-info">
+							<text class="result-name">{{item.name}}</text>
+							<text class="result-location">{{item.location}}</text>
+							<view class="result-tags">
+								<text class="result-tag" v-for="(t, i) in item.tags.slice(0, 3)" :key="i">{{t}}</text>
+							</view>
+						</view>
+						<view class="result-arrow"></view>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+
+		<view class="search-hint" v-if="!hasSearched">
+			<text class="hint-text">输入关键词搜索甘肃非遗、景点、美食</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed, onLoad } from 'vue'
+	import { api } from '../../utils/api'
+
+	const keyword = ref('')
+	const hasSearched = ref(false)
+	const cultures = ref<any[]>([])
+	const spots = ref<any[]>([])
+	const foods = ref<any[]>([])
+
+	const totalCount = computed(() => cultures.value.length + spots.value.length + foods.value.length)
+
+	const doSearch = async () => {
+		const kw = keyword.value.trim()
+		if (!kw) {
+			cultures.value = []
+			spots.value = []
+			foods.value = []
+			hasSearched.value = false
+			return
+		}
+
+		try {
+			const data = await api.search.do(kw)
+			cultures.value = data.cultures || []
+			spots.value = data.spots || []
+			foods.value = data.foods || []
+			hasSearched.value = true
+		} catch (e) {
+			uni.showToast({ title: '搜索失败，请重试', icon: 'none' })
+		}
+	}
+
+	const goToDetail = (id: string, type: string = '') => {
+		uni.navigateTo({ url: '/pages/detail/detail?id=' + id + '&type=' + type })
+	}
+</script>
+
+<style>
+	.search-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+	}
+
+	.search-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: #FFFFFF;
+	}
+
+	.search-input-wrap {
+		flex: 1;
+		height: 72rpx;
+		background: #F5F5F5;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 28rpx;
+		margin-right: 20rpx;
+		position: relative;
+	}
+
+	.search-icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-right: 16rpx;
+	}
+
+	.icon-lens {
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #8B4513;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.icon-lens:after {
+		content: '';
+		position: absolute;
+		bottom: -6rpx;
+		right: -6rpx;
+		width: 10rpx;
+		height: 3rpx;
+		background: #8B4513;
+		border-radius: 2rpx;
+		transform: rotate(45deg);
+	}
+
+	.search-input {
+		flex: 1;
+		font-size: 28rpx;
+		color: #2C1810;
+	}
+
+	.search-clear {
+		width: 36rpx;
+		height: 36rpx;
+		border-radius: 50%;
+		background: #CCC;
+		position: relative;
+	}
+
+	.search-clear:before,
+	.search-clear:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 16rpx;
+		height: 2rpx;
+		background: #FFF;
+	}
+
+	.search-clear:before { transform: translate(-50%, -50%) rotate(45deg); }
+	.search-clear:after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+	.search-btn {
+		padding: 0 32rpx;
+		height: 72rpx;
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+		border-radius: 36rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.search-btn-text {
+		font-size: 28rpx;
+		color: #2C1810;
+		font-weight: 600;
+	}
+
+	.search-results {
+		padding: 20rpx 24rpx;
+	}
+
+	.result-section {
+		margin-bottom: 32rpx;
+	}
+
+	.section-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 16rpx;
+	}
+
+	.section-icon {
+		width: 8rpx;
+		height: 32rpx;
+		border-radius: 4rpx;
+		margin-right: 16rpx;
+	}
+
+	.culture-icon { background: #8B4513; }
+	.spot-icon { background: #4A8F6D; }
+	.food-icon { background: #D4A86A; }
+
+	.section-title {
+		font-size: 30rpx;
+		color: #2C1810;
+		font-weight: 600;
+	}
+
+	.result-list {
+		background: #FFFFFF;
+		border-radius: 16rpx;
+		overflow: hidden;
+	}
+
+	.result-card {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx;
+		border-bottom: 1rpx solid #F0E6D3;
+	}
+
+	.result-card:last-child { border-bottom: none; }
+
+	.result-image {
+		width: 120rpx;
+		height: 120rpx;
+		border-radius: 12rpx;
+		flex-shrink: 0;
+	}
+
+	.result-info {
+		flex: 1;
+		margin-left: 20rpx;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.result-name {
+		font-size: 30rpx;
+		color: #2C1810;
+		font-weight: 600;
+		margin-bottom: 8rpx;
+	}
+
+	.result-location {
+		font-size: 24rpx;
+		color: #9A8B7A;
+		margin-bottom: 8rpx;
+	}
+
+	.result-tags {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.result-tag {
+		font-size: 22rpx;
+		color: #8B4513;
+		background: rgba(139, 69, 19, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 8rpx;
+		margin-bottom: 4rpx;
+	}
+
+	.result-arrow {
+		width: 12rpx;
+		height: 12rpx;
+		border-top: 3rpx solid #CCC;
+		border-right: 3rpx solid #CCC;
+		transform: rotate(45deg);
+		flex-shrink: 0;
+	}
+
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 120rpx 0;
+	}
+
+	.empty-icon {
+		width: 120rpx;
+		height: 120rpx;
+		border: 4rpx solid #D4A86A;
+		border-radius: 50%;
+		margin-bottom: 32rpx;
+		position: relative;
+	}
+
+	.empty-icon:before {
+		content: '?';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 56rpx;
+		color: #D4A86A;
+	}
+
+	.empty-text {
+		font-size: 32rpx;
+		color: #6B3410;
+		font-weight: 600;
+		margin-bottom: 12rpx;
+	}
+
+	.empty-hint {
+		font-size: 26rpx;
+		color: #9A8B7A;
+	}
+
+	.search-hint {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 200rpx 0;
+	}
+
+	.hint-text {
+		font-size: 28rpx;
+		color: #9A8B7A;
+	}
+</style>

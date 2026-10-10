@@ -1,0 +1,271 @@
+<template>
+	<view class="my-list-page">
+		<scroll-view scroll-y class="list-scroll">
+			<view class="spots-grid">
+				<view
+					class="spot-card"
+					v-for="(item, index) in displayList"
+					:key="index"
+					@click="goToDetail(item.id)"
+				>
+					<view class="spot-image-wrap">
+						<image :src="item.image" mode="aspectFill" class="spot-image"></image>
+						<view class="spot-overlay"></view>
+						<view class="spot-rating">
+							<view class="star-icon"></view>
+							<text class="rating-text">{{item.rating}}</text>
+						</view>
+						<view class="spot-badge" v-if="has5ATag(item)">
+							<text class="badge-text">5A</text>
+						</view>
+						<view class="spot-badge-world" v-if="hasWorldTag(item)">
+							<text class="badge-text-world">世界遗产</text>
+						</view>
+					</view>
+					<view class="spot-info">
+						<text class="spot-name">{{item.name}}</text>
+						<text class="spot-location">{{item.location}}</text>
+						<view class="spot-tags">
+							<text class="spot-tag" v-for="(tag, tIndex) in item.tags.slice(0, 2)" :key="tIndex">{{tag}}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<view class="empty-state" v-if="allList.length === 0">
+				<view class="empty-icon"></view>
+				<text class="empty-text">暂无景点记录</text>
+				<text class="empty-sub">浏览过的景点将出现在这里</text>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed, onMounted } from 'vue'
+	import { api } from '../../utils/api'
+	import { getDeviceId } from '../../utils/identity'
+
+	const allList = ref<any[]>([])
+
+	const loadData = async () => {
+		try {
+			const deviceId = getDeviceId()
+			const data = await api.favorites.get(deviceId)
+			if (data && data.spots) {
+				allList.value = data.spots
+			}
+		} catch (err) {
+			console.error('加载收藏失败:', err)
+			allList.value = []
+		}
+	}
+
+	const displayList = computed(() => allList.value)
+
+	onMounted(() => {
+		loadData()
+	})
+
+	const has5ATag = (item: any) => {
+		return (item.tags || []).some((t: string) => t.includes('AAAAA'))
+	}
+
+	const hasWorldTag = (item: any) => {
+		return (item.tags || []).some((t: string) => t.includes('世界'))
+	}
+
+	const goToDetail = (id: string) => {
+		uni.navigateTo({ url: '/pages/detail/detail?id=' + id + '&type=spot' })
+	}
+</script>
+
+<style>
+	.my-list-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+	}
+
+	.list-scroll {
+		height: 100vh;
+		padding: 20rpx 0;
+	}
+
+	.spots-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		padding: 0 24rpx;
+	}
+
+	.spot-card {
+		width: 335rpx;
+		margin-right: 22rpx;
+		margin-bottom: 20rpx;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+	}
+
+	.spot-card:nth-child(2n) {
+		margin-right: 0;
+	}
+
+	.spot-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 240rpx;
+	}
+
+	.spot-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.spot-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 80rpx;
+		background: linear-gradient(transparent, rgba(0,0,0,0.3));
+	}
+
+	.spot-rating {
+		position: absolute;
+		bottom: 16rpx;
+		left: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: rgba(0,0,0,0.6);
+		padding: 6rpx 12rpx;
+		border-radius: 16rpx;
+	}
+
+	.star-icon {
+		width: 24rpx;
+		height: 24rpx;
+		background: #FFD700;
+		clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+		margin-right: 6rpx;
+	}
+
+	.rating-text {
+		font-size: 24rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-badge {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #FF6B6B;
+		padding: 6rpx 14rpx;
+		border-radius: 12rpx;
+	}
+
+	.spot-badge-world {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #8B4513;
+		padding: 6rpx 10rpx;
+		border-radius: 12rpx;
+	}
+
+	.badge-text {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.badge-text-world {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-info {
+		padding: 20rpx;
+	}
+
+	.spot-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+
+	.spot-location {
+		font-size: 24rpx;
+		color: #999;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+
+	.spot-tags {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.spot-tag {
+		font-size: 22rpx;
+		color: #8B4513;
+		background: rgba(139, 69, 19, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+	}
+
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 200rpx 0;
+	}
+
+	.empty-icon {
+		width: 120rpx;
+		height: 120rpx;
+		background: #F5F5F5;
+		border-radius: 50%;
+		margin-bottom: 24rpx;
+		position: relative;
+	}
+
+	.empty-icon:before {
+		content: '';
+		position: absolute;
+		top: 40rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-icon:after {
+		content: '';
+		position: absolute;
+		top: 50rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-text {
+		font-size: 30rpx;
+		color: #8B7355;
+		margin-bottom: 12rpx;
+	}
+
+	.empty-sub {
+		font-size: 24rpx;
+		color: #B0A090;
+	}
+</style>

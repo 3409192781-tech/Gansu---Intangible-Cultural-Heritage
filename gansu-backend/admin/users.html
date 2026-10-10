@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户管理 · 云游甘肃管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>云游甘肃</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item active" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">用户管理</div>
+        <div class="breadcrumb">首页 / <span>用户</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-sm btn-outline" onclick="load()">刷新 🔄</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="f_search" placeholder="搜索昵称或 openid…" onkeyup="if(event.key==='Enter')load()">
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="load()">搜索</button>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('f_search').value='';load()">清除</button>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span style="font-size:.85rem;color:var(--grey)" id="countLabel">共 0 条</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>昵称</th><th>OpenID</th><th>头像</th><th>收藏数</th><th>注册时间</th><th>最后登录</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = '/api';
+const TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+let currentPage = 1;
+
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+function tick() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+}
+tick(); setInterval(tick, 30000);
+
+async function api(path, method, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try { var res = await fetch(API + path, opts); var data = await res.json(); if (data.code === 401) { logout(); return null; } return data; }
+  catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+async function load(pg) {
+  if (pg) currentPage = pg;
+  var keyword = document.getElementById('f_search').value.trim();
+  var q = '?page=' + currentPage + '&pageSize=50';
+  if (keyword) q += '&keyword=' + encodeURIComponent(keyword);
+
+  var res = await api('/admin/users' + q, 'GET');
+  if (!res || res.code !== 200) { document.getElementById('tableBody').innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div>加载中…</div></td></tr>'; return; }
+  var users = res.data.list || [];
+  var total = res.data.total || 0;
+  document.getElementById('countLabel').textContent = '共 ' + total + ' 位用户';
+
+  if (users.length === 0) {
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">暂无用户</div><div class="empty-desc">用户通过微信登录后自动注册</div></div></td></tr>';
+  } else {
+    document.getElementById('tableBody').innerHTML = users.map(function(u) {
+      return '<tr>' +
+        '<td class="table-name">' + esc(u.nickName || '微信用户') + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:.78rem" title="' + esc(u.openid) + '">' + u.openid.substring(0, 16) + '…</td>' +
+        '<td>' + (u.avatarUrl ? '<img src="' + u.avatarUrl + '" class="table-img" style="width:36px;height:36px;border-radius:50%">' : '<span style="color:var(--grey-light)">-</span>') + '</td>' +
+        '<td>' + (u.collections ? u.collections.length : 0) + '</td>' +
+        '<td style="font-size:.82rem;color:var(--grey)">' + new Date(u.createdAt).toLocaleString('zh-CN') + '</td>' +
+        '<td style="font-size:.82rem;color:var(--grey)">' + new Date(u.lastLoginAt).toLocaleString('zh-CN') + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var totalPages = Math.ceil(total / 50);
+  document.getElementById('pagination').innerHTML = totalPages > 1
+    ? Array.from({length: totalPages}, function(_,i){ return '<button class="page-btn' + (i+1===currentPage?' active':'') + '" onclick="load(' + (i+1) + ')">' + (i+1) + '</button>'; }).join('') + '<span class="page-info">共 ' + totalPages + ' 页</span>'
+    : '';
+}
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

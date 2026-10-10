@@ -1,0 +1,228 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "陇韵匠心",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/map/map",
+			"style": {
+				"navigationBarTitleText": "甘肃地图",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/detail/detail",
+			"style": {
+				"navigationBarTitleText": "详情",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/settings/settings",
+			"style": {
+				"navigationBarTitleText": "设置",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/help/help",
+			"style": {
+				"navigationBarTitleText": "帮助中心",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/privacy/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "陇韵匠心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/agreement/agreement",
+			"style": {
+				"navigationBarTitleText": "用户协议",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/city-list/city-list",
+			"style": {
+				"navigationBarTitleText": "城市非遗",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/spot-list/spot-list",
+			"style": {
+				"navigationBarTitleText": "景点推荐",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/culture-list/culture-list",
+			"style": {
+				"navigationBarTitleText": "非遗文化",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/food-list/food-list",
+			"style": {
+				"navigationBarTitleText": "美食推荐",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/product-list/product-list",
+			"style": {
+				"navigationBarTitleText": "文创产品",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/product-detail/product-detail",
+			"style": {
+				"navigationBarTitleText": "产品详情",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/my-spots/my-spots",
+			"style": {
+				"navigationBarTitleText": "我的景点",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/my-culture/my-culture",
+			"style": {
+				"navigationBarTitleText": "非遗收藏",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/my-food/my-food",
+			"style": {
+				"navigationBarTitleText": "美食记录",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/my-orders/my-orders",
+			"style": {
+				"navigationBarTitleText": "我的订单",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/order-detail/order-detail",
+			"style": {
+				"navigationBarTitleText": "订单详情",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/guide-list/guide-list",
+			"style": {
+				"navigationBarTitleText": "旅游攻略",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/guide-detail/guide-detail",
+			"style": {
+				"navigationBarTitleText": "攻略详情",
+				"navigationBarBackgroundColor": "#D4A86A",
+				"navigationBarTextStyle": "white"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "陇韵匠心",
+		"navigationBarBackgroundColor": "#D4A86A",
+		"backgroundColor": "#F5E6D3",
+		"backgroundColorTop": "#F5E6D3",
+		"backgroundColorBottom": "#F5E6D3"
+	},
+	"tabBar": {
+		"color": "#8B7355",
+		"selectedColor": "#D4A86A",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/tabs/home.png",
+				"selectedIconPath": "static/tabs/home-active.png"
+			},
+			{
+				"pagePath": "pages/map/map",
+				"text": "地图",
+				"iconPath": "static/tabs/map.png",
+				"selectedIconPath": "static/tabs/map-active.png"
+			},
+			{
+				"pagePath": "pages/product-list/product-list",
+				"text": "文创",
+				"iconPath": "static/tabs/creation.png",
+				"selectedIconPath": "static/tabs/creation-active.png"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"text": "我的",
+				"iconPath": "static/tabs/user.png",
+				"selectedIconPath": "static/tabs/user-active.png"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}

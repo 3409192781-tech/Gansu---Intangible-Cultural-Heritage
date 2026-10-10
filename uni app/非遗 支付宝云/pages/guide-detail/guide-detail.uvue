@@ -1,0 +1,338 @@
+<template>
+  <view class="page">
+    <scroll-view scroll-y="true" class="scroll">
+      <!-- 封面 -->
+      <image class="cover" :src="guide.coverImage || defaultCover" mode="aspectFill" />
+
+      <!-- 头部信息 -->
+      <view class="header">
+        <view class="title">{{ guide.title }}</view>
+        <view class="meta-row">
+          <view class="type-tag" :class="guide.type">{{ guide.type === 'itinerary' ? '线路行程' : '游记攻略' }}</view>
+          <view class="cat-tag">{{ catLabel(guide.category) }}</view>
+          <view class="views">👁 {{ guide.views || 0 }}</view>
+        </view>
+        <view class="meta-row" style="margin-top:8rpx">
+          <text class="author">✍️ {{ guide.author || '陇韵匠心' }}</text>
+          <text class="date">{{ formatDate(guide.createdAt) }}</text>
+        </view>
+        <view class="tags" v-if="guide.tags && guide.tags.length > 0">
+          <text class="tag" v-for="tag in guide.tags" :key="tag">{{ tag }}</text>
+        </view>
+      </view>
+
+      <!-- 游记模式：正文 -->
+      <view class="section" v-if="guide.type === 'article' && guide.content">
+        <view class="section-title">📝 攻略正文</view>
+        <view class="content">{{ guide.content }}</view>
+      </view>
+
+      <!-- 线路模式：行程时间轴 -->
+      <view class="section" v-if="guide.type === 'itinerary' && guide.days && guide.days.length > 0">
+        <view class="section-title">🗺️ 行程安排</view>
+        <view class="timeline">
+          <view class="day-card" v-for="(day, idx) in guide.days" :key="idx">
+            <view class="day-header">
+              <view class="day-num">Day {{ day.day }}</view>
+              <view class="day-title">{{ day.title }}</view>
+            </view>
+            <view class="day-spots" v-if="day.spots && day.spots.length > 0">
+              <text class="spot-tag" v-for="spot in day.spots" :key="spot">{{ spot }}</text>
+            </view>
+            <view class="day-desc" v-if="day.description">{{ day.description }}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 旅行贴士 -->
+      <view class="section" v-if="guide.tips && guide.tips.length > 0">
+        <view class="section-title">💡 旅行贴士</view>
+        <view class="tips-list">
+          <view class="tip-item" v-for="(tip, idx) in guide.tips" :key="idx">
+            <text class="tip-num">{{ idx + 1 }}</text>
+            <text class="tip-text">{{ tip }}</text>
+          </view>
+        </view>
+      </view>
+
+    <view style="height: 60rpx"></view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue';
+import { api } from '../../utils/api';
+
+const defaultCover = 'https://img.gansu-culture.xyz/placeholder.jpg';
+
+const catLabels: Record<string, string> = {
+  family: '亲子游', self_drive: '自驾游', photo: '摄影游', deep: '深度游',
+  food: '美食游', history: '文史游', weekend: '周末游', budget: '穷游'
+};
+const catLabel = (c: string) => catLabels[c] || c;
+
+const guide = ref<any>({});
+
+const formatDate = (d: string) => {
+  if (!d) return '';
+  const date = new Date(d);
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+};
+
+const loadData = async () => {
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+  const id = currentPage.$page?.options?.id || currentPage.options?.id || '';
+  if (!id) return;
+
+  try {
+    const data = await api.guides.detail(id);
+    if (data) guide.value = data;
+  } catch (e) {}
+
+};
+
+const goDetail = (id: string, type: string) => {
+  uni.navigateTo({ url: '/pages/detail/detail?id=' + id + '&type=' + type });
+};
+
+onMounted(() => {
+  loadData();
+});
+</script>
+
+<style>
+.page {
+  background: #F5E6D3;
+  min-height: 100vh;
+}
+
+.scroll {
+  height: 100vh;
+}
+
+.cover {
+  width: 100%;
+  height: 400rpx;
+}
+
+.header {
+  padding: 32rpx;
+  background: #FFF;
+  border-radius: 0 0 24rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #2C1810;
+  line-height: 1.3;
+  margin-bottom: 16rpx;
+}
+
+.meta-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.type-tag {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 6rpx;
+  font-weight: 600;
+  margin-right: 12rpx;
+  white-space: nowrap;
+}
+
+.type-tag.article {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.type-tag.itinerary {
+  background: #CCE5FF;
+  color: #004085;
+}
+
+.cat-tag {
+  font-size: 22rpx;
+  color: #8B4513;
+  background: rgba(212,168,106,0.2);
+  padding: 4rpx 16rpx;
+  border-radius: 6rpx;
+  margin-right: 12rpx;
+  white-space: nowrap;
+}
+
+.views {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.author {
+  font-size: 24rpx;
+  color: #7A6B5A;
+}
+
+.date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 16rpx;
+}
+
+.tag {
+  font-size: 22rpx;
+  color: #D4A86A;
+  background: rgba(212,168,106,0.1);
+  padding: 4rpx 14rpx;
+  border-radius: 6rpx;
+}
+
+.section {
+  background: #FFF;
+  border-radius: 16rpx;
+  margin: 0 28rpx 20rpx;
+  padding: 28rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2C1810;
+  margin-bottom: 20rpx;
+}
+
+.content {
+  font-size: 28rpx;
+  color: #2C1810;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 40rpx;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 16rpx;
+  top: 8rpx;
+  bottom: 8rpx;
+  width: 4rpx;
+  background: linear-gradient(180deg, #D4A86A, #8B4513);
+  border-radius: 2rpx;
+}
+
+.day-card {
+  position: relative;
+  margin-bottom: 28rpx;
+  background: #FFF8E7;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border: 1px solid rgba(212,168,106,0.2);
+}
+
+.day-card::before {
+  content: '';
+  position: absolute;
+  left: -30rpx;
+  top: 24rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #8B4513;
+  border: 3rpx solid #D4A86A;
+}
+
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 10rpx;
+}
+
+.day-num {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #8B4513;
+  background: rgba(212,168,106,0.2);
+  padding: 2rpx 16rpx;
+  border-radius: 6rpx;
+}
+
+.day-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2C1810;
+}
+
+.day-spots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 10rpx;
+}
+
+.spot-tag {
+  font-size: 22rpx;
+  color: #8B4513;
+  background: #FFF;
+  padding: 4rpx 14rpx;
+  border-radius: 6rpx;
+  border: 1px solid rgba(212,168,106,0.3);
+}
+
+.day-desc {
+  font-size: 24rpx;
+  color: #7A6B5A;
+  line-height: 1.5;
+}
+
+/* Tips */
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.tip-item {
+  display: flex;
+  gap: 16rpx;
+  align-items: flex-start;
+}
+
+.tip-num {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #8B4513;
+  color: #FFF;
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 26rpx;
+  color: #2C1810;
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* Related */
+</style>
