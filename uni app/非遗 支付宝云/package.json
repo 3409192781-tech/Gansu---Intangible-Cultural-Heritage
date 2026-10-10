@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@dcloudio/uni-cli-shared": "^2.0.2-5010420260703001",
+    "@dcloudio/uni-components": "^3.0.0-alpha-3000020210521001",
+    "@dcloudio/uni-mp-weixin": "^2.0.2-5010420260703001"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.3"
+  }
+}

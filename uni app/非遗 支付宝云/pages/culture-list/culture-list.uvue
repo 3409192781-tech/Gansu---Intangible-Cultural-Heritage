@@ -1,0 +1,915 @@
+<template>
+	<view class="spot-list-page">
+		<view class="search-bar">
+			<view class="search-input-wrap" @click="focusSearch">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<input 
+					class="search-input" 
+					placeholder="搜索非遗项目" 
+					v-model="searchText" 
+					@confirm="handleSearch"
+					:focus="searchFocused"
+				/>
+				<view class="search-clear" v-if="searchText" @click="clearSearch"></view>
+			</view>
+			<view class="filter-btn" @click="showFilter = true">
+				<view class="filter-icon"></view>
+				<text class="filter-text">筛选</text>
+			</view>
+		</view>
+		
+		<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
+			<view class="tabs-inner">
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'all' }"
+					@click="activeCategory = 'all'"
+				>
+					<text class="tab-text">全部</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'world' }"
+					@click="activeCategory = 'world'"
+				>
+					<text class="tab-text">世界遗产</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'national' }"
+					@click="activeCategory = 'national'"
+				>
+					<text class="tab-text">国家级非遗</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'provincial' }"
+					@click="activeCategory = 'provincial'"
+				>
+					<text class="tab-text">省级非遗</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'city' }"
+					@click="activeCategory = 'city'"
+				>
+					<text class="tab-text">市级非遗</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'art' }"
+					@click="activeCategory = 'art'"
+				>
+					<text class="tab-text">传统美术</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'music' }"
+					@click="activeCategory = 'music'"
+				>
+					<text class="tab-text">传统音乐</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'dance' }"
+					@click="activeCategory = 'dance'"
+				>
+					<text class="tab-text">传统舞蹈</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'drama' }"
+					@click="activeCategory = 'drama'"
+				>
+					<text class="tab-text">传统戏剧</text>
+				</view>
+				<view 
+					class="tab-item" 
+					:class="{ active: activeCategory === 'skill' }"
+					@click="activeCategory = 'skill'"
+				>
+					<text class="tab-text">传统技艺</text>
+				</view>
+			</view>
+		</scroll-view>
+		
+		<view class="spot-count">
+			<text class="count-text">共 {{filteredCultures.length}} 个非遗项目</text>
+		</view>
+		
+		<scroll-view 
+			class="spot-list" 
+			scroll-y 
+			@scrolltolower="loadMore"
+			:refresher-enabled="true"
+			:refresher-triggered="refreshing"
+			@refresherrefresh="onRefresh"
+		>
+			<view class="spots-grid">
+				<view 
+					class="spot-card" 
+					v-for="(culture, index) in displayCultures" 
+					:key="index"
+					@click="goToDetail(culture.id)"
+				>
+					<view class="spot-image-wrap">
+						<image :src="culture.image" mode="aspectFill" class="spot-image"></image>
+						<view class="spot-overlay"></view>
+						<view class="spot-rating">
+							<view class="star-icon"></view>
+							<text class="rating-text">{{culture.rating}}</text>
+						</view>
+						<view class="spot-badge" v-if="hasLevelTag(culture.tags, '世界级')">
+							<text class="badge-text">世界级</text>
+						</view>
+						<view class="spot-badge-world" v-if="hasLevelTag(culture.tags, '国家级')">
+							<text class="badge-text-world">国家级</text>
+						</view>
+					</view>
+					<view class="spot-info">
+						<text class="spot-name">{{culture.name}}</text>
+						<text class="spot-location">{{culture.location}}</text>
+						<view class="spot-tags">
+							<text class="spot-tag" v-for="(tag, tIndex) in culture.tags.slice(0, 2)" :key="tIndex">{{tag}}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			
+			<view class="load-more" v-if="loading">
+				<view class="loading-icon"></view>
+				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<view class="no-more" v-if="!loading && displayCultures.length >= filteredCultures.length && filteredCultures.length > 0">
+				<text class="no-more-text">- 已经到底了 -</text>
+			</view>
+			
+			<view class="empty-state" v-if="filteredCultures.length === 0">
+				<view class="empty-icon"></view>
+				<text class="empty-text">暂无相关非遗项目</text>
+			</view>
+		</scroll-view>
+		
+		<view class="filter-modal" v-if="showFilter" @click="showFilter = false">
+			<view class="filter-content" @click.stop>
+				<view class="filter-header">
+					<text class="filter-title">筛选条件</text>
+					<view class="filter-close" @click="showFilter = false"></view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">非遗等级</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '' }"
+							@click="selectedLevel = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '世界级' }"
+							@click="selectedLevel = '世界级'"
+						>
+							<text class="option-text">世界级</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '国家级' }"
+							@click="selectedLevel = '国家级'"
+						>
+							<text class="option-text">国家级</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '省级' }"
+							@click="selectedLevel = '省级'"
+						>
+							<text class="option-text">省级</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedLevel === '市级' }"
+							@click="selectedLevel = '市级'"
+						>
+							<text class="option-text">市级</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-section">
+					<text class="filter-label">非遗类型</text>
+					<view class="filter-options">
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '' }"
+							@click="selectedType = ''"
+						>
+							<text class="option-text">全部</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '传统美术' }"
+							@click="selectedType = '传统美术'"
+						>
+							<text class="option-text">传统美术</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '传统音乐' }"
+							@click="selectedType = '传统音乐'"
+						>
+							<text class="option-text">传统音乐</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '传统舞蹈' }"
+							@click="selectedType = '传统舞蹈'"
+						>
+							<text class="option-text">传统舞蹈</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '传统戏剧' }"
+							@click="selectedType = '传统戏剧'"
+						>
+							<text class="option-text">传统戏剧</text>
+						</view>
+						<view 
+							class="filter-option" 
+							:class="{ active: selectedType === '传统技艺' }"
+							@click="selectedType = '传统技艺'"
+						>
+							<text class="option-text">传统技艺</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="filter-actions">
+					<view class="filter-btn-reset" @click="resetFilter">
+						<text class="btn-text">重置</text>
+					</view>
+					<view class="filter-btn-confirm" @click="confirmFilter">
+						<text class="btn-text">确定</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, computed } from 'vue'
+	import { onLoad } from '@dcloudio/uni-app'
+	import { api } from '../../utils/api'
+	
+	const searchText = ref('')
+	const searchFocused = ref(false)
+	const showFilter = ref(false)
+	const activeCategory = ref('all')
+	const selectedLevel = ref('')
+	const selectedType = ref('')
+	const loading = ref(false)
+	const refreshing = ref(false)
+	const pageSize = 10
+	const currentPage = ref(1)
+	
+
+	
+	const allCultures = ref<any[]>([])
+
+	onLoad(async () => {
+		try {
+			const res = await api.cultures.list(1, 100)
+			allCultures.value = ((res as any)?.list) || []
+		} catch (e) {
+			uni.showToast({ title: '加载失败，请稍后重试', icon: 'none' })
+		}
+	})
+
+		const filteredCultures = computed(() => {
+		let result = allCultures.value
+		
+		if (searchText.value) {
+			const keyword = searchText.value.toLowerCase()
+			result = result.filter(c => 
+				c.name.toLowerCase().includes(keyword) ||
+				c.location.toLowerCase().includes(keyword)
+			)
+		}
+		
+		if (selectedLevel.value) {
+			result = result.filter(c => c.tags.some(t => t.includes(selectedLevel.value)))
+		}
+		
+		if (selectedType.value) {
+			result = result.filter(c => c.tags.some(t => t.includes(selectedType.value)))
+		}
+		
+		if (activeCategory.value !== 'all') {
+			const categoryMap: Record<string, string[]> = {
+				'world': ['世界级'],
+				'national': ['国家级'],
+				'provincial': ['省级'],
+				'city': ['市级'],
+				'art': ['传统美术'],
+				'music': ['传统音乐'],
+				'dance': ['传统舞蹈'],
+				'drama': ['传统戏剧'],
+				'skill': ['传统技艺', '传统手工艺']
+			}
+			const keywords = categoryMap[activeCategory.value] || []
+			result = result.filter(c => c.tags.some(t => keywords.some(k => t.includes(k))))
+		}
+		
+		return result
+	})
+	
+	const displayCultures = computed(() => {
+		return filteredCultures.value.slice(0, currentPage.value * pageSize)
+	})
+	
+	const focusSearch = () => {
+		searchFocused.value = true
+	}
+	
+	const clearSearch = () => {
+		searchText.value = ''
+	}
+	
+	const handleSearch = () => {
+		currentPage.value = 1
+	}
+	
+	const goToDetail = (id) => {
+		uni.navigateTo({
+			url: '/pages/detail/detail?id=' + id + '&type=culture'
+		})
+	}
+	
+	const hasLevelTag = (tags: string[], level: string) => {
+		return tags.some(t => t.includes(level))
+	}
+	
+	const loadMore = () => {
+		if (loading.value) return
+		if (displayCultures.value.length >= filteredCultures.value.length) return
+		
+		loading.value = true
+		setTimeout(() => {
+			currentPage.value++
+			loading.value = false
+		}, 500)
+	}
+	
+	const onRefresh = () => {
+		refreshing.value = true
+		currentPage.value = 1
+		setTimeout(() => {
+			refreshing.value = false
+		}, 1000)
+	}
+	
+	const resetFilter = () => {
+		selectedLevel.value = ''
+		selectedType.value = ''
+	}
+	
+	const confirmFilter = () => {
+		currentPage.value = 1
+		showFilter.value = false
+	}
+</script>
+
+<style>
+	.spot-list-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	.search-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: #FFFFFF;
+	}
+
+	.search-input-wrap {
+		flex: 1;
+		height: 72rpx;
+		background: #F5F5F5;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 28rpx;
+		margin-right: 20rpx;
+	}
+
+	.search-icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-right: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.icon-lens {
+		width: 20rpx;
+		height: 20rpx;
+		border: 3rpx solid #8B4513;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.icon-lens:after {
+		content: '';
+		position: absolute;
+		bottom: -6rpx;
+		right: -6rpx;
+		width: 10rpx;
+		height: 3rpx;
+		background: #8B4513;
+		border-radius: 2rpx;
+		transform: rotate(45deg);
+		transform-origin: left center;
+	}
+
+	.search-input {
+		flex: 1;
+		height: 72rpx;
+		font-size: 28rpx;
+		color: #333;
+	}
+
+	.search-clear {
+		width: 32rpx;
+		height: 32rpx;
+		background: #999;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.search-clear:before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(45deg);
+	}
+
+	.search-clear:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 20rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+		transform: translate(-50%, -50%) rotate(-45deg);
+	}
+
+	.filter-btn {
+		padding: 0 24rpx;
+		height: 72rpx;
+		background: #8B4513;
+		border-radius: 36rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.filter-icon {
+		width: 24rpx;
+		height: 24rpx;
+		border: 3rpx solid #FFFFFF;
+		border-radius: 6rpx;
+		position: relative;
+		margin-right: 8rpx;
+	}
+
+	.filter-icon:after {
+		content: '';
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		right: 8rpx;
+		height: 3rpx;
+		background: #FFFFFF;
+	}
+
+	.filter-text {
+		font-size: 26rpx;
+		color: #FFFFFF;
+	}
+
+	.category-tabs {
+		width: 100%;
+		background: #FFFFFF;
+		height: 100rpx;
+		white-space: nowrap;
+		padding: 14rpx 0;
+	}
+
+	.tabs-inner {
+		display: inline-block;
+		width: 1000rpx;
+		padding-right: 24rpx;
+		white-space: nowrap;
+		font-size: 0;
+	}
+
+	.tab-item {
+		display: inline-block;
+		vertical-align: top;
+		padding: 16rpx 32rpx;
+		background: #F5F5F5;
+		border-radius: 30rpx;
+		margin-right: 16rpx;
+		white-space: normal;
+		font-size: 26rpx;
+	}
+
+	.tab-item.active {
+		background: #D4A86A;
+	}
+
+	.tab-item.active .tab-text {
+		color: #FFFFFF;
+	}
+
+	.tab-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.spot-count {
+		padding: 16rpx 24rpx;
+	}
+
+	.count-text {
+		font-size: 24rpx;
+		color: #8B7355;
+	}
+
+	.spot-list {
+		height: calc(100vh - 320rpx);
+	}
+
+	.spots-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		padding: 0 24rpx;
+	}
+
+	.spot-card {
+		width: 48%;
+		margin-bottom: 24rpx;
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 6rpx 20rpx rgba(139, 69, 19, 0.12);
+		border: 2rpx solid rgba(212, 168, 106, 0.15);
+	}
+
+	.spot-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 240rpx;
+	}
+
+	.spot-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.spot-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 80rpx;
+		background: linear-gradient(transparent, rgba(0,0,0,0.3));
+	}
+
+	.spot-rating {
+		position: absolute;
+		bottom: 16rpx;
+		left: 16rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: rgba(0,0,0,0.6);
+		padding: 6rpx 12rpx;
+		border-radius: 16rpx;
+	}
+
+	.star-icon {
+		width: 24rpx;
+		height: 24rpx;
+		background: #FFD700;
+		clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+		margin-right: 6rpx;
+	}
+
+	.rating-text {
+		font-size: 24rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-badge {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #FF6B6B;
+		padding: 6rpx 14rpx;
+		border-radius: 12rpx;
+	}
+
+	.spot-badge-world {
+		position: absolute;
+		top: 16rpx;
+		right: 16rpx;
+		background: #8B4513;
+		padding: 6rpx 10rpx;
+		border-radius: 12rpx;
+	}
+
+	.badge-text {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.badge-text-world {
+		font-size: 20rpx;
+		color: #FFFFFF;
+	}
+
+	.spot-info {
+		padding: 20rpx;
+	}
+
+	.spot-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 8rpx;
+	}
+
+	.spot-location {
+		font-size: 24rpx;
+		color: #999;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+
+	.spot-tags {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.spot-tag {
+		font-size: 22rpx;
+		color: #8B4513;
+		background: rgba(139, 69, 19, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+	}
+
+	.load-more {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: 30rpx 0;
+	}
+
+	.loading-icon {
+		width: 36rpx;
+		height: 36rpx;
+		border: 3rpx solid #8B4513;
+		border-top-color: transparent;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-right: 16rpx;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+
+	.loading-text {
+		font-size: 26rpx;
+		color: #999;
+	}
+
+	.no-more {
+		text-align: center;
+		padding: 30rpx 0;
+	}
+
+	.no-more-text {
+		font-size: 24rpx;
+		color: #CCC;
+	}
+
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 100rpx 0;
+	}
+
+	.empty-icon {
+		width: 120rpx;
+		height: 120rpx;
+		background: #F5F5F5;
+		border-radius: 50%;
+		margin-bottom: 24rpx;
+		position: relative;
+	}
+
+	.empty-icon:before {
+		content: '';
+		position: absolute;
+		top: 40rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-icon:after {
+		content: '';
+		position: absolute;
+		top: 50rpx;
+		left: 30rpx;
+		width: 60rpx;
+		height: 3rpx;
+		background: #CCC;
+	}
+
+	.empty-text {
+		font-size: 28rpx;
+		color: #999;
+	}
+
+	.filter-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+		z-index: 1000;
+	}
+
+	.filter-content {
+		width: 100%;
+		background: #FFFFFF;
+		border-radius: 30rpx 30rpx 0 0;
+		padding: 30rpx 24rpx;
+		padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+	}
+
+	.filter-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 30rpx;
+	}
+
+	.filter-title {
+		font-size: 32rpx;
+		color: #333;
+		font-weight: 600;
+	}
+
+	.filter-close {
+		width: 40rpx;
+		height: 40rpx;
+		position: relative;
+	}
+
+	.filter-close:before,
+	.filter-close:after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 3rpx;
+		background: #999;
+		border-radius: 2rpx;
+	}
+
+	.filter-close:before {
+		transform: rotate(45deg);
+	}
+
+	.filter-close:after {
+		transform: rotate(-45deg);
+	}
+
+	.filter-section {
+		margin-bottom: 30rpx;
+	}
+
+	.filter-label {
+		font-size: 28rpx;
+		color: #333;
+		font-weight: 500;
+		display: block;
+		margin-bottom: 20rpx;
+	}
+
+	.filter-options {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.filter-option {
+		padding: 16rpx 28rpx;
+		background: #F5F5F5;
+		border-radius: 20rpx;
+		margin-right: 20rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.filter-option.active {
+		background: #8B4513;
+	}
+
+	.option-text {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	.filter-option.active .option-text {
+		color: #FFFFFF;
+	}
+
+	.filter-actions {
+		display: flex;
+		flex-direction: row;
+		margin-top: 40rpx;
+	}
+
+	.filter-btn-reset {
+		flex: 1;
+		height: 88rpx;
+		background: #F5F5F5;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-right: 20rpx;
+	}
+
+	.filter-btn-confirm {
+		flex: 1;
+		height: 88rpx;
+		background: #8B4513;
+		border-radius: 44rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.btn-text {
+		font-size: 30rpx;
+		color: #FFFFFF;
+		font-weight: 600;
+	}
+
+	.filter-btn-reset .btn-text {
+		color: #666;
+	}
+</style>

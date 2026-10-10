@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item active" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">订单管理</div>
+        <div class="breadcrumb">首页 / <span>订单</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-sm btn-outline" onclick="load()">刷新 🔄</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-status="all" onclick="filterOrders('all')">全部 📋</div>
+        <div class="tab" data-status="pending" onclick="filterOrders('pending')">待付款 ⏳</div>
+        <div class="tab" data-status="paid" onclick="filterOrders('paid')">已付款 ✅</div>
+        <div class="tab" data-status="shipped" onclick="filterOrders('shipped')">已发货 🚚</div>
+        <div class="tab" data-status="refunding" onclick="filterOrders('refunding')">退款中 🔄</div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="f_search" placeholder="搜索订单号 / 产品 / 收件人 / 手机号…" onkeyup="if(event.key==='Enter')load()">
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="load()">搜索</button>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('f_search').value='';load()">清除</button>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span style="font-size:.85rem;color:var(--grey)" id="countLabel">共 0 条</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>订单号</th><th>产品</th><th>金额</th><th>收货人</th><th>电话</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody id="orderTable"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = '/api';
+const TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+
+const LABELS = { pending: '待付款', paid: '已付款', shipped: '已发货', completed: '已完成', cancelled: '已取消', refunding: '退款中' };
+let currentStatus = 'all';
+let currentPage = 1;
+
+// ── XSS 防护: HTML 转义 ──
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+// ── Toast ──
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+// ── Confirm dialog ──
+function confirmAction(msg, cb) {
+  if (typeof msg === 'string') { if (confirm(msg)) cb(); }
+  else cb();
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+// ── Clock ──
+function tick() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+}
+tick(); setInterval(tick, 30000);
+
+// ── API ──
+async function api(path, method, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API + path, opts);
+    const data = await res.json();
+    if (data.code === 401) { logout(); return null; }
+    return data;
+  } catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+// ── Load ──
+async function load() {
+  var keyword = document.getElementById('f_search').value.trim();
+  var url = '/orders?page=' + currentPage + '&pageSize=20' + (currentStatus !== 'all' ? '&status=' + currentStatus : '');
+  if (keyword) url += '&keyword=' + encodeURIComponent(keyword);
+
+  var res = await api(url, 'GET');
+  if (!res || res.code !== 200) { document.getElementById('orderTable').innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div>加载中…</div></td></tr>'; return; }
+  const { list, total, page, pageSize } = res.data;
+  document.getElementById('countLabel').textContent = '共 ' + total + ' 条订单';
+
+  if (list.length === 0) {
+    document.getElementById('orderTable').innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">暂无订单</div><div class="empty-desc">没有找到符合条件的订单</div></div></td></tr>';
+  } else {
+    document.getElementById('orderTable').innerHTML = list.map(function(o) {
+      return '<tr>' +
+        '<td style="font-family:var(--font-mono);font-size:.8rem" title="' + esc(o.orderNo) + '">' + o.orderNo + '</td>' +
+        '<td class="table-name">' + esc(o.productName) + '</td>' +
+        '<td style="font-weight:600">¥' + o.price + '</td>' +
+        '<td>' + esc(o.customerName) + '</td>' +
+        '<td style="font-size:.85rem">' + esc(o.customerPhone) + '</td>' +
+        '<td><span class="badge badge-' + o.status + '">' + (LABELS[o.status] || o.status) + '</span></td>' +
+        '<td style="font-size:.82rem;color:var(--grey)">' + new Date(o.createdAt).toLocaleString('zh-CN') + '</td>' +
+        '<td style="white-space:nowrap">' + actionButtons(o) + '</td>' +
+      '</tr>' +
+      '<tr id="expand-' + o._id + '" style="display:none">' +
+        '<td colspan="8"><div class="order-expand">' +
+          '<div class="info-row"><span class="label">收货地址 📍</span>' + esc(o.customerAddress) + '</div>' +
+          '<div class="info-row"><span class="label">订单编号 📦</span>' + o.orderNo + '</div>' +
+          (o.wxTransactionId ? '<div class="info-row"><span class="label">微信支付号 💳</span>' + esc(o.wxTransactionId) + '</div>' : '') +
+          (o.paidAt ? '<div class="info-row"><span class="label">付款时间 💰</span>' + new Date(o.paidAt).toLocaleString('zh-CN') + '</div>' : '') +
+          (o.shippedAt ? '<div class="info-row"><span class="label">发货时间 📬</span>' + new Date(o.shippedAt).toLocaleString('zh-CN') + '</div>' : '') +
+          (o.logistics ? '<div class="info-row"><span class="label">物流 🚚</span>' + esc(o.logisticsCompany || '--') + ' / ' + esc(o.logistics) + '</div>' : '') +
+          (o.refundReason ? '<div class="info-row"><span class="label" style="color:#D4695A">退款原因 ↩️</span><span style="color:#D4695A">' + esc(o.refundReason) + '</span></div><div class="info-row"><span class="label">退款状态</span>' + (o.refundStatus === 'pending' ? '待处理 ⏳' : o.refundStatus === 'approved' ? '已同意 ✅' : '已拒绝 ❌') + '</div>' : '') +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  const totalPages = Math.ceil(total / pageSize);
+  document.getElementById('pagination').innerHTML = totalPages > 1
+    ? Array.from({ length: totalPages }, function(_, i) {
+        return '<button class="page-btn' + (i + 1 === page ? ' active' : '') + '" onclick="goPage(' + (i + 1) + ')">' + (i + 1) + '</button>';
+      }).join('') + '<span class="page-info">共 ' + totalPages + ' 页</span>'
+    : '';
+}
+
+// ── Action Buttons ──
+function actionButtons(o) {
+  var html = '<button class="btn btn-sm btn-ghost" onclick="toggleExpand(\'' + o._id + '\')" title="展开详情">详情 📋</button> ';
+  if (o.status === 'pending') {
+    html += '<button class="btn btn-sm btn-green" onclick="updateStatus(\'' + o._id + '\',\'paid\')">标记付款 💰</button> ';
+  } else if (o.status === 'paid') {
+    html += '<button class="btn btn-sm btn-primary" onclick="showShipModal(\'' + o._id + '\')">发货 📦</button> ';
+  } else if (o.status === 'shipped' || o.status === 'completed') {
+    html += '<button class="btn btn-sm btn-outline" onclick="showEditLogistics(\'' + o._id + '\',\'' + (o.logisticsCompany || '').replace(/'/g, '') + '\',\'' + (o.logistics || '').replace(/'/g, '') + '\')">修改物流 ✏️</button> ';
+  }
+  if (o.status === 'refunding') {
+    html += '<button class="btn btn-sm btn-green" onclick="handleRefund(\'' + o._id + '\',\'approved\')">同意 ✅</button> ';
+    html += '<button class="btn btn-sm btn-red" onclick="handleRefund(\'' + o._id + '\',\'rejected\')">拒绝 ❌</button> ';
+  }
+  if (o.status === 'pending' || o.status === 'paid') {
+    html += '<button class="btn btn-sm btn-red" onclick="updateStatus(\'' + o._id + '\',\'cancelled\')">取消 🗑️</button>';
+  }
+  return html;
+}
+
+// ── Ship / Edit Logistics ──
+function showShipModal(id) {
+  var logisticsCompany = prompt('请输入物流公司（如：顺丰速运）：');
+  if (logisticsCompany === null) return;
+  var logisticsNo = prompt('请输入物流单号：');
+  if (logisticsNo === null) return;
+  updateStatus(id, 'shipped', logisticsNo, logisticsCompany);
+}
+
+function showEditLogistics(id, company, no) {
+  var newCompany = prompt('物流公司：', company || '');
+  if (newCompany === null) return;
+  var newNo = prompt('物流单号：', no || '');
+  if (newNo === null) return;
+  updateLogistics(id, newNo, newCompany);
+}
+
+// ── Status Update ──
+async function updateStatus(id, status, logistics, logisticsCompany) {
+  if (!confirm('确认「' + LABELS[status] + '」该订单？')) return;
+  var body = { status: status };
+  if (logistics) body.logistics = logistics;
+  if (logisticsCompany) body.logisticsCompany = logisticsCompany;
+  var res = await api('/orders/' + id + '/status', 'PUT', body);
+  if (res && res.code === 200) { toast(LABELS[status] + ' 操作成功', 'success'); load(); }
+  else toast((res && res.message) || '操作失败', 'error');
+}
+
+async function updateLogistics(id, logistics, logisticsCompany) {
+  if (!confirm('确认修改物流信息？\n物流公司：' + (logisticsCompany || '--') + '\n物流单号：' + (logistics || '--'))) return;
+  var res = await api('/orders/' + id + '/logistics', 'PUT', { logistics: logistics, logisticsCompany: logisticsCompany });
+  if (res && res.code === 200) { toast('物流信息已更新', 'success'); load(); }
+  else toast((res && res.message) || '修改失败', 'error');
+}
+
+async function handleRefund(id, action) {
+  if (!confirm('确认' + (action === 'approved' ? '同意' : '拒绝') + '退款？')) return;
+  var res = await api('/orders/' + id + '/refund-handle', 'PUT', { action: action });
+  if (res && res.code === 200) { toast(action === 'approved' ? '已同意退款' : '已拒绝退款', 'success'); load(); }
+  else toast((res && res.message) || '操作失败', 'error');
+}
+
+function toggleExpand(id) {
+  const row = document.getElementById('expand-' + id);
+  if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function filterOrders(status) {
+  currentStatus = status;
+  currentPage = 1;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.status === status); });
+  load();
+}
+
+function goPage(page) { currentPage = page; load(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

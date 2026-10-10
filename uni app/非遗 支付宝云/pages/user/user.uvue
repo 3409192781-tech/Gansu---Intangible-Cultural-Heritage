@@ -1,0 +1,469 @@
+<template>
+	<view class="user-page">
+		<view class="user-header">
+			<view class="header-bg-layer">
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			<view class="user-info" @click="handleUserClick">
+				<view class="avatar" :class="{ 'avatar-guest': !loggedIn }">
+					<image v-if="loggedIn && userAvatar" class="avatar-img" :src="userAvatar" mode="aspectFill"></image>
+					<text v-else class="avatar-text">{{avatarText}}</text>
+				</view>
+				<view class="user-detail">
+					<text class="user-name">{{ loggedIn ? userNickName : '点击登录' }}</text>
+					<text class="user-id">{{ loggedIn ? '已登录' : '登录后可同步收藏和订单' }}</text>
+				</view>
+				<view class="edit-btn" v-if="loggedIn">
+					<text class="edit-text">›</text>
+				</view>
+			</view>
+			<view class="user-stats">
+				<view class="stat-item" @click="goToCollection">
+					<text class="stat-value">{{favoriteCount}}</text>
+					<text class="stat-label">收藏</text>
+					<view class="stat-decoration"></view>
+				</view>
+				<view class="stat-divider"></view>
+				<view class="stat-item" @click="goToHistory">
+					<text class="stat-value">{{historyCount}}</text>
+					<text class="stat-label">浏览</text>
+					<view class="stat-decoration"></view>
+				</view>
+			</view>
+		</view>
+
+		<view class="user-menu">
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-spots"><image src="/static/icons/menu-trip.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-group-title">我的行程</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToMySpots">
+					<view class="menu-icon menu-icon-spots"><image src="/static/icons/menu-spot.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">我的景点</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToMyCulture">
+					<view class="menu-icon menu-icon-culture"><image src="/static/icons/menu-culture.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">非遗收藏</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToMyFood">
+					<view class="menu-icon menu-icon-food"><image src="/static/icons/menu-food.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">美食记录</text>
+					<view class="menu-arrow"></view>
+				</view>
+				<view class="menu-item" @click="goToMyOrders">
+					<view class="menu-icon menu-icon-orders"><image src="/static/icons/menu-food.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">我的订单</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-services"><image src="/static/icons/menu-service.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-group-title">服务中心</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToHelp">
+					<view class="menu-icon menu-icon-help"><image src="/static/icons/menu-help.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">帮助中心</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+
+			<view class="menu-group">
+				<view class="menu-header">
+					<view class="menu-icon-wrap icon-settings"><image src="/static/icons/menu-settings.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-group-title">设置</text>
+					<view class="menu-line"></view>
+				</view>
+				<view class="menu-item" @click="goToSettings">
+					<view class="menu-icon menu-icon-settings"><image src="/static/icons/menu-gear.svg" mode="aspectFit" class="menu-icon-img"></image></view>
+					<text class="menu-text">设置</text>
+					<view class="menu-arrow"></view>
+				</view>
+			</view>
+		</view>
+
+		<view class="user-footer">
+			<view class="footer-decoration"></view>
+			<text class="footer-text">陇韵匠心 · 带你领略丝路文化</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { ref, computed } from 'vue'
+import { api } from '../../utils/api'
+import { getDeviceId, isLoggedIn, getUserInfo } from '../../utils/identity'
+
+const loggedIn = ref(false)
+const userNickName = ref('游客')
+const userAvatar = ref('')
+const favoriteCount = ref(0)
+const historyCount = ref(0)
+
+const syncLoginState = () => {
+	const state = isLoggedIn()
+	loggedIn.value = state
+	if (state) {
+		const info = getUserInfo()
+		userNickName.value = (info && info.nickName) ? info.nickName : '微信用户'
+		userAvatar.value = (info && info.avatarUrl) ? info.avatarUrl : ''
+	} else {
+		userNickName.value = '游客'
+		userAvatar.value = ''
+	}
+}
+syncLoginState()
+
+const avatarText = computed(() => {
+	const name = userNickName.value
+	if (!name || name.length === 0) return '游'
+	return name.charAt(0)
+})
+
+const handleUserClick = () => {
+	if (!loggedIn.value) {
+		uni.navigateTo({ url: '/pages/login/login' })
+	} else {
+		uni.showToast({ title: '已登录微信账号', icon: 'none' })
+	}
+}
+
+const loadStats = async () => {
+	try {
+		const deviceId = getDeviceId()
+		const data = await api.favorites.get(deviceId)
+		if (data) {
+			const spots = data.spots?.length || 0
+			const cultures = data.cultures?.length || 0
+			const foods = data.foods?.length || 0
+			favoriteCount.value = spots + cultures + foods
+		}
+	} catch (e) {
+		favoriteCount.value = 0
+	}
+
+	try {
+		const raw = uni.getStorageSync('browseHistory')
+		const history = raw ? JSON.parse(raw) : []
+		historyCount.value = history.length
+	} catch (e) {
+		historyCount.value = 0
+	}
+}
+
+onShow(() => {
+	syncLoginState()
+	loadStats()
+})
+
+const goToCollection = () => {
+	uni.showToast({ title: '共收藏 ' + favoriteCount.value + ' 项', icon: 'none' })
+}
+
+const goToHistory = () => {
+	uni.showToast({ title: '共浏览 ' + historyCount.value + ' 项', icon: 'none' })
+}
+
+const goToMySpots = () => {
+	uni.navigateTo({ url: '/pages/my-spots/my-spots' })
+}
+
+const goToMyCulture = () => {
+	uni.navigateTo({ url: '/pages/my-culture/my-culture' })
+}
+
+const goToMyFood = () => {
+	uni.navigateTo({ url: '/pages/my-food/my-food' })
+}
+
+const goToMyOrders = () => {
+	uni.navigateTo({ url: '/pages/my-orders/my-orders' })
+}
+
+const goToHelp = () => {
+	uni.navigateTo({ url: '/pages/help/help' })
+}
+
+const goToSettings = () => {
+	uni.navigateTo({ url: '/pages/settings/settings' })
+}
+</script>
+
+<style>
+.user-page {
+	min-height: 100vh;
+	background: #FFF8E7;
+	padding-bottom: 120rpx;
+}
+
+.user-header {
+	position: relative;
+	padding: 60rpx 30rpx 40rpx;
+}
+
+.header-bg-layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.header-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(180deg, rgba(139, 69, 19, 0.8) 0%, rgba(196, 98, 16, 0.9) 100%);
+}
+
+.header-pattern {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.user-info {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-bottom: 40rpx;
+}
+
+.avatar {
+	position: relative;
+	width: 130rpx;
+	height: 130rpx;
+	border-radius: 50%;
+	background: rgba(255, 248, 231, 0.25);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 4rpx solid #D4A86A;
+}
+
+.avatar-img {
+	width: 130rpx;
+	height: 130rpx;
+	border-radius: 50%;
+}
+
+.avatar-guest {
+	border: 3rpx dashed rgba(212, 168, 106, 0.5);
+}
+
+.avatar-text {
+	font-size: 52rpx;
+	color: #8B4513;
+	font-weight: bold;
+	font-family: 'STKaiti', 'KaiTi', serif;
+}
+
+.user-detail {
+	flex: 1;
+	margin-left: 28rpx;
+}
+
+.user-name {
+	font-size: 40rpx;
+	font-weight: bold;
+	color: #FFF8E7;
+	margin-bottom: 8rpx;
+	text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+
+.user-id {
+	font-size: 24rpx;
+	color: rgba(255, 248, 231, 0.7);
+}
+
+.edit-btn {
+	padding: 12rpx;
+}
+
+.edit-text {
+	font-size: 36rpx;
+	color: #D4A86A;
+	font-weight: bold;
+}
+
+.user-stats {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-around;
+	background: rgba(255, 248, 231, 0.2);
+	border-radius: 16rpx;
+	padding: 24rpx 0;
+	border: 1rpx solid rgba(212, 168, 106, 0.3);
+}
+
+.stat-item {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+}
+
+.stat-value {
+	font-size: 44rpx;
+	font-weight: bold;
+	color: #FFF8E7;
+	margin-bottom: 6rpx;
+}
+
+.stat-label {
+	font-size: 22rpx;
+	color: rgba(255, 248, 231, 0.8);
+}
+
+.stat-divider {
+	width: 2rpx;
+	height: 48rpx;
+	background: rgba(212, 168, 106, 0.3);
+}
+
+.stat-decoration {
+	position: absolute;
+	bottom: -8rpx;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 40rpx;
+	height: 4rpx;
+	background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+	border-radius: 2rpx;
+}
+
+.user-menu {
+	padding: 24rpx;
+	margin-top: -20rpx;
+	position: relative;
+	z-index: 2;
+}
+
+.menu-group {
+	background: #FFFFFF;
+	border-radius: 20rpx;
+	overflow: hidden;
+	margin-bottom: 20rpx;
+	box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+	border: 2rpx solid rgba(212, 168, 106, 0.2);
+}
+
+.menu-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 20rpx 24rpx;
+	border-bottom: 1rpx solid rgba(212, 168, 106, 0.12);
+	background: linear-gradient(180deg, rgba(212, 168, 106, 0.06), transparent);
+}
+
+.menu-icon-wrap {
+	width: 40rpx;
+	height: 40rpx;
+	border-radius: 8rpx;
+	margin-right: 14rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.icon-spots { background: linear-gradient(135deg, #D4A86A, #B4884A); }
+.icon-services { background: linear-gradient(135deg, #5EAA7F, #4A8F6D); }
+.icon-settings { background: linear-gradient(135deg, #8B9BA9, #6B7B8B); }
+
+.menu-icon-img { width: 24rpx; height: 24rpx; }
+
+.menu-group-title {
+	font-size: 30rpx;
+	font-weight: bold;
+	color: #2C1810;
+	font-family: 'STKaiti', 'KaiTi', serif;
+}
+
+.menu-line {
+	flex: 1;
+	height: 2rpx;
+	background: linear-gradient(90deg, #D4A86A, transparent);
+	margin-left: 16rpx;
+}
+
+.menu-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 24rpx 24rpx;
+	border-bottom: 1rpx solid rgba(212, 168, 106, 0.1);
+}
+
+.menu-item:last-child { border-bottom: none; }
+
+.menu-icon {
+	width: 36rpx;
+	height: 36rpx;
+	border-radius: 8rpx;
+	margin-right: 18rpx;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.menu-icon-spots { background: linear-gradient(135deg, #D4A86A, #B4884A); }
+.menu-icon-culture { background: linear-gradient(135deg, #5EAA7F, #4A8F6D); }
+.menu-icon-food { background: linear-gradient(135deg, #C46210, #A45200); }
+.menu-icon-orders { background: linear-gradient(135deg, #8B9BA9, #6B7B8B); }
+.menu-icon-help { background: linear-gradient(135deg, #6B6FA3, #4A4E7F); }
+.menu-icon-settings { background: linear-gradient(135deg, #6B8FA3, #4A6B7F); }
+
+.menu-text { flex: 1; font-size: 30rpx; color: #2C1810; }
+
+.menu-arrow {
+	width: 24rpx;
+	height: 24rpx;
+	border-right: 3rpx solid #D4A86A;
+	border-bottom: 3rpx solid #D4A86A;
+	transform: rotate(-45deg);
+	flex-shrink: 0;
+}
+
+.user-footer {
+	padding: 48rpx 40rpx;
+	text-align: center;
+	position: relative;
+}
+
+.footer-decoration {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 120rpx;
+	height: 4rpx;
+	background: linear-gradient(90deg, transparent, #D4A86A, transparent);
+}
+
+.footer-text {
+	font-size: 26rpx;
+	color: #7A6B5A;
+	display: block;
+	font-family: 'STKaiti', 'KaiTi', serif;
+}
+</style>

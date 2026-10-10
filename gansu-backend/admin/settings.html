@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站点设置 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+      <a class="nav-item active" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">站点设置</div>
+        <div class="breadcrumb">首页 / <span>站点设置</span></div>
+      </div>
+    </div>
+    <div class="main-inner">
+      <div class="panel">
+        <div class="panel-header">首页 Hero 大图</div>
+        <div class="panel-body">
+          <div class="form-group"><label>大标题</label><input id="s_heroTitle" placeholder="云游甘肃"></div>
+          <div class="form-group"><label>副标题</label><input id="s_heroSub" placeholder="世界文化遗产、非遗技艺、丝路美食 — 一站探索陇原大地的瑰宝"></div>
+          <div class="form-group"><label>顶部小字</label><input id="s_heroEyebrow" placeholder="探访千年丝路"></div>
+          <div class="form-group"><label>背景图片 URL</label><input id="s_heroImage" placeholder="https://img.gansu-culture.xyz/..."></div>
+          <div style="margin-top:4px;margin-bottom:16px">
+            <img id="heroPreview" src="" style="width:100%;max-width:600px;border-radius:8px;display:none;border:1px solid rgba(212,168,106,.2)">
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+          <span id="saveMsg" style="margin-left:12px;font-size:.85rem;color:var(--grey)"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+var API = '/api';
+var TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type]||'') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+async function api(path, method, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try { var res = await fetch(API + path, opts); var data = await res.json(); if (data.code === 401) { logout(); return null; } return data; }
+  catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+async function loadSettings() {
+  var res = await api('/settings', 'GET');
+  if (res && res.code === 200) {
+    var s = res.data;
+    document.getElementById('s_heroImage').value = s.heroImage || '';
+    document.getElementById('s_heroTitle').value = s.heroTitle || '云游甘肃';
+    document.getElementById('s_heroSub').value = s.heroSub || '';
+    document.getElementById('s_heroEyebrow').value = s.heroEyebrow || '';
+    updatePreview();
+  }
+}
+
+function updatePreview() {
+  var url = document.getElementById('s_heroImage').value.trim();
+  var preview = document.getElementById('heroPreview');
+  if (url) { preview.src = url; preview.style.display = 'block'; }
+  else preview.style.display = 'none';
+}
+
+document.getElementById('s_heroImage').addEventListener('input', updatePreview);
+
+async function saveSettings() {
+  var body = {
+    heroImage: document.getElementById('s_heroImage').value.trim(),
+    heroTitle: document.getElementById('s_heroTitle').value.trim(),
+    heroSub: document.getElementById('s_heroSub').value.trim(),
+    heroEyebrow: document.getElementById('s_heroEyebrow').value.trim()
+  };
+  var res = await api('/settings', 'POST', body);
+  var msgEl = document.getElementById('saveMsg');
+  if (res && res.code === 200) {
+    msgEl.textContent = '已保存 ✓';
+    msgEl.style.color = 'var(--green)';
+    toast('站点设置已更新', 'success');
+  } else {
+    msgEl.textContent = (res && res.message) || '保存失败';
+    msgEl.style.color = 'var(--error)';
+  }
+  setTimeout(function(){ msgEl.textContent = ''; }, 3000);
+}
+
+loadSettings();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陇韵匠心 · 管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="logo-icon">🏔️</div>
+    <h1>陇韵匠心</h1>
+    <p class="sub">管理后台</p>
+    <div class="input-group">
+      <span class="input-icon">👤</span>
+      <input type="text" id="username" placeholder="用户名" autocomplete="username">
+    </div>
+    <div class="input-group">
+      <span class="input-icon">🔒</span>
+      <input type="password" id="password" placeholder="密码" onkeydown="if(event.key==='Enter')login()" autocomplete="current-password">
+    </div>
+    <button onclick="login()">登 录</button>
+    <p class="error" id="error"></p>
+  </div>
+</div>
+<script>
+const API = '/api';
+
+async function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('error');
+  if (!username || !password) { err.textContent = '请输入用户名和密码'; return; }
+  const btn = document.querySelector('.login-card button');
+  btn.textContent = '登录中…'; btn.disabled = true;
+  try {
+    const res = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.code === 200) {
+      localStorage.setItem('admin_token', data.data.token);
+      window.location.href = '/admin/dashboard.html';
+    } else {
+      err.textContent = data.message || '登录失败';
+    }
+  } catch (e) {
+    err.textContent = '网络错误，请重试';
+  }
+  btn.textContent = '登 录'; btn.disabled = false;
+}
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

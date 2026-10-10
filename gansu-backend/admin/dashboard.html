@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仪表盘 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item active" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">仪表盘</div>
+        <div class="breadcrumb">首页 / <span>概览</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-sm btn-outline" onclick="load()">刷新 🔄</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <div class="stats" id="stats"></div>
+      <div class="panel">
+        <div class="panel-header"><h3>📋 最近订单</h3></div>
+        <div class="table-wrap">
+          <table id="recentOrders"><thead><tr><th>订单号</th><th>产品</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = '/api';
+const TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+// ── XSS 防护 ──
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+// ── Toast ──
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3000);
+}
+
+// ── API ──
+async function api(path, method, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  const data = await res.json();
+  if (data.code === 401) { logout(); return null; }
+  if (data.code !== 200) { console.error(data.message); return null; }
+  return data.data;
+}
+
+// ── Clock ──
+function tick() {
+  var now = new Date();
+  document.getElementById('liveTime').textContent = now.toLocaleString('zh-CN', { hour12: false });
+}
+tick(); setInterval(tick, 30000);
+
+// ── Load ──
+async function load() {
+  var stats = await api('/admin/dashboard', 'GET');
+  if (!stats) return;
+
+  var icons = ['🏛️','🏔️','🎭','🍜','📦','⏳','📊','📌','👥'];
+  var labels = ['文创产品','景点','非遗项目','美食','今日订单','待处理','总订单','活动/轮播','注册用户'];
+  var values = [
+    stats.productCount, stats.spotCount, stats.cultureCount, stats.foodCount,
+    stats.orderToday, stats.orderPending + (stats.orderRefunding || 0),
+    stats.orderTotal, stats.eventCount + stats.bannerCount,
+    stats.userCount || 0
+  ];
+  document.getElementById('stats').innerHTML = values.map(function(v, i) {
+    return '<div class="stat-card"><div class="stat-icon">' + icons[i] + '</div><div class="val">' + v + '</div><div class="lbl">' + labels[i] + '</div></div>';
+  }).join('');
+
+  var ord = await api('/orders?page=1&pageSize=8', 'GET');
+  if (!ord) return;
+  var labels2 = { pending: '待付款', paid: '已付款', shipped: '已发货', completed: '已完成', cancelled: '已取消', refunding: '退款中' };
+  document.querySelector('#recentOrders tbody').innerHTML = ord.list.map(function(o) {
+    return '<tr><td style="font-family:var(--font-mono);font-size:.82rem">' + o.orderNo + '</td><td class="table-name">' + esc(o.productName) + '</td><td style="font-weight:600">¥' + o.price + '</td><td><span class="badge badge-' + o.status + '">' + (labels2[o.status] || o.status) + '</span></td><td style="font-size:.82rem;color:var(--grey)">' + new Date(o.createdAt).toLocaleString('zh-CN') + '</td></tr>';
+  }).join('') || '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">暂无订单</div></div></td></tr>';
+}
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

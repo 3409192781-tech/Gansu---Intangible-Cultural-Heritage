@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>攻略管理 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item active" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">攻略管理</div>
+        <div class="breadcrumb">首页 / <span>旅游攻略</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-outline" onclick="showAIModal()" style="margin-right:8px">🤖 AI生成</button>
+        <button class="btn btn-primary" onclick="openModal()">＋ 新增攻略</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="f_search" placeholder="搜索攻略标题…" onkeyup="if(event.key==='Enter')load()">
+        </div>
+        <select id="f_category" onchange="load()">
+          <option value="">全部分类 📂</option>
+          <option value="family">亲子游</option><option value="self_drive">自驾游</option>
+          <option value="photo">摄影游</option><option value="deep">深度游</option>
+          <option value="food">美食游</option><option value="history">文史游</option>
+          <option value="weekend">周末游</option><option value="budget">穷游</option>
+        </select>
+        <select id="f_type" onchange="load()">
+          <option value="">全部类型 📝</option><option value="article">游记文章</option><option value="itinerary">线路行程</option>
+        </select>
+        <select id="f_status" onchange="load()">
+          <option value="">全部状态 📌</option><option value="1">启用</option><option value="0">禁用</option>
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('f_search').value='';document.getElementById('f_category').value='';document.getElementById('f_type').value='';document.getElementById('f_status').value='';load()">清除</button>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>封面</th><th>标题</th><th>类型</th><th>分类</th><th>标签</th><th>浏览</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h3 id="modalTitle">新增攻略</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><label>标题</label><input id="f_title" placeholder="攻略标题"></div>
+        <div class="form-group" style="flex:1"><label>类型</label><select id="f_type2"><option value="article">游记文章</option><option value="itinerary">线路行程</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>封面图 URL</label><input id="f_coverImage" placeholder="https://img.gansu-culture.xyz/..."></div>
+      </div>
+      <div class="form-group"><label>摘要</label><input id="f_summary" placeholder="一句话概括…"></div>
+      <div class="form-row">
+        <div class="form-group"><label>分类</label><select id="f_category2">
+          <option value="deep">深度游</option><option value="family">亲子游</option><option value="self_drive">自驾游</option>
+          <option value="photo">摄影游</option><option value="food">美食游</option><option value="history">文史游</option>
+          <option value="weekend">周末游</option><option value="budget">穷游</option>
+        </select></div>
+        <div class="form-group"><label>作者</label><input id="f_author" placeholder="陇韵匠心"></div>
+      </div>
+      <div class="form-group"><label>标签 <span class="form-hint">（逗号分隔）</span></label><input id="f_tags" placeholder="敦煌, 莫高窟, 丝绸之路"></div>
+      <div class="form-group" id="fg_content"><label>正文内容</label><textarea id="f_content" rows="6" placeholder="攻略正文…"></textarea></div>
+      <div id="fg_days" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="font-weight:600;color:var(--grey)">行程安排</label>
+          <button class="btn btn-sm btn-outline" onclick="addDay()">＋ 添加一天</button>
+        </div>
+        <div id="daysContainer"></div>
+      </div>
+      <div class="form-group"><label>旅行贴士 <span class="form-hint">（每行一条）</span></label><textarea id="f_tips" rows="2" placeholder="建议穿舒适鞋子&#10;早晚温差大注意保暖&#10;提前预约门票"></textarea></div>
+      <div class="form-group"><label>排序值</label><input type="number" id="f_sortOrder" value="0"></div>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="f_isHot"> 🔥 热门推荐</label>
+      </div>
+      <p class="form-error" id="saveError"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveItem()">保存 💾</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI MODAL ═══ -->
+<div class="modal-overlay" id="aiModal" style="display:none" onclick="if(event.target===this)closeAIModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3>🤖 AI 生成攻略</h3>
+      <button class="modal-close" onclick="closeAIModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>目的地</label><input id="ai_destination" placeholder="如：敦煌、张掖、甘南…"></div>
+      <div class="form-row">
+        <div class="form-group"><label>攻略类型</label><select id="ai_type"><option value="article">游记文章</option><option value="itinerary">线路行程</option></select></div>
+        <div class="form-group"><label>行程天数</label><input type="number" id="ai_days" value="3" min="1" max="15"></div>
+      </div>
+      <p id="aiStatus" style="text-align:center;color:var(--grey);display:none">⏳ AI正在生成…</p>
+      <p class="form-error" id="aiError"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAIModal()">取消</button>
+      <button class="btn btn-primary" onclick="aiGenerate()">生成 🤖</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+var API = '/api';
+var TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+var editId = null;
+var guides = [];
+var currentPage = 1;
+var currentDays = [];
+
+var TYPES = { article: '游记', itinerary: '线路' };
+var CATS = { family: '亲子游', self_drive: '自驾游', photo: '摄影游', deep: '深度游', food: '美食游', history: '文史游', weekend: '周末游', budget: '穷游' };
+
+// ── XSS + Toast ──
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+function tick() { document.getElementById('liveTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false }); }
+tick(); setInterval(tick, 30000);
+
+async function api(path, method, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try { var res = await fetch(API + path, opts); var data = await res.json(); if (data.code === 401) { logout(); return null; } return data; }
+  catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+// ── Load ──
+async function load(pg) {
+  if (pg) currentPage = pg;
+  var keyword = document.getElementById('f_search').value.trim();
+  var category = document.getElementById('f_category').value;
+  var type = document.getElementById('f_type').value;
+  var status = document.getElementById('f_status').value;
+  var q = '?page=' + currentPage + '&pageSize=50&admin=1';
+  if (keyword) q += '&keyword=' + encodeURIComponent(keyword);
+  if (category) q += '&category=' + category;
+  if (type) q += '&type=' + type;
+  if (status !== '') q += '&status=' + status;
+
+  var res = await api('/guides' + q, 'GET');
+  if (!res || res.code !== 200) { document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="loading"><div class="spinner"></div>加载中…</div></td></tr>'; return; }
+  guides = res.data.list || [];
+  var total = res.data.total || 0;
+
+  if (guides.length === 0) {
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">暂无攻略</div><div class="empty-desc">点击"新增攻略"或"AI生成"开始创建</div></div></td></tr>';
+  } else {
+    document.getElementById('tableBody').innerHTML = guides.map(function(g) {
+      return '<tr>' +
+        '<td style="font-family:var(--font-mono);font-size:.82rem">' + (g.id || '-') + '</td>' +
+        '<td><img src="' + (g.coverImage || '') + '" class="table-img"></td>' +
+        '<td class="table-name">' + esc(g.title) + '</td>' +
+        '<td><span class="badge ' + (g.type === 'itinerary' ? 'badge-shipped' : 'badge-paid') + '">' + (TYPES[g.type] || g.type) + '</span></td>' +
+        '<td>' + (CATS[g.category] || g.category || '-') + '</td>' +
+        '<td>' + esc((g.tags || []).join(', ')) + '</td>' +
+        '<td>' + (g.views || 0) + '</td>' +
+        '<td><span class="badge ' + (g.status === 1 ? 'badge-paid' : 'badge-cancelled') + '">' + (g.status === 1 ? '启用' : '禁用') + '</span></td>' +
+        '<td style="font-size:.82rem;color:var(--grey)">' + new Date(g.createdAt).toLocaleString('zh-CN') + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="btn btn-sm btn-primary" onclick="editItem(\'' + g.id + '\')">编辑 ✏️</button> ' +
+          '<button class="btn btn-sm btn-red" onclick="deleteItem(\'' + g.id + '\')">删除 🗑️</button> ' +
+          '<button class="btn btn-sm btn-outline" onclick="toggleStatus(\'' + g.id + '\',' + (g.status === 1 ? 0 : 1) + ')">' + (g.status === 1 ? '下架 ⬇️' : '上架 ⬆️') + '</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var totalPages = Math.ceil(total / 50);
+  document.getElementById('pagination').innerHTML = totalPages > 1
+    ? Array.from({length: totalPages}, function(_,i){ return '<button class="page-btn' + (i+1===currentPage?' active':'') + '" onclick="load(' + (i+1) + ')">' + (i+1) + '</button>'; }).join('') + '<span class="page-info">共 ' + totalPages + ' 页</span>'
+    : '';
+}
+
+// ── Form ──
+function getF(id) { var el = document.getElementById(id); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; }
+function setF(id, v) { var el = document.getElementById(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v !== undefined && v !== null ? v : ''; }
+
+function openModal() {
+  editId = null; currentDays = [];
+  document.getElementById('modalTitle').textContent = '新增攻略';
+  clearForm();
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('saveError').style.display = 'none';
+  updateTypeUI();
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function clearForm() {
+  ['f_title','f_coverImage','f_summary','f_author','f_tags','f_content','f_tips','f_sortOrder'].forEach(function(id){ setF(id, ''); });
+  setF('f_sortOrder', 0); setF('f_isHot', false);
+  setF('f_author', '陇韵匠心');
+  document.getElementById('f_type2').value = 'article';
+  document.getElementById('f_category2').value = 'deep';
+  renderDays();
+}
+
+function updateTypeUI() {
+  var type = document.getElementById('f_type2').value;
+  document.getElementById('fg_content').style.display = type === 'article' ? '' : 'none';
+  document.getElementById('fg_days').style.display = type === 'itinerary' ? '' : 'none';
+}
+document.getElementById('f_type2').addEventListener('change', updateTypeUI);
+
+// ── Days (线路模式) ──
+function addDay() {
+  currentDays.push({ day: currentDays.length + 1, title: '', spots: '', description: '' });
+  renderDays();
+}
+function removeDay(idx) { currentDays.splice(idx, 1); renderDays(); }
+function renderDays() {
+  var html = '';
+  currentDays.forEach(function(d, i) {
+    html += '<div style="background:var(--cream);padding:12px;border-radius:var(--radius-sm);margin-bottom:8px">' +
+      '<div style="display:flex;gap:8px;margin-bottom:6px">' +
+        '<div style="flex:1"><input placeholder="Day' + (i+1) + ' 标题" value="' + esc(d.title) + '" oninput="currentDays[' + i + '].title=this.value" style="width:100%;padding:6px 10px;border:1px solid rgba(212,168,106,0.3);border-radius:4px;font-size:.85rem;background:#fff"></div>' +
+        '<button class="btn btn-sm btn-red" onclick="removeDay(' + i + ')" style="flex-shrink:0">✕</button>' +
+      '</div>' +
+      '<input placeholder="景点列表（逗号分隔）" value="' + esc(d.spots) + '" oninput="currentDays[' + i + '].spots=this.value" style="width:100%;padding:6px 10px;border:1px solid rgba(212,168,106,0.3);border-radius:4px;font-size:.85rem;background:#fff;margin-bottom:4px">' +
+      '<textarea placeholder="当日描述" oninput="currentDays[' + i + '].description=this.value" style="width:100%;padding:6px 10px;border:1px solid rgba(212,168,106,0.3);border-radius:4px;font-size:.85rem;background:#fff;resize:vertical" rows="2">' + esc(d.description) + '</textarea>' +
+    '</div>';
+  });
+  document.getElementById('daysContainer').innerHTML = html || '<p style="color:var(--grey-light);font-size:.85rem;text-align:center;padding:12px">暂无日程，点击"＋ 添加一天"</p>';
+}
+
+function editItem(id) {
+  var g = guides.find(function(gg){ return gg.id === id; });
+  if (!g) { toast('未找到该攻略', 'error'); return; }
+  editId = id;
+  document.getElementById('modalTitle').textContent = '编辑攻略 — ' + g.title;
+  setF('f_title', g.title); setF('f_coverImage', g.coverImage); setF('f_summary', g.summary);
+  setF('f_author', g.author); setF('f_tags', (g.tags || []).join(', '));
+  setF('f_content', g.content); setF('f_sortOrder', g.sortOrder);
+  setF('f_isHot', g.isHot);
+  setF('f_tips', (g.tips || []).join('\n'));
+  document.getElementById('f_type2').value = g.type || 'article';
+  document.getElementById('f_category2').value = g.category || 'deep';
+  currentDays = (g.days || []).map(function(d) { return { day: d.day, title: d.title || '', spots: (d.spots || []).join(', '), description: d.description || '' }; });
+  renderDays();
+  updateTypeUI();
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('saveError').style.display = 'none';
+}
+
+async function saveItem() {
+  var type = document.getElementById('f_type2').value;
+  var body = {
+    title: getF('f_title'), coverImage: getF('f_coverImage'), summary: getF('f_summary'),
+    type: type, category: document.getElementById('f_category2').value,
+    author: getF('f_author'),
+    tags: getF('f_tags').split(',').map(function(t){return t.trim()}).filter(Boolean),
+    sortOrder: parseInt(getF('f_sortOrder')) || 0, isHot: getF('f_isHot'),
+    tips: getF('f_tips').split('\n').map(function(t){return t.trim()}).filter(Boolean)
+  };
+
+  if (type === 'article') {
+    body.content = getF('f_content');
+  } else {
+    body.days = currentDays.filter(function(d){return d.title || d.spots || d.description;}).map(function(d, i){
+      return { day: i + 1, title: d.title, spots: d.spots.split(',').map(function(s){return s.trim()}).filter(Boolean), description: d.description };
+    });
+  }
+
+  Object.keys(body).forEach(function(k){ if (body[k] === '' || body[k] === undefined || body[k] === null) delete body[k]; });
+
+  if (!editId) {
+    var maxId = Math.max.apply(null, guides.map(function(g){ return parseInt(g.id) || 0; }));
+    if (maxId < 400) maxId = 400;
+    body.id = String(maxId + 1);
+  }
+
+  var res = editId ? await api('/guides/' + editId, 'PUT', body) : await api('/guides', 'POST', body);
+
+  if (res && res.code === 200) { closeModal(); toast(editId ? '攻略已更新' : '攻略已创建', 'success'); load(); }
+  else { var el = document.getElementById('saveError'); el.textContent = (res && res.message) ? res.message : '保存失败'; el.style.display = 'block'; }
+}
+
+async function toggleStatus(id, newStatus) {
+  if (!confirm('确认' + (newStatus === 0 ? '下架' : '上架') + '该攻略？')) return;
+  var res = await api('/guides/' + id, 'PUT', { status: newStatus });
+  if (res && res.code === 200) { toast(newStatus === 0 ? '已下架' : '已上架', 'success'); load(); }
+  else toast((res && res.message) || '操作失败', 'error');
+}
+
+async function deleteItem(id) {
+  if (!confirm('确认删除该攻略？\n此操作不可恢复。')) return;
+  var res = await api('/guides/' + id, 'DELETE');
+  if (res && res.code === 200) { toast('已删除', 'success'); load(); }
+  else toast((res && res.message) || '删除失败', 'error');
+}
+
+// ── AI Generate ──
+function showAIModal() { document.getElementById('aiModal').style.display = 'flex'; document.getElementById('aiError').style.display = 'none'; document.getElementById('aiStatus').style.display = 'none'; }
+function closeAIModal() { document.getElementById('aiModal').style.display = 'none'; }
+
+async function aiGenerate() {
+  var destination = document.getElementById('ai_destination').value.trim();
+  if (!destination) { document.getElementById('aiError').textContent = '请输入目的地'; document.getElementById('aiError').style.display = 'block'; return; }
+  var status = document.getElementById('aiStatus');
+  var error = document.getElementById('aiError');
+  status.style.display = 'block'; error.style.display = 'none';
+  var type = document.getElementById('ai_type').value;
+  var days = parseInt(document.getElementById('ai_days').value) || 3;
+
+  var res = await api('/guides/ai-generate', 'POST', { destination: destination, type: type, days: days });
+  status.style.display = 'none';
+
+  if (res && res.code === 200) {
+    var data = res.data;
+    closeAIModal();
+    // 填充表单
+    openModal();
+    setF('f_title', data.title || '');
+    setF('f_summary', data.summary || '');
+    setF('f_author', 'AI助手');
+    setF('f_tags', (data.tags || []).join(', '));
+    setF('f_tips', (data.tips || []).join('\n'));
+    document.getElementById('f_type2').value = data.type || type;
+    document.getElementById('f_category2').value = data.category || 'deep';
+    if (data.content) setF('f_content', data.content);
+    if (data.days) {
+      currentDays = data.days.map(function(d){ return { day: d.day, title: d.title || '', spots: (d.spots || []).join(', '), description: d.description || '' }; });
+      renderDays();
+    }
+    updateTypeUI();
+    toast('AI草稿已生成，请审阅后保存', 'success');
+  } else {
+    error.textContent = (res && res.message) || 'AI生成失败';
+    error.style.display = 'block';
+  }
+}
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>

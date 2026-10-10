@@ -1,0 +1,665 @@
+<template>
+	<view class="spot-list-page">
+		<!-- 搜索栏 -->
+		<view class="search-bar">
+			<view class="search-input-wrap" @click="focusSearch">
+				<view class="search-icon">
+					<view class="icon-lens"></view>
+				</view>
+				<input
+					class="search-input"
+					placeholder="搜索攻略"
+					v-model="searchText"
+					@confirm="handleSearch"
+					:focus="searchFocused"
+				/>
+				<view class="search-clear" v-if="searchText" @click.stop="clearSearch"></view>
+			</view>
+			<view class="filter-btn" @click="openFilter">
+				<view class="filter-icon"></view>
+				<text class="filter-text">筛选</text>
+			</view>
+		</view>
+
+		<!-- 分类标签 -->
+		<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
+			<view class="tabs-inner">
+				<view class="tab-item" :class="{ active: activeCategory === 'all' }" @click="switchCategory('all')">
+					<text class="tab-text">全部</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'family' }" @click="switchCategory('family')">
+					<text class="tab-text">亲子游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'self_drive' }" @click="switchCategory('self_drive')">
+					<text class="tab-text">自驾游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'photo' }" @click="switchCategory('photo')">
+					<text class="tab-text">摄影游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'deep' }" @click="switchCategory('deep')">
+					<text class="tab-text">深度游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'food' }" @click="switchCategory('food')">
+					<text class="tab-text">美食游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'history' }" @click="switchCategory('history')">
+					<text class="tab-text">文史游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'weekend' }" @click="switchCategory('weekend')">
+					<text class="tab-text">周末游</text>
+				</view>
+				<view class="tab-item" :class="{ active: activeCategory === 'budget' }" @click="switchCategory('budget')">
+					<text class="tab-text">穷游</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 攻略列表 -->
+		<scroll-view class="guide-list" scroll-y="true" @scrolltolower="loadMore" :refresher-enabled="true" :refresher-triggered="refreshing" @refresherrefresh="onRefresh">
+			<view class="guide-count">
+				<text class="count-text">{{ filteredGuides.length }} 篇攻略</text>
+			</view>
+
+			<view class="card" v-for="item in displayGuides" :key="item.id" @click="goDetail(item.id)">
+				<image class="card-img" :src="item.coverImage || defaultCover" mode="aspectFill" />
+				<view class="card-body">
+					<view class="card-title">{{ item.title }}</view>
+					<view class="card-summary">{{ item.summary }}</view>
+				<view class="card-meta">
+						<view class="type-badge" :class="item.type"><text>{{ item.type === 'itinerary' ? '线路' : '游记' }}</text></view>
+						<view class="cat-text"><text>{{ catLabel(item.category) }}</text></view>
+						<text class="views">👁 {{ item.views || 0 }}</text>
+				</view>
+					<view class="card-tags" v-if="item.tags && item.tags.length">
+						<text class="tag" v-for="tag in (item.tags || []).slice(0, 3)" :key="tag">{{ tag }}</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="load-more" v-if="loading">加载中…</view>
+			<view class="no-more" v-if="!loading && displayGuides.length >= filteredGuides.length && filteredGuides.length > 0">— 已加载全部 —</view>
+
+			<view class="empty" v-if="!loading && filteredGuides.length === 0">
+				<text class="empty-icon">📖</text>
+				<text class="empty-text">暂无攻略</text>
+				<text class="empty-sub">敬请期待更多精彩内容</text>
+			</view>
+
+			<view style="height: 40rpx"></view>
+		</scroll-view>
+
+		<!-- 筛选面板 (底部弹出) -->
+		<view class="filter-overlay" v-if="showFilter" @click="showFilter = false">
+			<view class="filter-panel" @click.stop>
+				<view class="filter-header">
+					<text class="filter-title">筛选</text>
+					<view class="filter-close" @click="showFilter = false">
+						<text class="close-text">✕</text>
+					</view>
+				</view>
+
+				<view class="filter-section">
+					<text class="filter-label">攻略类型</text>
+					<view class="filter-options">
+						<view class="filter-option" :class="{ active: tempType === '' }" @click="tempType = ''">
+							<text class="option-text">全部</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempType === 'article' }" @click="tempType = 'article'">
+							<text class="option-text">游记文章</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempType === 'itinerary' }" @click="tempType = 'itinerary'">
+							<text class="option-text">线路行程</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="filter-section">
+					<text class="filter-label">攻略分类</text>
+					<view class="filter-options">
+						<view class="filter-option" :class="{ active: tempCategory === '' }" @click="tempCategory = ''">
+							<text class="option-text">全部</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'family' }" @click="tempCategory = 'family'">
+							<text class="option-text">亲子游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'self_drive' }" @click="tempCategory = 'self_drive'">
+							<text class="option-text">自驾游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'photo' }" @click="tempCategory = 'photo'">
+							<text class="option-text">摄影游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'deep' }" @click="tempCategory = 'deep'">
+							<text class="option-text">深度游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'food' }" @click="tempCategory = 'food'">
+							<text class="option-text">美食游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'history' }" @click="tempCategory = 'history'">
+							<text class="option-text">文史游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'weekend' }" @click="tempCategory = 'weekend'">
+							<text class="option-text">周末游</text>
+						</view>
+						<view class="filter-option" :class="{ active: tempCategory === 'budget' }" @click="tempCategory = 'budget'">
+							<text class="option-text">穷游</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="filter-actions">
+					<view class="filter-btn-reset" @click="resetTempFilter">
+						<text class="btn-text">重置</text>
+					</view>
+					<view class="filter-btn-confirm" @click="confirmFilter">
+						<text class="btn-text">确定</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { ref, computed, onMounted } from 'vue';
+import { api } from '../../utils/api';
+
+const defaultCover = 'https://img.gansu-culture.xyz/placeholder.jpg';
+
+const catLabels: Record<string, string> = {
+	family: '亲子游', self_drive: '自驾游', photo: '摄影游', deep: '深度游',
+	food: '美食游', history: '文史游', weekend: '周末游', budget: '穷游'
+};
+const catLabel = (c: string) => catLabels[c] || c;
+
+const searchText = ref('');
+const searchFocused = ref(false);
+const showFilter = ref(false);
+const activeCategory = ref('all');
+const selectedType = ref('');
+const tempType = ref('');
+const tempCategory = ref('');
+const loading = ref(false);
+const refreshing = ref(false);
+const guides = ref<any[]>([]);
+const currentPage = ref(1);
+const pageSize = 30;
+
+const filteredGuides = computed(() => guides.value);
+const displayGuides = computed(() => filteredGuides.value.slice(0, currentPage.value * pageSize));
+
+const loadData = async () => {
+	loading.value = true;
+	try {
+		const data = await api.guides.list(1, 200, {
+			category: activeCategory.value !== 'all' ? activeCategory.value : undefined,
+			type: selectedType.value || undefined,
+			keyword: searchText.value || undefined
+		});
+		if (data && data.list) {
+			guides.value = data.list;
+			currentPage.value = 1;
+		}
+	} catch (e) {}
+	loading.value = false;
+};
+
+const handleSearch = () => loadData();
+const clearSearch = () => { searchText.value = ''; loadData(); };
+const focusSearch = () => { searchFocused.value = true; };
+
+const switchCategory = (cat: string) => {
+	activeCategory.value = cat;
+	currentPage.value = 1;
+	loadData();
+};
+
+const openFilter = () => {
+	tempType.value = selectedType.value;
+	tempCategory.value = activeCategory.value === 'all' ? '' : activeCategory.value;
+	showFilter.value = true;
+};
+
+const resetTempFilter = () => {
+	tempType.value = '';
+	tempCategory.value = '';
+};
+
+const confirmFilter = () => {
+	selectedType.value = tempType.value;
+	activeCategory.value = tempCategory.value || 'all';
+	showFilter.value = false;
+	loadData();
+};
+
+const loadMore = () => {
+	if (displayGuides.value.length >= filteredGuides.value.length) return;
+	currentPage.value = currentPage.value + 1;
+};
+
+const onRefresh = async () => {
+	refreshing.value = true;
+	currentPage.value = 1;
+	await loadData();
+	refreshing.value = false;
+};
+
+const goDetail = (id: string) => {
+	uni.navigateTo({ url: '/pages/guide-detail/guide-detail?id=' + id });
+};
+
+onMounted(() => { loadData(); });
+</script>
+
+<style>
+/* ── 搜索栏 ── */
+.search-bar {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 20rpx 24rpx;
+	background: #FFFFFF;
+}
+
+.search-input-wrap {
+	flex: 1;
+	height: 72rpx;
+	background: #F5F5F5;
+	border-radius: 36rpx;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0 28rpx;
+	margin-right: 20rpx;
+}
+
+.search-icon {
+	width: 32rpx;
+	height: 32rpx;
+	margin-right: 16rpx;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.icon-lens {
+	width: 20rpx;
+	height: 20rpx;
+	border: 3rpx solid #8B4513;
+	border-radius: 50%;
+	position: relative;
+}
+
+.icon-lens:after {
+	content: '';
+	position: absolute;
+	bottom: -6rpx;
+	right: -6rpx;
+	width: 10rpx;
+	height: 3rpx;
+	background: #8B4513;
+	border-radius: 2rpx;
+	transform: rotate(45deg);
+	transform-origin: left center;
+}
+
+.search-input {
+	flex: 1;
+	height: 72rpx;
+	font-size: 28rpx;
+	color: #333;
+}
+
+.search-clear {
+	width: 32rpx;
+	height: 32rpx;
+	background: #999;
+	border-radius: 50%;
+	position: relative;
+}
+
+.search-clear:before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20rpx;
+	height: 3rpx;
+	background: #FFFFFF;
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.search-clear:after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20rpx;
+	height: 3rpx;
+	background: #FFFFFF;
+	transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.filter-btn {
+	padding: 0 24rpx;
+	height: 72rpx;
+	background: #8B4513;
+	border-radius: 36rpx;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.filter-icon {
+	width: 24rpx;
+	height: 24rpx;
+	border: 3rpx solid #FFFFFF;
+	border-radius: 6rpx;
+	position: relative;
+	margin-right: 8rpx;
+}
+
+.filter-icon:after {
+	content: '';
+	position: absolute;
+	top: 8rpx;
+	left: 8rpx;
+	right: 8rpx;
+	height: 3rpx;
+	background: #FFFFFF;
+}
+
+.filter-text {
+	font-size: 26rpx;
+	color: #FFFFFF;
+}
+
+/* ── 分类标签 ── */
+.category-tabs {
+	width: 100%;
+	background: #FFFFFF;
+	height: 100rpx;
+	white-space: nowrap;
+	padding: 14rpx 0;
+}
+
+.tabs-inner {
+	display: inline-block;
+	width: 1620rpx;
+	padding-right: 24rpx;
+	white-space: nowrap;
+	font-size: 0;
+}
+
+.tab-item {
+	display: inline-block;
+	vertical-align: top;
+	padding: 16rpx 32rpx;
+	background: #F5F5F5;
+	border-radius: 30rpx;
+	margin-right: 16rpx;
+	white-space: normal;
+	font-size: 26rpx;
+}
+
+.tab-item.active {
+	background: #D4A86A;
+}
+
+.tab-item.active .tab-text {
+	color: #FFFFFF;
+}
+
+.tab-text {
+	font-size: 26rpx;
+	color: #666;
+}
+
+/* ── 列表 ── */
+.guide-list {
+	height: calc(100vh - 310rpx);
+}
+
+.guide-count {
+	padding: 16rpx 24rpx;
+}
+
+.count-text {
+	font-size: 24rpx;
+	color: #8B7355;
+}
+
+.card {
+	background: #FFF;
+	border-radius: 16rpx;
+	margin: 0 24rpx 20rpx;
+	overflow: hidden;
+	box-shadow: 0 2rpx 12rpx rgba(139,69,19,0.08);
+}
+
+.card-img {
+	width: 100%;
+	height: 340rpx;
+}
+
+.card-body {
+	padding: 24rpx;
+}
+
+.card-title {
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #2C1810;
+	margin-bottom: 10rpx;
+	line-height: 1.3;
+}
+
+.card-summary {
+	font-size: 26rpx;
+	color: #7A6B5A;
+	line-height: 1.5;
+	margin-bottom: 16rpx;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.card-meta {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-bottom: 12rpx;
+}
+
+.type-badge {
+	display: block;
+	font-size: 22rpx;
+	padding: 4rpx 16rpx;
+	border-radius: 6rpx;
+	font-weight: 600;
+	margin-right: 12rpx;
+	white-space: nowrap;
+}
+
+.type-badge text {
+	font-size: 22rpx;
+}
+
+.type-badge.article { background: #D4EDDA; color: #155724; }
+.type-badge.itinerary { background: #CCE5FF; color: #004085; }
+
+.cat-text {
+	display: block;
+	font-size: 24rpx;
+	color: #8B4513;
+	background: rgba(212,168,106,0.2);
+	padding: 4rpx 16rpx;
+	border-radius: 6rpx;
+	margin-right: 12rpx;
+	white-space: nowrap;
+}
+
+.cat-text text {
+	font-size: 24rpx;
+	color: #8B4513;
+}
+
+
+.views {
+	font-size: 22rpx;
+	color: #999;
+	margin-left: auto;
+}
+
+.card-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8rpx;
+}
+
+.tag {
+	font-size: 22rpx;
+	color: #D4A86A;
+	background: rgba(212,168,106,0.1);
+	padding: 4rpx 14rpx;
+	border-radius: 6rpx;
+}
+
+.load-more, .no-more {
+	text-align: center;
+	padding: 24rpx;
+	font-size: 24rpx;
+	color: #999;
+}
+
+.empty {
+	text-align: center;
+	padding: 120rpx 40rpx;
+}
+
+.empty-icon { font-size: 80rpx; display: block; margin-bottom: 20rpx; }
+.empty-text { font-size: 30rpx; color: #2C1810; font-weight: 600; margin-bottom: 8rpx; }
+.empty-sub { font-size: 24rpx; color: #999; }
+
+/* ── 筛选面板 ── */
+.filter-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0,0,0,0.45);
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+.filter-panel {
+	background: #FFFFFF;
+	border-radius: 24rpx 24rpx 0 0;
+	padding: 32rpx 28rpx 48rpx;
+	max-height: 70vh;
+	overflow-y: auto;
+}
+
+.filter-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 28rpx;
+}
+
+.filter-title {
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #2C1810;
+}
+
+.filter-close {
+	font-size: 28rpx;
+	color: #999;
+	padding: 8rpx;
+}
+
+.close-text {
+	font-size: 28rpx;
+	color: #999;
+}
+
+.filter-section {
+	margin-bottom: 28rpx;
+}
+
+.filter-label {
+	font-size: 26rpx;
+	color: #999;
+	margin-bottom: 16rpx;
+	display: block;
+}
+
+.filter-options {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 16rpx;
+}
+
+.filter-option {
+	padding: 14rpx 28rpx;
+	border-radius: 30rpx;
+	background: #F5F5F5;
+}
+
+.filter-option.active {
+	background: #D4A86A;
+}
+
+.filter-option.active .option-text {
+	color: #FFFFFF;
+}
+
+.option-text {
+	font-size: 26rpx;
+	color: #666;
+}
+
+.filter-actions {
+	display: flex;
+	flex-direction: row;
+	gap: 24rpx;
+	margin-top: 12rpx;
+}
+
+.filter-btn-reset {
+	flex: 1;
+	height: 80rpx;
+	background: #F5F5F5;
+	border-radius: 40rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.filter-btn-confirm {
+	flex: 1;
+	height: 80rpx;
+	background: #8B4513;
+	border-radius: 40rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.filter-btn-reset .btn-text {
+	font-size: 28rpx;
+	color: #666;
+}
+
+.filter-btn-confirm .btn-text {
+	font-size: 28rpx;
+	color: #FFFFFF;
+}
+</style>

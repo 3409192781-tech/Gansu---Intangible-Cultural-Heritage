@@ -1,0 +1,27 @@
+# ===== 敏感信息（绝不提交） =====
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+certs/
+1749048068_20260804_cert/
+
+# ===== 依赖 / 构建产物 =====
+node_modules/
+dist/
+unpackage/
+uts2js/
+
+# ===== 打包 / 临时文件 =====
+*.tar.gz
+*.zip
+*.log
+
+# ===== IDE / 工具 =====
+.claude/
+.vscode/
+.idea/
+*.code-workspace
+.hbuilderx/

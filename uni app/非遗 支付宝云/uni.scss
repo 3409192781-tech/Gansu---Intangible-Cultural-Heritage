@@ -1,0 +1,81 @@
+$uni-color-primary: #8B4513;
+$uni-color-primary-light: #A0522D;
+$uni-color-primary-dark: #6B3410;
+
+$uni-color-secondary: #4A8F6D;
+$uni-color-secondary-light: #5EAA7F;
+$uni-color-secondary-dark: #3A7A5D;
+
+$uni-color-gold: #D4A86A;
+$uni-color-gold-light: #E8C895;
+$uni-color-gold-dark: #B4884A;
+
+$uni-color-terracotta: #C46210;
+$uni-color-terracotta-light: #D47220;
+$uni-color-terracotta-dark: #A45200;
+
+$uni-color-ochre: #CC8800;
+$uni-color-ochre-light: #DC9810;
+$uni-color-ochre-dark: #AC7800;
+
+$uni-color-success: #4A8F6D;
+$uni-color-warning: #D4A86A;
+$uni-color-error: #C44510;
+
+$uni-text-color: #2C1810;
+$uni-text-color-inverse: #FFF8E7;
+$uni-text-color-grey: #7A6B5A;
+$uni-text-color-placeholder: #9A8B7A;
+$uni-text-color-disable: #B0A090;
+
+$uni-bg-color: #FFF8E7;
+$uni-bg-color-grey: #F5E6D3;
+$uni-bg-color-hover: #E8D8C3;
+$uni-bg-color-mask: rgba(44, 24, 16, 0.6);
+
+$uni-bg-gradient-header: linear-gradient(180deg, #C46210 0%, #8B4513 100%);
+$uni-bg-gradient-card: linear-gradient(135deg, #FFF8E7 0%, #F5E6D3 100%);
+$uni-bg-gradient-btn: linear-gradient(135deg, #8B4513 0%, #6B3410 100%);
+$uni-bg-gradient-btn-gold: linear-gradient(135deg, #D4A86A 0%, #B4884A 100%);
+$uni-bg-gradient-btn-green: linear-gradient(135deg, #4A8F6D 0%, #3A7A5D 100%);
+
+$uni-border-color: #D4A86A;
+$uni-border-color-light: rgba(212, 168, 106, 0.3);
+
+$uni-font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+$uni-font-family-title: 'STKaiti', 'KaiTi', serif;
+
+$uni-font-size-xs: 22rpx;
+$uni-font-size-sm: 24rpx;
+$uni-font-size-base: 28rpx;
+$uni-font-size-lg: 32rpx;
+$uni-font-size-xl: 36rpx;
+$uni-font-size-xxl: 40rpx;
+$uni-font-size-title: 48rpx;
+$uni-font-size-logo: 120rpx;
+
+$uni-border-radius-sm: 8rpx;
+$uni-border-radius-base: 16rpx;
+$uni-border-radius-lg: 24rpx;
+$uni-border-radius-xl: 32rpx;
+$uni-border-radius-circle: 50%;
+
+$uni-spacing-xs: 8rpx;
+$uni-spacing-sm: 12rpx;
+$uni-spacing-base: 16rpx;
+$uni-spacing-lg: 24rpx;
+$uni-spacing-xl: 32rpx;
+$uni-spacing-xxl: 48rpx;
+
+$uni-shadow-sm: 0 2rpx 8rpx rgba(139, 69, 19, 0.1);
+$uni-shadow-base: 0 4rpx 16rpx rgba(139, 69, 19, 0.15);
+$uni-shadow-lg: 0 8rpx 24rpx rgba(139, 69, 19, 0.2);
+
+$uni-opacity-disabled: 0.5;
+
+$uni-color-title: #2C1810;
+$uni-font-size-title: 48rpx;
+$uni-color-subtitle: #5A4B3A;
+$uni-font-size-subtitle: 28rpx;
+$uni-color-paragraph: #4A3B2A;
+$uni-font-size-paragraph: 26rpx;

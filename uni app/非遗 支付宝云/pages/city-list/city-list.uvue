@@ -1,0 +1,749 @@
+<template>
+	<view class="city-list-page">
+		<view class="city-header">
+			<view class="city-banner">
+				<image :src="cityInfo.banner" mode="aspectFill" class="city-banner-img"></image>
+				<view class="banner-overlay"></view>
+				<view class="city-name-wrap">
+					<view class="name-decoration"></view>
+					<text class="city-name">{{cityInfo.name}}</text>
+					<view class="name-decoration"></view>
+				</view>
+				<text class="city-desc">{{cityInfo.desc}}</text>
+			</view>
+		</view>
+		
+		<view class="stats-bar">
+			<view class="stat-item">
+				<text class="stat-num">{{heritages.length}}</text>
+				<text class="stat-label">项非遗</text>
+			</view>
+			<view class="stat-divider"></view>
+			<view class="stat-item">
+				<text class="stat-num">{{cityInfo.level}}</text>
+				<text class="stat-label">历史文化</text>
+			</view>
+			<view class="stat-divider"></view>
+			<view class="stat-item">
+				<text class="stat-num">{{cityInfo.years}}</text>
+				<text class="stat-label">年建城史</text>
+			</view>
+		</view>
+		
+		<view class="heritage-section">
+			<view class="section-header">
+				<view class="section-icon">
+					<view class="icon-flower"></view>
+				</view>
+				<text class="section-title">非遗文化</text>
+				<view class="section-line"></view>
+			</view>
+			
+			<view class="heritage-list">
+				<view class="heritage-item" v-for="(item, index) in heritages" :key="index" @click="goToDetail(item.id)">
+					<view class="heritage-image-wrap">
+						<image :src="item.image" mode="aspectFill" class="heritage-image"></image>
+						<view class="heritage-overlay"></view>
+						<view class="heritage-corner"></view>
+						<view class="heritage-badge" v-if="item.level">
+							<text class="badge-text">{{item.level}}</text>
+						</view>
+					</view>
+					<view class="heritage-info">
+						<text class="heritage-name">{{item.name}}</text>
+						<text class="heritage-desc">{{item.desc}}</text>
+						<view class="heritage-tags">
+							<text class="heritage-tag" v-for="(tag, tIndex) in item.tags" :key="tIndex">{{tag}}</text>
+						</view>
+					</view>
+					<view class="heritage-arrow"></view>
+				</view>
+			</view>
+		</view>
+		
+					<view class="spots-section">
+				<view class="section-header">
+					<view class="section-icon section-icon-spot">
+						<view class="icon-mountain"></view>
+					</view>
+					<text class="section-title">热门景点</text>
+					<view class="section-line"></view>
+				</view>
+				<view class="spots-grid">
+					<view class="spot-card" v-for="(item, index) in citySpots" :key="index" @click="goToDetail(item.id)">
+						<image :src="item.image" mode="aspectFill" class="spot-image"></image>
+						<view class="spot-info">
+							<text class="spot-name">{{item.name}}</text>
+							<text class="spot-location">{{item.location}}</text>
+						</view>
+						<view class="spot-arrow"></view>
+					</view>
+				</view>
+			</view>
+
+			<view class="intro-section">
+			<view class="section-header">
+				<view class="section-icon">
+					<view class="icon-book"></view>
+				</view>
+				<text class="section-title">城市介绍</text>
+				<view class="section-line"></view>
+			</view>
+			<view class="intro-content">
+				<text class="intro-text">{{cityInfo.intro}}</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref, onMounted } from 'vue'
+import { api } from '../../utils/api'
+	import { images } from '../../data/images'
+	
+	const cityName = ref('兰州')
+	
+	const cityDataMap: Record<string, any> = {
+		'兰州': {
+			name: '兰州',
+			desc: '黄河之都 · 丝路重镇',
+			banner: images.cityLanzhou,
+			level: '国家级',
+			years: '2200+',
+			intro: '兰州，简称"兰"，是甘肃省省会，丝绸之路经济带的重要节点城市。兰州有着两千多年的建城史，自古就是"联络四域、襟带万里"的交通枢纽和军事要塞，被誉为"黄河明珠"。',
+			heritages: [
+				{ id: 6, name: '兰州太平鼓', image: images.culture6, desc: '黄河文化的杰出代表', tags: ['传统舞蹈', '国家级非遗'], level: '国家级' },
+				{ id: 8, name: '兰州刻葫芦', image: images.spot1, desc: '针尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 7, name: '兰州牛肉面', image: images.food1, desc: '中华第一面', tags: ['传统技艺', '省级非遗'], level: '省级' },
+				{ id: 35, name: '兰州鼓子', image: images.culture2, desc: '兰州文化名片', tags: ['曲艺', '国家级非遗'], level: '国家级' },
+				{ id: 36, name: '兰州黄河大水车', image: images.spot1, desc: '古代自来水工程', tags: ['传统技艺', '国家级非遗'], level: '国家级' },
+				{ id: 45, name: '陇剧', image: images.culture5, desc: '甘肃地方戏曲', tags: ['传统戏剧', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'敦煌': {
+			name: '敦煌',
+			desc: '丝路明珠 · 艺术圣地',
+			banner: images.cityDunhuang,
+			level: '世界遗产',
+			years: '2000+',
+			intro: '敦煌市，隶属于甘肃省酒泉市，位于河西走廊的最西端，是丝绸之路的节点城市，以"敦煌石窟"、"敦煌壁画"闻名天下，是世界遗产莫高窟的所在地。',
+			heritages: [
+				{ id: 1, name: '敦煌彩塑', image: images.spot1, desc: '千年艺术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 9, name: '敦煌壁画', image: images.culture1, desc: '墙壁上的博物馆', tags: ['传统美术', '世界遗产'], level: '世界级' },
+				{ id: 10, name: '敦煌曲子戏', image: images.culture5, desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+			]
+		},
+		'嘉峪关': {
+			name: '嘉峪关',
+			desc: '天下第一雄关',
+			banner: images.cityJiayuguan,
+			level: '国家级',
+			years: '600+',
+			intro: '嘉峪关，号称"天下第一雄关"，位于甘肃省嘉峪关市西5千米处最狭窄的山谷中部，是明长城最西端的关口，历史上曾被称为河西咽喉。',
+			heritages: [
+				{ id: 11, name: '嘉峪关石砚', image: images.spot3, desc: '丝路文房瑰宝', tags: ['传统技艺', '省级非遗'], level: '省级' },
+				{ id: 12, name: '地蹦子', image: images.culture2, desc: '民间舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' }
+			]
+		},
+		'张掖': {
+			name: '张掖',
+			desc: '七彩丹霞 · 塞上江南',
+			banner: images.cityZhangye,
+			level: '国家级',
+			years: '2100+',
+			intro: '张掖，以"张国臂掖，以通西域"而得名，位于甘肃省西北部，河西走廊中段。张掖有着悠久的历史、灿烂的文化、优美的自然风光和独特的人文景观。',
+			heritages: [
+				{ id: 13, name: '张掖剪纸', image: images.culture3, desc: '指尖上的艺术', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 14, name: '张掖高跷', image: images.culture6, desc: '民间舞蹈奇葩', tags: ['传统舞蹈', '省级非遗'], level: '省级' },
+				{ id: 39, name: '裕固族民歌', image: images.culture2, desc: '草原民族之歌', tags: ['传统音乐', '国家级非遗'], level: '国家级' },
+				{ id: 40, name: '裕固族服饰', image: images.spot1, desc: '民族服饰瑰宝', tags: ['民俗', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'天水': {
+			name: '天水',
+			desc: '羲皇故里 · 陇上江南',
+			banner: images.cityTianshui,
+			level: '国家级',
+			years: '8000+',
+			intro: '天水，位于甘肃省东南部，是华夏文明和中华民族的重要发源地，相传是伏羲和女娲的诞生地，有"羲皇故里"之称，拥有8000多年的文明史。',
+			heritages: [
+				{ id: 3, name: '天水雕漆', image: images.spot3, desc: '传统技艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' },
+				{ id: 15, name: '天水呱呱', image: images.food4, desc: '秦州第一美食', tags: ['传统技艺', '省级非遗'], level: '省级' },
+				{ id: 16, name: '皮影戏', image: images.culture5, desc: '灯影里的戏曲', tags: ['传统戏剧', '国家级非遗'], level: '国家级' },
+				{ id: 37, name: '太昊伏羲祭典', image: images.spot1, desc: '人文始祖祭祀', tags: ['民俗', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'酒泉': {
+			name: '酒泉',
+			desc: '航天城 · 丝路重镇',
+			banner: images.cityJiuquan,
+			level: '国家级',
+			years: '2100+',
+			intro: '酒泉，为甘肃省地级市，位于甘肃省西北部河西走廊西端的阿尔金山、祁连山与马鬃山之间，是现代航天的摇篮，也是敦煌艺术的故乡。',
+			heritages: [
+				{ id: 4, name: '夜光杯雕', image: images.spot4, desc: '葡萄美酒夜光杯', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 17, name: '酒泉剪纸', image: images.culture3, desc: '民间艺术之花', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 10, name: '敦煌曲子戏', image: images.culture5, desc: '西北戏曲之魂', tags: ['传统戏剧', '省级非遗'], level: '省级' },
+				{ id: 38, name: '河西宝卷', image: images.culture2, desc: '活着的敦煌遗书', tags: ['民间文学', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'武威': {
+			name: '武威',
+			desc: '六朝古都 · 马踏飞燕',
+			banner: images.cityWuwei,
+			level: '国家级',
+			years: '2100+',
+			intro: '武威，简称"武"或"凉"，古称凉州、姑臧，是甘肃省辖地级市，被命名为"中国葡萄酒城"，是中国旅游标志"马踏飞燕"的出土地。',
+			heritages: [
+				{ id: 18, name: '武威重刻剪纸', image: images.culture3, desc: '西域特色剪纸', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 19, name: '凉州贤孝', image: images.culture2, desc: '河西曲艺之冠', tags: ['传统曲艺', '国家级非遗'], level: '国家级' },
+				{ id: 20, name: '攻鼓子', image: images.culture6, desc: '西部鼓魂', tags: ['传统舞蹈', '省级非遗'], level: '省级' },
+				{ id: 46, name: '天祝唐卡', image: images.spot1, desc: '藏族绘画艺术', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 47, name: '华锐藏族民歌', image: images.culture2, desc: '藏族风情之歌', tags: ['传统音乐', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'临夏': {
+			name: '临夏',
+			desc: '中国花儿之乡',
+			banner: images.cityLinxia,
+			level: '国家级',
+			years: '5000+',
+			intro: '临夏回族自治州，位于甘肃省中部西南面，黄河上游，是中国两大回族自治州之一，被誉为"中国花儿之乡"，拥有丰富多彩的民族文化。',
+			heritages: [
+				{ id: 2, name: '临夏砖雕', image: images.spot2, desc: '传统美术瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 21, name: '花儿', image: images.culture2, desc: '西北民歌之魂', tags: ['传统音乐', '世界级非遗'], level: '世界级' },
+				{ id: 5, name: '保安腰刀', image: images.spot5, desc: '民族工艺瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' },
+				{ id: 48, name: '河州贤孝', image: images.culture2, desc: '临夏曲艺代表', tags: ['曲艺', '国家级非遗'], level: '国家级' },
+				{ id: 49, name: '河州平弦', image: images.culture2, desc: '地方曲艺瑰宝', tags: ['曲艺', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'平凉': {
+			name: '平凉',
+			desc: '崆峒问道 · 陇东旱码头',
+			banner: images.cityLanzhou,
+			level: '省级',
+			years: '3000+',
+			intro: '平凉，位于甘肃省东部，六盘山东麓，泾河上游，是陕甘宁交汇几何中心"金三角"，历史上为兵家必争之地，素有"陇上旱码头"之称。',
+			heritages: [
+				{ id: 22, name: '平凉剪纸', image: images.culture3, desc: '民间艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 23, name: '静宁烧鸡', image: images.food3, desc: '陇东名吃', tags: ['传统技艺', '省级非遗'], level: '省级' }
+			]
+		},
+		'庆阳': {
+			name: '庆阳',
+			desc: '香包之乡 · 陇东粮仓',
+			banner: images.cityLanzhou,
+			level: '国家级',
+			years: '2000+',
+			intro: '庆阳，位于甘肃省最东部，陕甘宁三省区的交汇处，系黄河中下游黄土高原沟壑区，素有"陇东粮仓"之称，是中国香包刺绣之乡。',
+			heritages: [
+				{ id: 6, name: '庆阳香包', image: images.banner2, desc: '传统手工艺瑰宝', tags: ['传统美术', '国家级非遗'], level: '国家级' },
+				{ id: 24, name: '庆阳剪纸', image: images.culture3, desc: '窗花艺术之乡', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 42, name: '环县道情皮影戏', image: images.culture5, desc: '东方魔术般的艺术', tags: ['传统戏剧', '世界级非遗'], level: '世界级' },
+				{ id: 43, name: '唢呐艺术', image: images.culture2, desc: '陇东第一声', tags: ['传统音乐', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'陇南': {
+			name: '陇南',
+			desc: '陇上江南 · 秦地锁钥',
+			banner: images.cityLongnan,
+			level: '省级',
+			years: '2200+',
+			intro: '陇南，甘肃省下辖地级行政区，位于甘肃省东南部，地处秦巴山区，素称"秦陇锁钥，巴蜀咽喉"，是甘肃省唯一属于长江水系的地区。',
+			heritages: [
+				{ id: 25, name: '陇南高山戏', image: images.culture5, desc: '地方戏曲奇葩', tags: ['传统戏剧', '省级非遗'], level: '省级' },
+				{ id: 26, name: '文县傩舞', image: images.culture6, desc: '舞蹈活化石', tags: ['传统舞蹈', '省级非遗'], level: '省级' },
+				{ id: 44, name: '七夕节（乞巧节）', image: images.spot1, desc: '中国最早的情人节', tags: ['民俗', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'白银': {
+			name: '白银',
+			desc: '铜城 · 黄河上游明珠',
+			banner: images.cityBaiyin,
+			level: '省级',
+			years: '600+',
+			intro: '白银，位于甘肃省中部，因矿得名，因企设市，是全国重要的有色金属工业基地和黄河上游重要的生态屏障。白银有着丰富的矿产资源和悠久的历史文化。',
+			heritages: [
+				{ id: 27, name: '白银剪纸', image: images.culture3, desc: '民间艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 28, name: '白银皮影戏', image: images.culture5, desc: '灯影里的艺术', tags: ['传统戏剧', '省级非遗'], level: '省级' }
+			]
+		},
+		'金昌': {
+			name: '金昌',
+			desc: '镍都 · 戈壁花城',
+			banner: images.cityJinchang,
+			level: '省级',
+			years: '40+',
+			intro: '金昌，位于甘肃省河西走廊中段，因盛产镍而被誉为"祖国的镍都"，是中国最大的镍钴生产基地和铂族金属提炼中心。',
+			heritages: [
+				{ id: 29, name: '金昌剪纸', image: images.culture3, desc: '戈壁艺术之花', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 30, name: '金昌民歌', image: images.culture2, desc: '塞上歌声', tags: ['传统音乐', '市级非遗'], level: '市级' }
+			]
+		},
+		'定西': {
+			name: '定西',
+			desc: '马铃薯之乡 · 千年药乡',
+			banner: images.cityDingxi,
+			level: '省级',
+			years: '2000+',
+			intro: '定西，位于甘肃省中部，是古丝绸之路重镇，新欧亚大陆桥必经之地。定西以"千年药乡"、"中国马铃薯之乡"闻名遐迩。',
+			heritages: [
+				{ id: 31, name: '定西剪纸', image: images.culture3, desc: '陇中艺术瑰宝', tags: ['传统美术', '省级非遗'], level: '省级' },
+				{ id: 32, name: '定西皮影戏', image: images.culture5, desc: '乡土戏曲', tags: ['传统戏剧', '省级非遗'], level: '省级' },
+				{ id: 41, name: '洮砚制作技艺', image: images.spot1, desc: '东方瑰宝', tags: ['传统技艺', '国家级非遗'], level: '国家级' }
+			]
+		},
+		'甘南': {
+			name: '甘南',
+			desc: '九色甘南 · 香巴拉',
+			banner: images.cityGannan,
+			level: '国家级',
+			years: '3000+',
+			intro: '甘南藏族自治州，位于甘肃省西南部，是全国十个藏族自治州之一。甘南有着壮丽的自然风光和独特的藏族文化，被誉为"九色甘南·香巴拉"。',
+			heritages: [
+				{ id: 33, name: '甘南民歌', image: images.culture2, desc: '草原之声', tags: ['传统音乐', '国家级非遗'], level: '国家级' },
+				{ id: 34, name: '锅庄舞', image: images.culture6, desc: '欢乐的舞蹈', tags: ['传统舞蹈', '省级非遗'], level: '省级' },
+				{ id: 50, name: '玛曲藏族唐卡', image: images.spot1, desc: '千年不褪色的艺术', tags: ['传统美术', '国家级非遗'], level: '国家级' }
+			]
+		}
+	}
+	
+	const cityInfo = ref<any>({})
+	const heritages = ref<any[]>([])
+	const citySpots = ref<any[]>([])
+	
+	onMounted(async () => {
+			const pages = getCurrentPages()
+			const currentPage = pages[pages.length - 1]
+			const options = (currentPage as any).options
+			const name = options?.city || '兰州'
+			cityName.value = name
+			try {
+				const data = await api.cities.detail(name)
+				if (data) {
+					cityInfo.value = data
+					heritages.value = data.heritages || []
+					citySpots.value = data.spots || []
+					return
+				}
+			} catch (e) {}
+			const data = cityDataMap[name] || cityDataMap['兰州']
+			cityInfo.value = data
+			heritages.value = data.heritages || []
+			citySpots.value = data.spots || []
+		})
+	
+	const goToDetail = (id: number) => {
+		uni.navigateTo({
+			url: `/pages/detail/detail?id=${id}&type=spot`
+		})
+	}
+</script>
+
+<style>
+	.city-list-page {
+		min-height: 100vh;
+		background: #FFF8E7;
+		padding-bottom: 40rpx;
+	}
+	
+	.city-header {
+		position: relative;
+	}
+	
+	.city-banner {
+		position: relative;
+		width: 100%;
+		height: 400rpx;
+		overflow: hidden;
+	}
+	
+	.city-banner-img {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.banner-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(180deg, rgba(44, 24, 16, 0.3) 0%, rgba(44, 24, 16, 0.7) 100%);
+	}
+	
+	.city-name-wrap {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.name-decoration {
+		width: 60rpx;
+		height: 2rpx;
+		background: #D4A86A;
+	}
+	
+	.city-name {
+		font-size: 56rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		margin: 0 30rpx;
+		text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+	}
+	
+	.city-desc {
+		position: absolute;
+		bottom: 60rpx;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-size: 28rpx;
+		color: #F5E6D3;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.stats-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-around;
+		background: #FFFFFF;
+		margin: -30rpx 24rpx 0;
+		border-radius: 16rpx;
+		padding: 30rpx 0;
+		box-shadow: 0 4rpx 20rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		position: relative;
+		z-index: 1;
+	}
+	
+	.stat-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex: 1;
+	}
+	
+	.stat-num {
+		font-size: 36rpx;
+		font-weight: bold;
+		color: #8B4513;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.stat-label {
+		font-size: 22rpx;
+		color: #7A6B5A;
+		margin-top: 8rpx;
+	}
+	
+	.stat-divider {
+		width: 2rpx;
+		height: 60rpx;
+		background: linear-gradient(180deg, transparent, #D4A86A, transparent);
+	}
+	
+	.heritage-section {
+		padding: 30rpx 24rpx 0;
+	}
+	
+	
+	.spots-section {
+		padding: 28rpx 20rpx;
+	}
+
+	.spots-section .section-icon-spot {
+		background: rgba(74, 143, 109, 0.1);
+	}
+
+	.spots-grid {
+		padding: 0 4rpx;
+	}
+
+	.spot-card {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 16rpx;
+		margin-bottom: 16rpx;
+		background: #FFFFFF;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.08);
+	}
+
+	.spot-image {
+		width: 120rpx;
+		height: 90rpx;
+		border-radius: 12rpx;
+		flex-shrink: 0;
+	}
+
+	.spot-info {
+		flex: 1;
+		margin-left: 20rpx;
+	}
+
+	.spot-name {
+		font-size: 28rpx;
+		color: #2C1810;
+		font-weight: 600;
+		margin-bottom: 6rpx;
+	}
+
+	.spot-location {
+		font-size: 22rpx;
+		color: #9A8B7A;
+	}
+
+	.spot-arrow {
+		width: 12rpx;
+		height: 12rpx;
+		border-top: 3rpx solid #CCC;
+		border-right: 3rpx solid #CCC;
+		transform: rotate(45deg);
+		flex-shrink: 0;
+	}
+
+	
+	.section-icon-spot {
+		background: linear-gradient(135deg, #4A8F6D, #2E6B4F) !important;
+	}
+	.icon-mountain {
+		width: 24rpx;
+		height: 20rpx;
+		position: relative;
+	}
+	.icon-mountain:before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 8rpx solid transparent;
+		border-right: 8rpx solid transparent;
+		border-bottom: 12rpx solid #FFF8E7;
+	}
+	.icon-mountain:after {
+		content: '';
+		position: absolute;
+		top: 4rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 18rpx;
+		height: 4rpx;
+		background: #FFF8E7;
+		border-radius: 2rpx;
+	}
+
+.intro-section {
+		padding: 30rpx 24rpx 0;
+	}
+	
+	.section-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 24rpx;
+	}
+	
+	.section-icon {
+		width: 44rpx;
+		height: 44rpx;
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+		border-radius: 10rpx;
+		margin-right: 14rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	
+	.icon-flower {
+		width: 24rpx;
+		height: 24rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+		position: relative;
+	}
+	
+	.icon-flower::before {
+		content: '';
+		position: absolute;
+		top: -8rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 12rpx;
+		height: 12rpx;
+		background: #FFF8E7;
+		border-radius: 50%;
+	}
+	
+	.icon-book {
+		width: 24rpx;
+		height: 20rpx;
+		background: #FFF8E7;
+		border-radius: 4rpx;
+		position: relative;
+	}
+	
+	.section-title {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		flex-shrink: 0;
+	}
+	
+	.section-line {
+		flex: 1;
+		height: 2rpx;
+		background: linear-gradient(90deg, #D4A86A, transparent);
+		margin-left: 16rpx;
+	}
+	
+	.heritage-list {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	.heritage-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: #FFFFFF;
+		border-radius: 16rpx;
+		padding: 20rpx;
+		margin-bottom: 16rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+		position: relative;
+	}
+	
+	.heritage-item::before {
+		content: '';
+		position: absolute;
+		top: 8rpx;
+		left: 8rpx;
+		width: 16rpx;
+		height: 16rpx;
+		border-top: 2rpx solid #D4A86A;
+		border-left: 2rpx solid #D4A86A;
+		border-radius: 4rpx 0 0 0;
+		opacity: 0.5;
+	}
+	
+	.heritage-image-wrap {
+		position: relative;
+		width: 160rpx;
+		height: 160rpx;
+		border-radius: 12rpx;
+		overflow: hidden;
+		margin-right: 20rpx;
+		flex-shrink: 0;
+	}
+	
+	.heritage-image {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.heritage-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(180deg, transparent, rgba(139, 69, 19, 0.3));
+	}
+	
+	.heritage-corner {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 36rpx;
+		height: 36rpx;
+		background: linear-gradient(135deg, #D4A86A 50%, transparent 50%);
+	}
+	
+	.heritage-badge {
+		position: absolute;
+		bottom: 8rpx;
+		left: 8rpx;
+		background: linear-gradient(135deg, #8B4513, #6B3410);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+	}
+	
+	.badge-text {
+		font-size: 18rpx;
+		color: #FFF8E7;
+	}
+	
+	.heritage-info {
+		flex: 1;
+	}
+	
+	.heritage-name {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+	
+	.heritage-desc {
+		font-size: 24rpx;
+		color: #7A6B5A;
+		display: block;
+		margin-bottom: 12rpx;
+	}
+	
+	.heritage-tags {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	
+	.heritage-tag {
+		font-size: 20rpx;
+		background: rgba(139, 69, 19, 0.1);
+		color: #8B4513;
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+		margin-right: 10rpx;
+		margin-bottom: 6rpx;
+	}
+	
+	.heritage-arrow {
+		width: 24rpx;
+		height: 24rpx;
+		border-right: 3rpx solid #D4A86A;
+		border-bottom: 3rpx solid #D4A86A;
+		transform: rotate(-45deg);
+		margin-left: 10rpx;
+		flex-shrink: 0;
+	}
+	
+	.intro-content {
+		background: #FFFFFF;
+		border-radius: 16rpx;
+		padding: 24rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+	
+	.intro-text {
+		font-size: 28rpx;
+		color: #5A4B3A;
+		line-height: 1.8;
+	}
+</style>

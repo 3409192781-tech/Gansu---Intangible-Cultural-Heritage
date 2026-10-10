@@ -1,0 +1,494 @@
+<template>
+	<view class="help-page">
+		<view class="help-header">
+			<view class="header-bg-layer">
+				<view class="header-overlay"></view>
+				<view class="header-pattern"></view>
+			</view>
+			<view class="header-content">
+				<view class="header-icon-wrap">
+					<view class="header-icon"></view>
+				</view>
+				<text class="header-title">帮助中心</text>
+				<text class="header-subtitle">全面了解陇韵匠心</text>
+			</view>
+		</view>
+
+		<scroll-view class="help-content" scroll-y>
+			<view class="help-group">
+				<view class="group-title-wrap">
+					<view class="group-dot"></view>
+					<text class="group-title">快速入门</text>
+				</view>
+				<view class="qa-item" v-for="(qa, i) in faqBasic" :key="i" @click="qa.open = !qa.open">
+					<view class="qa-header">
+						<view class="qa-q">Q</view>
+						<text class="qa-question">{{ qa.q }}</text>
+						<view :class="qa.open ? 'qa-arrow qa-arrow-open' : 'qa-arrow'"></view>
+					</view>
+					<view class="qa-body" v-show="qa.open">
+						<view class="qa-divider"></view>
+						<view class="qa-a">A</view>
+						<text class="qa-answer">{{ qa.a }}</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="help-group">
+				<view class="group-title-wrap">
+					<view class="group-dot"></view>
+					<text class="group-title">收藏与浏览</text>
+				</view>
+				<view class="qa-item" v-for="(qa, i) in faqFavorite" :key="i" @click="qa.open = !qa.open">
+					<view class="qa-header">
+						<view class="qa-q">Q</view>
+						<text class="qa-question">{{ qa.q }}</text>
+						<view :class="qa.open ? 'qa-arrow qa-arrow-open' : 'qa-arrow'"></view>
+					</view>
+					<view class="qa-body" v-show="qa.open">
+						<view class="qa-divider"></view>
+						<view class="qa-a">A</view>
+						<text class="qa-answer">{{ qa.a }}</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="help-group">
+				<view class="group-title-wrap">
+					<view class="group-dot"></view>
+					<text class="group-title">AI 助手</text>
+				</view>
+				<view class="qa-item" v-for="(qa, i) in faqAI" :key="i" @click="qa.open = !qa.open">
+					<view class="qa-header">
+						<view class="qa-q">Q</view>
+						<text class="qa-question">{{ qa.q }}</text>
+						<view :class="qa.open ? 'qa-arrow qa-arrow-open' : 'qa-arrow'"></view>
+					</view>
+					<view class="qa-body" v-show="qa.open">
+						<view class="qa-divider"></view>
+						<view class="qa-a">A</view>
+						<text class="qa-answer">{{ qa.a }}</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="help-group">
+				<view class="group-title-wrap">
+					<view class="group-dot"></view>
+					<text class="group-title">其他问题</text>
+				</view>
+				<view class="qa-item" v-for="(qa, i) in faqOther" :key="i" @click="qa.open = !qa.open">
+					<view class="qa-header">
+						<view class="qa-q">Q</view>
+						<text class="qa-question">{{ qa.q }}</text>
+						<view :class="qa.open ? 'qa-arrow qa-arrow-open' : 'qa-arrow'"></view>
+					</view>
+					<view class="qa-body" v-show="qa.open">
+						<view class="qa-divider"></view>
+						<view class="qa-a">A</view>
+						<text class="qa-answer">{{ qa.a }}</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="contact-section">
+				<view class="contact-card">
+					<view class="contact-icon">
+						<view class="contact-icon-inner"></view>
+					</view>
+					<text class="contact-title">还没解决你的问题？</text>
+					<text class="contact-desc">可以拨打客服电话联系我们</text>
+					<text class="contact-phone">13800000000</text>
+					<view class="contact-btn" @click="handleCall">
+						<text class="contact-btn-text">立即拨打</text>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ref } from 'vue'
+
+	const faqBasic = ref([
+		{
+			q: '陇韵匠心是什么？',
+			a: '陇韵匠心是一款展示甘肃省文旅资源的微信小程序，涵盖景点、非遗文化、特色美食、文创产品四大板块，帮助你全面了解甘肃的独特魅力。',
+			open: false
+		},
+		{
+			q: '如何使用这个小程序？',
+			a: '底部有四个导航栏：首页浏览推荐内容；地图查看甘肃各城市文旅资源；文创浏览特色文创产品；我的管理收藏和设置。点击任意内容即可查看详情。',
+			open: false
+		},
+		{
+			q: '需要注册账号吗？',
+			a: '完全不需要！打开即可浏览全部内容，无需登录注册。',
+			open: false
+		}
+	])
+
+	const faqFavorite = ref([
+		{
+			q: '如何收藏景点、非遗或美食？',
+			a: '进入任意详情页，点击底部心形按钮即可收藏或取消收藏。收藏状态会实时同步。',
+			open: false
+		},
+		{
+			q: '在哪里查看我的收藏？',
+			a: '在"我的"页面点击"我的行程"下的"我的景点"、"非遗收藏"、"美食记录"，即可查看各类收藏。收藏数量会在"我的"页面顶部实时显示。',
+			open: false
+		},
+		{
+			q: '浏览记录在哪里查看？',
+			a: '你查看过的内容会自动保存为浏览记录，"我的"页面顶部的"浏览"数字就是你的浏览总数。',
+			open: false
+		}
+	])
+
+	const faqAI = ref([
+		{
+			q: '驼小游是什么？',
+			a: '驼小游是你的专属AI导游助手，它以悬浮球的形式出现在首页右下角。你可以向它提问任何甘肃文旅相关的问题，它会像一个热情的当地人一样为你解答。',
+			open: false
+		},
+		{
+			q: '驼小游能回答什么问题？',
+			a: '驼小游擅长回答景点推荐、非遗文化科普、美食攻略、旅行路线规划等。日常问题也能简单回应，但它的专长是甘肃文旅～',
+			open: false
+		},
+		{
+			q: '驼小游回答有字数限制吗？',
+			a: '为了让你快速获取信息，驼小游每次回答控制在300字以内，简洁实用。',
+			open: false
+		}
+	])
+
+	const faqOther = ref([
+		{
+			q: '图片加载不出来怎么办？',
+			a: '请检查网络连接是否正常。如果持续加载失败，可以稍后再试或联系客服反馈。',
+			open: false
+		},
+		{
+			q: '想反馈建议或报告问题？',
+			a: '可以在"设置"页面的"意见反馈"中提交，或直接拨打客服电话 13800000000。',
+			open: false
+		}
+	])
+
+	const handleCall = () => {
+		uni.makePhoneCall({ phoneNumber: '13800000000' })
+	}
+</script>
+
+<style>
+	.help-page {
+		min-height: 100vh;
+		background: #F5E6D3;
+		padding-bottom: 60rpx;
+	}
+
+	.help-header {
+		position: relative;
+		padding: 60rpx 30rpx 50rpx;
+		overflow: hidden;
+	}
+
+	.header-bg-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.header-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(180deg, rgba(139, 69, 19, 0.85) 0%, #8B4513 100%);
+	}
+
+	.header-pattern {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4A86A' fill-opacity='0.05'%3E%3Cpath d='M0 20h20v20H0V20zm10 10h10v10H10V30z'/%3E%3C/g%3E%3C/svg%3E");
+	}
+
+	.header-content {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.header-icon-wrap {
+		width: 100rpx;
+		height: 100rpx;
+		background: rgba(255, 248, 231, 0.2);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 24rpx;
+		border: 3rpx solid rgba(212, 168, 106, 0.5);
+	}
+
+	.header-icon {
+		width: 28rpx;
+		height: 28rpx;
+		border: 3rpx solid #FFF8E7;
+		border-radius: 50%;
+		position: relative;
+	}
+
+	.header-icon::after {
+		content: '?';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 20rpx;
+		color: #FFF8E7;
+		font-weight: bold;
+	}
+
+	.header-title {
+		font-size: 48rpx;
+		font-weight: bold;
+		color: #FFF8E7;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		margin-bottom: 10rpx;
+		text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+	}
+
+	.header-subtitle {
+		font-size: 26rpx;
+		color: rgba(255, 248, 231, 0.8);
+		letter-spacing: 2rpx;
+	}
+
+	.help-content {
+		padding: 0 24rpx;
+		margin-top: -20rpx;
+		position: relative;
+		z-index: 2;
+	}
+
+	.help-group {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		overflow: hidden;
+		margin-bottom: 20rpx;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+
+	.group-title-wrap {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 24rpx;
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.12);
+		background: linear-gradient(180deg, rgba(212, 168, 106, 0.06), transparent);
+	}
+
+	.group-dot {
+		width: 12rpx;
+		height: 12rpx;
+		background: #D4A86A;
+		border-radius: 50%;
+		margin-right: 14rpx;
+	}
+
+	.group-title {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #2C1810;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+
+	.qa-item {
+		border-bottom: 1rpx solid rgba(212, 168, 106, 0.08);
+	}
+
+	.qa-item:last-child {
+		border-bottom: none;
+	}
+
+	.qa-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 24rpx;
+	}
+
+	.qa-q {
+		width: 36rpx;
+		height: 36rpx;
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+		border-radius: 8rpx;
+		color: #FFF8E7;
+		font-size: 22rpx;
+		font-weight: bold;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 16rpx;
+		flex-shrink: 0;
+	}
+
+	.qa-question {
+		flex: 1;
+		font-size: 28rpx;
+		color: #2C1810;
+		line-height: 1.5;
+	}
+
+	.qa-arrow {
+		width: 18rpx;
+		height: 18rpx;
+		border-right: 3rpx solid #C0B0A0;
+		border-bottom: 3rpx solid #C0B0A0;
+		transform: rotate(-45deg);
+		margin-left: 12rpx;
+		flex-shrink: 0;
+		transition: transform 0.2s ease;
+	}
+
+	.qa-arrow-open {
+		transform: rotate(45deg);
+		border-color: #D4A86A;
+	}
+
+	.qa-body {
+		padding: 0 24rpx 24rpx 76rpx;
+		display: flex;
+		flex-direction: row;
+	}
+
+	.qa-divider {
+		display: none;
+	}
+
+	.qa-a {
+		width: 36rpx;
+		height: 36rpx;
+		background: linear-gradient(135deg, #4A8F6D, #3E7A5B);
+		border-radius: 8rpx;
+		color: #FFF8E7;
+		font-size: 22rpx;
+		font-weight: bold;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-right: 16rpx;
+		flex-shrink: 0;
+		align-self: flex-start;
+	}
+
+	.qa-answer {
+		flex: 1;
+		font-size: 26rpx;
+		color: #7A6B5A;
+		line-height: 1.7;
+	}
+
+	.contact-section {
+		padding: 32rpx 0;
+	}
+
+	.contact-card {
+		background: #FFFFFF;
+		border-radius: 20rpx;
+		padding: 40rpx 32rpx;
+		text-align: center;
+		box-shadow: 0 4rpx 16rpx rgba(139, 69, 19, 0.1);
+		border: 2rpx solid rgba(212, 168, 106, 0.2);
+	}
+
+	.contact-icon {
+		width: 80rpx;
+		height: 80rpx;
+		margin: 0 auto 24rpx;
+		background: linear-gradient(135deg, rgba(212, 168, 106, 0.2), rgba(180, 136, 74, 0.1));
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 2rpx solid rgba(212, 168, 106, 0.3);
+	}
+
+	.contact-icon-inner {
+		width: 32rpx;
+		height: 32rpx;
+		border: 3rpx solid #D4A86A;
+		border-radius: 4rpx;
+		position: relative;
+	}
+
+	.contact-icon-inner::after {
+		content: '';
+		position: absolute;
+		bottom: -12rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 0;
+		height: 0;
+		border-left: 8rpx solid transparent;
+		border-right: 8rpx solid transparent;
+		border-top: 10rpx solid #D4A86A;
+	}
+
+	.contact-title {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #2C1810;
+		display: block;
+		margin-bottom: 10rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+	}
+
+	.contact-desc {
+		font-size: 26rpx;
+		color: #7A6B5A;
+		display: block;
+		margin-bottom: 16rpx;
+	}
+
+	.contact-phone {
+		font-size: 44rpx;
+		font-weight: bold;
+		color: #8B4513;
+		display: block;
+		margin-bottom: 28rpx;
+		font-family: 'STKaiti', 'KaiTi', serif;
+		letter-spacing: 3rpx;
+	}
+
+	.contact-btn {
+		display: inline-flex;
+		padding: 18rpx 64rpx;
+		background: linear-gradient(135deg, #D4A86A, #B4884A);
+		border-radius: 40rpx;
+		box-shadow: 0 6rpx 20rpx rgba(212, 168, 106, 0.35);
+	}
+
+	.contact-btn:active {
+		transform: scale(0.96);
+	}
+
+	.contact-btn-text {
+		font-size: 28rpx;
+		color: #FFF8E7;
+		font-weight: bold;
+	}
+</style>

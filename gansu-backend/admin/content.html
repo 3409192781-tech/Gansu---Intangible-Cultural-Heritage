@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容管理 · 陇韵匠心管理后台</title>
+<link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+<div class="layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot"></span>陇韵匠心</div>
+    <nav>
+      <div class="nav-label">主菜单</div>
+      <a class="nav-item" href="/admin/dashboard.html"><span class="nav-dot"></span>仪表盘</a>
+      <a class="nav-item" href="/admin/orders.html"><span class="nav-dot"></span>订单管理</a>
+      <a class="nav-item" href="/admin/products.html"><span class="nav-dot"></span>产品管理</a>
+      <a class="nav-item" href="/admin/guides.html"><span class="nav-dot"></span>攻略管理</a>
+      <a class="nav-item active" href="/admin/content.html"><span class="nav-dot"></span>内容管理</a>
+      <a class="nav-item" href="/admin/settings.html"><span class="nav-dot"></span>站点设置</a>
+      <a class="nav-item" href="/admin/users.html"><span class="nav-dot"></span>用户管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar">管</div><span>管理员</span></div>
+      <a class="nav-item" onclick="logout()" style="color:rgba(255,248,231,.4);margin:0;padding:8px 12px;font-size:.82rem"><span class="nav-dot"></span>退出登录</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">内容管理</div>
+        <div class="breadcrumb">首页 / <span>内容</span></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="time" id="liveTime"></span>
+        <button class="btn btn-sm btn-outline" onclick="load()">刷新 🔄</button>
+      </div>
+    </div>
+    <div class="main-inner">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-type="spots" onclick="switchType('spots')">景点 🏔️</div>
+        <div class="tab" data-type="cultures" onclick="switchType('cultures')">非遗 🎭</div>
+        <div class="tab" data-type="foods" onclick="switchType('foods')">美食 🍜</div>
+        <div class="tab" data-type="events" onclick="switchType('events')">活动 📅</div>
+        <div class="tab" data-type="banners" onclick="switchType('banners')">轮播图 🖼️</div>
+        <div class="tab" data-type="cities" onclick="switchType('cities')">城市 🏙️</div>
+        <div class="tab" data-type="quick-entries" onclick="switchType('quick-entries')">快捷入口 🔗</div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="f_search" placeholder="搜索…" onkeyup="if(event.key==='Enter')load()">
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="load()">搜索</button>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('f_search').value='';load()">清除</button>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span style="font-size:.85rem;color:var(--grey)" id="countLabel">共 0 条</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-primary" onclick="openForm()">＋ 新增</button>
+            <button class="btn btn-sm btn-outline" onclick="load()">刷新 🔄</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="max-width:650px">
+    <div class="modal-header">
+      <h3 id="modalTitle">新增</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="formFields"></div>
+      <p class="form-error" id="saveError"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveItem()">保存 💾</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+var API = '/api';
+var TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin/';
+var currentType = 'spots';
+var items = [];
+var editItemData = null;
+var currentPage = 1;
+
+// ── XSS 防护 ──
+function esc(s) { if (!s && s !== 0) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+// ── Toast ──
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span><span class="toast-msg">' + msg + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); }, 3500);
+}
+
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+
+function tick() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+}
+tick(); setInterval(tick, 30000);
+
+async function api(path, method, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    var res = await fetch(API + path, opts);
+    var data = await res.json();
+    if (data.code === 401) { logout(); return null; }
+    return data;
+  } catch(e) { toast('网络错误', 'error'); return null; }
+}
+
+var HEADS = {
+  spots: ['ID','封面','轮播图','名称','所在地','级别','分类','视频','贴士','状态'],
+  cultures: ['ID','封面','轮播图','名称','所在地','级别','视频','贴士','状态'],
+  foods: ['ID','封面','轮播图','名称','地区','类型','视频','贴士','状态'],
+  events: ['月份','日期','活动名称','地点'],
+  banners: ['图片','标题','描述','链接','状态'],
+  cities: ['名称','描述','等级','历史','景观数','美食数'],
+  'quick-entries': ['图标','文字','链接类型','链接值','状态']
+};
+
+function getApiPath() {
+  if (currentType === 'quick-entries') return '/quick-entries';
+  if (currentType === 'cities') return '/cities';
+  return '/' + currentType;
+}
+
+async function load(pg) {
+  if (pg) currentPage = pg;
+  var keyword = document.getElementById('f_search').value.trim();
+  var path = getApiPath();
+  var isAdmin = (currentType === 'events' || currentType === 'banners') ? '&admin=1' : '';
+  if (currentType === 'quick-entries') isAdmin = '';
+  var queryStr = '?page=' + currentPage + '&pageSize=200' + isAdmin;
+  if (keyword) queryStr += '&keyword=' + encodeURIComponent(keyword);
+
+  var res = await api(path + queryStr, 'GET');
+  if (!res || res.code !== 200) { document.getElementById('tableBody').innerHTML = '<tr><td colspan="10"><div class="loading"><div class="spinner"></div>加载中…</div></td></tr>'; return; }
+
+  var data = res.data;
+  if (currentType === 'banners' || currentType === 'cities' || currentType === 'quick-entries') {
+    items = Array.isArray(data) ? data : (data.list || []);
+  } else {
+    items = data.list || [];
+  }
+  var total = data.total || items.length;
+
+  document.getElementById('countLabel').textContent = '共 ' + total + ' 条记录';
+  document.getElementById('tableHead').innerHTML = '<tr>' + HEADS[currentType].map(function(h){ return '<th>' + h + '</th>'; }).join('') + '<th>操作</th></tr>';
+
+  document.getElementById('tableBody').innerHTML = items.map(function(item) {
+    var cells = '';
+    var id = item.id || item._id || '';
+    var mongoId = item._id || '';
+    var nameOrTitle = item.name || item.title || '';
+    var img = item.image || item.icon || '';
+    var tags = (item.tags || []).join(', ');
+
+    if (currentType === 'spots') cells = td(id) + tdImg(img) + td((item.images||[]).length + '张') + td(nameOrTitle) + td(item.location) + td(item.level) + td(item.category) + td(item.videoUrl ? '有' : '无') + td((item.tips||[]).length + '条') + tdStatus(item.status);
+    else if (currentType === 'cultures') cells = td(id) + tdImg(img) + td((item.images||[]).length + '张') + td(nameOrTitle) + td(item.location) + td(item.level) + td(item.videoUrl ? '有' : '无') + td((item.tips||[]).length + '条') + tdStatus(item.status);
+    else if (currentType === 'foods') cells = td(id) + tdImg(img) + td((item.images||[]).length + '张') + td(nameOrTitle) + td(item.area) + td(item.type) + td(item.videoUrl ? '有' : '无') + td((item.tips||[]).length + '条') + tdStatus(item.status);
+    else if (currentType === 'events') cells = td(item.month) + td(item.day) + td(item.title) + td(item.location);
+    else if (currentType === 'banners') cells = tdImg(img, 60, 36) + td(item.title) + td(item.desc) + td(item.linkValue) + tdStatus(item.status);
+    else if (currentType === 'cities') cells = td(item.name) + td(item.desc) + td(item.level) + td(item.years) + td((item.spots || []).length) + td((item.foods || []).length);
+    else if (currentType === 'quick-entries') cells = tdImg(img, 32, 32) + td(item.text) + td(item.linkType) + td(item.linkValue) + tdStatus(item.status);
+
+    var btns = '<button class="btn btn-sm btn-primary" onclick="editItem(\'' + id + '\')">编辑 ✏️</button> ';
+    if (currentType !== 'quick-entries') {
+      btns += '<button class="btn btn-sm btn-red" onclick="deleteItem(\'' + id + '\')">删除 🗑️</button> ';
+    }
+    if (currentType === 'spots' || currentType === 'cultures' || currentType === 'foods' || currentType === 'banners' || currentType === 'quick-entries') {
+      var newSt = item.status === 1 ? 0 : 1;
+      btns += '<button class="btn btn-sm btn-outline" onclick="toggleStatus(\'' + id + '\',' + newSt + ')">' + (item.status === 1 ? '下架 ⬇️' : '上架 ⬆️') + '</button>';
+    }
+    return '<tr>' + cells + '<td style="white-space:nowrap">' + btns + '</td></tr>';
+  }).join('');
+
+  var totalPages = Math.ceil(total / 200);
+  document.getElementById('pagination').innerHTML = totalPages > 1
+    ? Array.from({length: totalPages}, function(_,i){ return '<button class="page-btn' + (i+1===currentPage?' active':'') + '" onclick="load(' + (i+1) + ')">' + (i+1) + '</button>'; }).join('') + '<span class="page-info">共 ' + totalPages + ' 页</span>'
+    : '';
+}
+
+function td(v) { return '<td>' + (v !== undefined && v !== null ? esc(v) : '<span style="color:var(--grey-light)">-</span>') + '</td>'; }
+function tdImg(src, w, h) { w = w || 40; h = h || 40; return '<td><img src="' + (src || '') + '" class="table-img" style="width:' + w + 'px;height:' + h + 'px"></td>'; }
+function tdStatus(s) { return '<td><span class="badge ' + (s === 1 ? 'badge-paid' : 'badge-cancelled') + '">' + (s === 1 ? '启用' : '禁用') + '</span></td>'; }
+
+function switchType(type) {
+  currentType = type;
+  currentPage = 1;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.type === type); });
+  load();
+}
+
+function openForm() { editItemData = null; document.getElementById('modalTitle').textContent = '新增'; renderForm(); document.getElementById('modal').style.display = 'flex'; document.getElementById('saveError').style.display = 'none'; }
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function renderForm() {
+  var html = '';
+  if (currentType === 'events') {
+    html += fg('活动名称','f_title'); html += fg('月份','f_month'); html += fg('日期','f_day'); html += fg('地点','f_location'); html += fg('日期(yyyy-mm-dd)','f_date','date');
+  } else if (currentType === 'banners') {
+    html += fg('标题','f_title'); html += fg('图片 URL','f_image'); html += fg('描述','f_desc');
+    html += '<div class="form-group"><label>链接类型</label><select id="f_linkType"><option value="detail">详情</option><option value="page">页面</option><option value="url">外链</option></select></div>';
+    html += fg('链接值','f_linkValue'); html += fg('排序值','f_sortOrder','number');
+  } else if (currentType === 'cities') {
+    html += fg('名称','f_name'); html += fg('描述','f_desc'); html += fg('横幅图片','f_banner'); html += fg('等级','f_level'); html += fg('历史年份','f_years'); html += fg('简介','f_intro','textarea');
+  } else if (currentType === 'quick-entries') {
+    html += fg('文字','f_text'); html += fg('图标路径','f_icon');
+    html += '<div class="form-group"><label>链接类型</label><select id="f_linkType"><option value="page">页面路径</option><option value="url">外部链接</option></select></div>';
+    html += fg('链接值','f_linkValue'); html += fg('排序值','f_sortOrder','number');
+  } else {
+    html += fg('名称','f_name'); html += fg('封面图片 URL','f_image');
+    html += '<div class="form-group"><label>轮播图（3张）</label>';
+    html += '<input id="f_img1" placeholder="第1张图片URL" style="margin-bottom:6px">';
+    html += '<input id="f_img2" placeholder="第2张图片URL" style="margin-bottom:6px">';
+    html += '<input id="f_img3" placeholder="第3张图片URL"></div>';
+    html += fg('标签（逗号分隔）','f_tags'); html += fg('所在地','f_location');
+    if (currentType === 'spots') { html += fg('级别','f_level'); html += fg('分类','f_category'); html += fg('地区','f_area'); }
+    else if (currentType === 'cultures') html += fg('级别','f_level');
+    else if (currentType === 'foods') { html += fg('地区','f_area'); html += fg('类型','f_type'); }
+    html += fg('描述','f_desc','textarea');
+    html += fg('开放时间','f_openTime'); if (currentType !== 'foods') html += fg('门票','f_ticketInfo'); html += fg('交通','f_transport'); html += fg('视频URL','f_videoUrl');
+    if (currentType === 'spots') { html += '<div class="form-row"><div class="form-group"><label>纬度 lat</label><input id="f_lat" type="number" step="any" placeholder="如：40.038"></div><div class="form-group"><label>经度 lng</label><input id="f_lng" type="number" step="any" placeholder="如：94.805"></div></div>'; }
+    html += fg('贴士（每行一条）','f_tips','textarea');
+    html += fg('排序值','f_sortOrder','number');
+    html += '<div class="checkbox-group"><label><input type="checkbox" id="f_isHot"> 🔥 热门</label></div>';
+  }
+  document.getElementById('formFields').innerHTML = html;
+}
+
+function fg(label, id, type) {
+  var tag = type === 'textarea' ? 'textarea id="' + id + '" rows="2"' : 'input id="' + id + '"' + (type === 'number' ? ' type="number" step="1"' : type === 'date' ? ' type="date"' : '');
+  return '<div class="form-group"><label>' + label + '</label><' + tag + '></' + (type==='textarea'?'textarea':'input') + '></div>';
+}
+
+function getF(id) { var el = document.getElementById(id); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; }
+function setF(id, v) { var el = document.getElementById(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = v !== undefined && v !== null ? v : ''; }
+
+function editItem(id) {
+  var item = items.find(function(i){ return (i.id || i._id || i.name || i.title || '') == id; });
+  if (!item) { toast('未找到该项目', 'error'); return; }
+  editItemData = item;
+  document.getElementById('modalTitle').textContent = '编辑';
+  renderForm();
+  if (currentType === 'events') {
+    setF('f_title', item.title); setF('f_month', item.month); setF('f_day', item.day); setF('f_location', item.location);
+    setF('f_date', item.date ? new Date(item.date).toISOString().split('T')[0] : '');
+  } else if (currentType === 'banners') {
+    setF('f_title', item.title); setF('f_image', item.image); setF('f_desc', item.desc);
+    setF('f_linkType', item.linkType || 'page'); setF('f_linkValue', item.linkValue); setF('f_sortOrder', item.sortOrder);
+  } else if (currentType === 'cities') {
+    setF('f_name', item.name); setF('f_desc', item.desc); setF('f_banner', item.banner); setF('f_level', item.level);
+    setF('f_years', item.years); setF('f_intro', item.intro);
+  } else if (currentType === 'quick-entries') {
+    setF('f_text', item.text); setF('f_icon', item.icon); setF('f_linkType', item.linkType || 'page');
+    setF('f_linkValue', item.linkValue); setF('f_sortOrder', item.sortOrder);
+  } else {
+    setF('f_name', item.name); setF('f_image', item.image);
+    var imgs = item.images || [];
+    setF('f_img1', imgs[0]); setF('f_img2', imgs[1]); setF('f_img3', imgs[2]);
+    setF('f_tags', (item.tags || []).join(', ')); setF('f_location', item.location);
+    if (currentType === 'spots') { setF('f_level', item.level); setF('f_category', item.category); setF('f_area', item.area); }
+    else if (currentType === 'cultures') setF('f_level', item.level);
+    else if (currentType === 'foods') { setF('f_area', item.area); setF('f_type', item.type); }
+    setF('f_desc', item.description);
+    setF('f_openTime', item.openTime); setF('f_ticketInfo', item.ticketInfo); setF('f_transport', item.transport); setF('f_videoUrl', item.videoUrl);
+    if (currentType === 'spots') { setF('f_lat', item.lat); setF('f_lng', item.lng); }
+    setF('f_tips', (item.tips || []).join('\n'));
+    setF('f_sortOrder', item.sortOrder);
+    setF('f_isHot', item.isHot);
+  }
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('saveError').style.display = 'none';
+}
+
+async function saveItem() {
+  var body = {};
+  var id = editItemData ? (editItemData.id || editItemData._id || editItemData.name || editItemData.title) : null;
+
+  if (currentType === 'events') {
+    body = { title: getF('f_title'), month: getF('f_month'), day: getF('f_day'), location: getF('f_location'), date: getF('f_date') || null };
+  } else if (currentType === 'banners') {
+    body = { title: getF('f_title'), image: getF('f_image'), desc: getF('f_desc'), linkType: getF('f_linkType'), linkValue: getF('f_linkValue'), sortOrder: parseInt(getF('f_sortOrder')) || 0 };
+  } else if (currentType === 'cities') {
+    body = { name: getF('f_name'), desc: getF('f_desc'), banner: getF('f_banner'), level: getF('f_level'), years: getF('f_years'), intro: getF('f_intro') };
+  } else if (currentType === 'quick-entries') {
+    body = { text: getF('f_text'), icon: getF('f_icon'), linkType: getF('f_linkType'), linkValue: getF('f_linkValue'), sortOrder: parseInt(getF('f_sortOrder')) || 0 };
+  } else {
+    var imagesArr = [getF('f_img1'), getF('f_img2'), getF('f_img3')].filter(function(s){return s && s.trim()});
+    body = {
+      name: getF('f_name'), image: getF('f_image'),
+      images: imagesArr,
+      tags: (getF('f_tags')||'').split(',').map(function(t){return t.trim()}).filter(Boolean),
+      location: getF('f_location'),
+      description: getF('f_desc'),
+      openTime: getF('f_openTime'), ticketInfo: getF('f_ticketInfo'), transport: getF('f_transport'), videoUrl: getF('f_videoUrl'),
+      tips: (getF('f_tips')||'').split('\n').map(function(t){return t.trim()}).filter(Boolean),
+      sortOrder: parseInt(getF('f_sortOrder')) || 0,
+      isHot: getF('f_isHot')
+    };
+    if (currentType === 'spots') { body.level = getF('f_level'); body.category = getF('f_category'); body.area = getF('f_area'); body.lat = parseFloat(getF('f_lat')) || null; body.lng = parseFloat(getF('f_lng')) || null; }
+    else if (currentType === 'cultures') { body.level = getF('f_level'); }
+    else if (currentType === 'foods') { body.area = getF('f_area'); body.type = getF('f_type'); }
+    Object.keys(body).forEach(function(k){ if (body[k] === '' || body[k] === undefined || body[k] === null) delete body[k]; });
+    if (!id) {
+      var maxId = Math.max.apply(null, items.map(function(i){ return parseInt(i.id) || 0; }));
+      if (currentType === 'spots' && maxId < 100) maxId = 100;
+      if (currentType === 'foods' && maxId < 200) maxId = 200;
+      body.id = String(maxId + 1);
+    }
+  }
+
+  var res;
+  if (id) {
+    if (currentType === 'quick-entries') {
+      res = await api(getApiPath() + '/' + (editItemData._id || id), 'PUT', body);
+    } else if (currentType === 'banners' || currentType === 'events') {
+      res = await api(getApiPath() + '/' + (editItemData._id || id), 'PUT', body);
+    } else if (currentType === 'cities') {
+      res = await api(getApiPath() + '/' + (editItemData.name || id), 'PUT', body);
+    } else {
+      res = await api(getApiPath() + '/' + id, 'PUT', body);
+    }
+  } else {
+    res = await api(getApiPath(), 'POST', body);
+  }
+
+  if (res && res.code === 200) {
+    var action = id ? '已更新' : '已创建';
+    toast(action, 'success');
+    closeModal(); load();
+  } else {
+    var errEl = document.getElementById('saveError');
+    errEl.textContent = (res && res.message) ? res.message : '保存失败';
+    errEl.style.display = 'block';
+  }
+}
+
+async function deleteItem(id) {
+  if (!confirm('确认删除？\n此操作不可恢复。')) return;
+  var item = items.find(function(i){ return (i.id || i._id || i.name || i.title || '') == id; });
+  var delId;
+  if (currentType === 'banners' || currentType === 'events' || currentType === 'quick-entries') delId = (item && item._id) || id;
+  else if (currentType === 'cities') delId = (item && item.name) || id;
+  else delId = id;
+  var res = await api(getApiPath() + '/' + delId, 'DELETE');
+  if (res && res.code === 200) { toast('已删除', 'success'); load(); }
+  else toast((res && res.message) || '删除失败', 'error');
+}
+
+async function toggleStatus(id, newStatus) {
+  if (!confirm('确认' + (newStatus === 0 ? '下架' : '上架') + '？')) return;
+  var item = items.find(function(i){ return (i.id || i._id || i.name || '') == id; });
+  var updId;
+  if (currentType === 'banners' || currentType === 'quick-entries') updId = (item && item._id) || id;
+  else if (currentType === 'cities') updId = (item && item.name) || id;
+  else updId = id;
+  var res = await api(getApiPath() + '/' + updId, 'PUT', { status: newStatus });
+  if (res && res.code === 200) { toast(newStatus === 0 ? '已下架' : '已上架', 'success'); load(); }
+  else toast((res && res.message) || '操作失败', 'error');
+}
+
+load();
+</script>
+<div class="filing-footer">
+  <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" style="color:var(--grey-light);text-decoration:none;font-size:.75rem;">ICP备案号</a>
+  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=XXXXXXXXXXXXXX" rel="noreferrer" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--grey-light);text-decoration:none;font-size:.75rem;margin-left:16px;">
+    <img src="/admin/police-icon.png" style="width:16px;height:16px;">
+    公安备案号
+  </a>
+</div>
+</body>
+</html>
